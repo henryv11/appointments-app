@@ -6,5 +6,7 @@ module.exports = {
         sourceType: 'module',
     },
     extends: ['plugin:@typescript-eslint/recommended'],
-    rules: {},
+    rules: {
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+    },
 };

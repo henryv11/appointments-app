@@ -1,0 +1,38 @@
+{
+    "database": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "postgres",
+        "pass": "postgres"
+    },
+    "server": {
+        "port": 8080
+    },
+    "jwt": {
+        "secret": "fwafwafwafwaf",
+        "algorithm": "HS512"
+    },
+    "helmet": {
+        "contentSecurityPolicy": {
+            "directives": {
+                "defaultSrc": ["'self'"],
+                "styleSrc": ["'self'", "'unsafe-inline'"],
+                "imgSrc": ["'self'", "data:", "validator.swagger.io"],
+                "scriptSrc": ["'self'", "https: 'unsafe-inline'"]
+            }
+        }
+    },
+    "swagger": {
+        "routePrefix": "/documentation",
+        "exposeRoute": true,
+        "swagger": {
+            "info": {
+                "title": "Fastify API",
+                "description": "Backend service for appointments using NodeJS, fastify and postgres",
+                "version": "1.0.0"
+            },
+            "consumes": ["application/json"],
+            "produces": ["application/json"]
+        }
+    }
+}
