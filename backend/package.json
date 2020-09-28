@@ -4,10 +4,12 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "tsc",
+        "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts"
     },
     "keywords": [],
-    "author": "Henry Viirmae",
+    "author": "Henry Viirmäe",
     "license": "ISC",
     "dependencies": {
         "bcrypt": "^5.0.0",
@@ -15,6 +17,7 @@
         "fastify-cors": "^4.1.0",
         "fastify-helmet": "^5.0.3",
         "jsonwebtoken": "^8.5.1",
+        "node-pg-migrate": "^5.8.0",
         "pg": "^8.3.3"
     },
     "devDependencies": {
@@ -26,6 +29,8 @@
         "eslint": "^7.10.0",
         "eslint-config-prettier": "^6.12.0",
         "eslint-plugin-prettier": "^3.1.4",
-        "prettier": "^2.1.2"
+        "prettier": "^2.1.2",
+        "ts-node": "^9.0.0",
+        "typescript": "^4.0.3"
     }
 }
