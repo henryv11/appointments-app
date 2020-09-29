@@ -14,7 +14,7 @@ const databasePlugin: FastifyPluginCallback<PoolConfig> = function (fastify, opt
         .decorate('database', pool)
         .decorate('query', query)
         .addHook('onClose', async function () {
-            fastify.log.info('closing database connection ...');
+            fastify.log.info('ending database pool ...');
             await pool.end();
         });
     done();

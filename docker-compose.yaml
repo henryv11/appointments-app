@@ -1,0 +1,58 @@
+version: "3.7"
+
+services:
+  backend_dev:
+    container_name: backend_container
+    image: node:12-alpine
+    volumes:
+      - type: bind
+        source: ./backend
+        target: /app
+      - type: volume
+        source: node_modules
+        target: /app/node_modules
+    working_dir: /app
+    command: npm run dev
+    networks:
+      - main
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  postgres_dev:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - main
+    restart: unless-stopped
+
+  pgadmin_dev:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    volumes:
+      - pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - main
+    restart: unless-stopped
+
+networks:
+  main:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
+  node_modules:

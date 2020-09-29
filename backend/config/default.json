@@ -1,9 +1,10 @@
 {
-    "database": {
-        "host": "localhost",
+    "db": {
+        "host": "postgres_container",
         "port": 5432,
         "user": "postgres",
-        "pass": "postgres"
+        "password": "postgres",
+        "database": "postgres"
     },
     "server": {
         "port": 8080

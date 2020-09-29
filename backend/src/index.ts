@@ -16,7 +16,7 @@ const fastify = Fastify({ logger: pino(get('logger')) })
     .register(helmet, get('helmet'))
     .register(cors)
     .register(jwtAuth, get('jwt'))
-    .register(database, get('database'))
+    .register(database, get('db'))
     .register(swagger, { ...get('swagger') })
     .register(blipp)
     .register(userService);
