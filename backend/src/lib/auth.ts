@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyPluginCallback, FastifyRequest } from 'fastify';
+import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { Algorithm, sign, verify } from 'jsonwebtoken';
 import { User } from '../@types';
@@ -8,7 +8,7 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
     { secret, algorithm },
     done,
 ) {
-    const signToken: FastifyInstance['signToken'] = ({ id }) => sign({ id }, secret, { algorithm });
+    const signToken: AuthFastifyInstance['signToken'] = ({ id }) => sign({ id }, secret, { algorithm });
 
     fastify
         .decorate('signToken', signToken)
@@ -20,12 +20,26 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
             const [, token] = headerToken.split(' ');
             try {
                 const decodedToken = verify(token, secret, { algorithms: [algorithm] });
-                if (typeof decodedToken === 'object') req.user = decodedToken as FastifyRequest['user'];
+                if (typeof decodedToken === 'object') req.user = decodedToken as AuthRequest['user'];
                 done();
             } catch (error) {
                 req.tokenError = error.message;
                 done();
             }
+        })
+        .addHook('onRoute', function (routeOptions) {
+            if (routeOptions.authorize)
+                routeOptions.preValidation = [
+                    function (req, _, done) {
+                        if (!req.user) return done(fastify.errors.unauthorized(req.tokenError));
+                        done();
+                    },
+                    ...(routeOptions.preValidation
+                        ? Array.isArray(routeOptions.preValidation)
+                            ? routeOptions.preValidation
+                            : [routeOptions.preValidation]
+                        : []),
+                ];
         });
 
     done();
@@ -33,13 +47,21 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
 
 export const jwtAuth = fp(jwtAuthPlugin);
 
-declare module 'fastify' {
-    interface FastifyRequest {
-        user?: Pick<User, 'id'>;
-        tokenError?: string;
-    }
+interface AuthRequest {
+    user?: Pick<User, 'id'>;
+    tokenError?: string;
+}
 
-    interface FastifyInstance {
-        signToken: ({ id }: Pick<User, 'id'>) => string;
-    }
+interface AuthRouteOptions {
+    authorize?: boolean;
+}
+
+interface AuthFastifyInstance {
+    signToken: ({ id }: Pick<User, 'id'>) => string;
+}
+
+declare module 'fastify' {
+    interface FastifyRequest extends AuthRequest {}
+    interface RouteOptions extends AuthRouteOptions {}
+    interface FastifyInstance extends AuthFastifyInstance {}
 }

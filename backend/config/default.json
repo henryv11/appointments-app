@@ -12,6 +12,9 @@
         "secret": "fwafwafwafwaf",
         "algorithm": "HS512"
     },
+    "logger": {
+        "prettyPrint": true
+    },
     "helmet": {
         "contentSecurityPolicy": {
             "directives": {

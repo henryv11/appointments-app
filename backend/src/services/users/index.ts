@@ -12,21 +12,21 @@ const usersServicePlugin: FastifyPluginCallback = function (fastify, _, done) {
         .put<{ Body: Pick<User, 'username' | 'password'> }>(
             '/auth',
             { schema: { body: { $ref: 'user#' } } },
-            async ({ body: { username, password } }) => {
+            async function ({ body: { username, password } }) {
                 const hashedPassword = await hash(password, 10);
                 const {
                     rows: [user],
-                } = await fastify.createUser({ username, password: hashedPassword });
+                } = await fastify.usersRepository.createUser({ username, password: hashedPassword });
                 return fastify.signToken(user);
             },
         )
         .post<{ Body: Pick<User, 'username' | 'password'> }>(
             '/auth',
             { schema: { body: { $ref: 'user#' } } },
-            async ({ body: { username, password } }) => {
+            async function ({ body: { username, password } }) {
                 const {
                     rows: [user],
-                } = await fastify.findUserByUsername(username);
+                } = await fastify.usersRepository.findUserByUsername(username);
                 if (!user) return;
                 const isValidPassword = await compare(password, user.password);
                 if (!isValidPassword) return;

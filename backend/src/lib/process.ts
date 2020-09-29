@@ -14,12 +14,12 @@ export async function handleExit(
     process.exit(code);
 }
 
-const exitHandlerPlugin: FastifyPluginCallback = function (fastify, _, next) {
+const exitHandlerPlugin: FastifyPluginCallback = function (fastify, _, done) {
     (['SIGINT', 'SIGTERM', 'SIGQUIT'] as const).forEach(signal =>
         process.on(signal, signal => handleExit(signal, undefined, 0, fastify)),
     );
     process.on('uncaughtException', error => handleExit(undefined, error, 1, fastify));
-    next();
+    done();
 };
 
 export const exitHandlers = fp(exitHandlerPlugin);

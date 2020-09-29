@@ -5,17 +5,14 @@ import cors from 'fastify-cors';
 import helmet from 'fastify-helmet';
 import swagger from 'fastify-swagger';
 import pino from 'pino';
-import { database, exitHandlers, handleExit, jwtAuth } from './lib';
+import { database, errors, exitHandlers, handleExit, jwtAuth } from './lib';
 import { userService } from './services';
 
 const port: number = get('server.port');
 
-const fastify = Fastify({
-    logger: pino({
-        prettyPrint: true,
-    }),
-})
+const fastify = Fastify({ logger: pino(get('logger')) })
     .register(exitHandlers)
+    .register(errors)
     .register(helmet, get('helmet'))
     .register(cors)
     .register(jwtAuth, get('jwt'))
