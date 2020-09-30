@@ -1,9 +1,80 @@
-import { FastifyPluginCallback } from 'fastify';
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
-import { Pool, PoolConfig, QueryResult } from 'pg';
+import migrate, { RunnerOption } from 'node-pg-migrate';
+import { Client, ClientConfig, Pool, QueryResult } from 'pg';
 
-const databasePlugin: FastifyPluginCallback<PoolConfig> = function (fastify, options, done) {
-    const pool = new Pool(options).on('error', err => fastify.log.error('database pool error', err));
+async function createDatabase(
+    { host, port, user, password, database }: Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>,
+    logger: FastifyInstance['log'],
+) {
+    logger.info('attempting to create database');
+    const client = new Client({ host, port, user, password });
+    try {
+        await client.connect();
+        const {
+            rows: [{ dbExists }],
+        } = await client.query(
+            `SELECT EXISTS(
+                SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower($1)
+            ) AS "dbExists"`,
+            [database],
+        );
+        if (dbExists) return logger.info('database already exists');
+        await client.query(`CREATE DATABASE ${database}`); // can't use parametrized query here
+    } catch (error) {
+        logger.error(error, 'failed to create database');
+        throw error;
+    } finally {
+        await client.end();
+    }
+}
+
+async function runMigrations(
+    {
+        host,
+        port,
+        user,
+        password,
+        database,
+        dir,
+        migrationsTable,
+    }: Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'> &
+        Pick<RunnerOption, 'dir' | 'migrationsTable'>,
+    logger: FastifyInstance['log'],
+) {
+    logger.info('attempting to run migrations');
+    const client = new Client({ host, port, user, password, database });
+    try {
+        await client.connect();
+        await migrate({
+            dbClient: client,
+            dir,
+            migrationsTable,
+            direction: 'up',
+            count: Infinity,
+            logger,
+        });
+    } catch (error) {
+        logger.error(error, 'failed to run migrations');
+        throw error;
+    } finally {
+        await client.end();
+    }
+}
+
+const databasePlugin: FastifyPluginAsync<
+    Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'> &
+        Partial<Pick<RunnerOption, 'dir' | 'migrationsTable'>>
+> = async function (
+    fastify,
+    { dir = './migrations', migrationsTable = 'migrations', host, port, user, password, database },
+) {
+    await createDatabase({ host, port, user, password, database }, fastify.log);
+    await runMigrations({ host, port, user, password, database, dir, migrationsTable }, fastify.log);
+
+    const pool = new Pool({ host, port, user, password, database }).on('error', err =>
+        fastify.log.error(err, 'database pool error'),
+    );
 
     const query: DatabaseFastifyInstance['query'] = async function (query, replacements) {
         const client = await pool.connect();
@@ -17,7 +88,6 @@ const databasePlugin: FastifyPluginCallback<PoolConfig> = function (fastify, opt
             fastify.log.info('ending database pool ...');
             await pool.end();
         });
-    done();
 };
 
 export const database = fp(databasePlugin);

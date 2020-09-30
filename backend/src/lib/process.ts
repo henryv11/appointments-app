@@ -7,8 +7,8 @@ export async function handleExit(
     code: number,
     fastify: FastifyInstance,
 ) {
-    if (signal) fastify.log.info(`caught NodeJS exit signal ${signal}`);
-    if (error) fastify.log.info(`error <${error}> caused process to exit`);
+    if (signal) fastify.log.info(signal, 'caught NodeJS exit signal');
+    if (error) fastify.log.info(error, 'error caused process to exit');
     fastify.log.info('shutting down server ...');
     await fastify.close();
     process.exit(code);

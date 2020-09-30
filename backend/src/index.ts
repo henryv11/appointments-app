@@ -16,16 +16,15 @@ const fastify = Fastify({ logger: pino(get('logger')) })
     .register(helmet, get('helmet'))
     .register(cors)
     .register(jwtAuth, get('jwt'))
-    .register(database, get('db'))
     .register(swagger, { ...get('swagger') })
     .register(blipp)
+    .register(database, get('db'))
     .register(userService);
 
 fastify.ready(err => {
     if (err) return handleExit(undefined, err, 1, fastify);
     fastify.listen(port, () => {
         if (err) return handleExit(undefined, err, 1, fastify);
-        fastify.log.info(`server listening on port ${port}`);
         fastify.blipp();
         fastify.swagger();
     });
