@@ -1,19 +1,19 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { QueryResult } from 'pg';
-import { User } from '../../@types';
+import { User } from '../@types';
 
-const usersRepositoryPlugin: FastifyPluginCallback = function (fastify, _, done) {
+const usersRepositoryPlugin: FastifyPluginCallback = function (app, _, done) {
     const usersRepository: UsersRepository = {
         createUser: ({ username, password }) =>
-            fastify.query('INSERT INTO app_user (username, password) VALUES ($1, $2) RETURNING id, username', [
+            app.query('INSERT INTO app_user (username, password) VALUES ($1, $2) RETURNING id, username', [
                 username,
                 password,
             ]),
         findUserByUsername: username =>
-            fastify.query('SELECT id, username, password FROM app_user WHERE username = $1', [username]),
+            app.query('SELECT id, username, password FROM app_user WHERE username = $1', [username]),
     };
-    fastify.decorate('usersRepository', usersRepository);
+    app.decorate('usersRepository', usersRepository);
     done();
 };
 

@@ -1,31 +1,29 @@
 import { get } from 'config';
 import Fastify from 'fastify';
-import blipp from 'fastify-blipp';
 import cors from 'fastify-cors';
 import helmet from 'fastify-helmet';
 import swagger from 'fastify-swagger';
 import pino from 'pino';
 import { database, errors, exitHandlers, handleExit, jwtAuth } from './lib';
-import { userService } from './services';
+import { repositories } from './repositories';
+import { services } from './services';
 
-const port: number = get('server.port');
-
-const fastify = Fastify({ logger: pino(get('logger')) })
+const app = Fastify({ logger: pino(get('logger')) })
     .register(exitHandlers)
     .register(errors)
     .register(helmet, get('helmet'))
     .register(cors)
     .register(jwtAuth, get('jwt'))
-    .register(swagger, { ...get('swagger') })
-    .register(blipp)
-    .register(database, get('db'))
-    .register(userService);
+    .register(swagger, { ...get('docs') })
+    .register(repositories)
+    .register(services)
+    .register(database, get('db'));
 
-fastify.ready(err => {
-    if (err) return handleExit(undefined, err, 1, fastify);
-    fastify.listen(port, () => {
-        if (err) return handleExit(undefined, err, 1, fastify);
-        fastify.blipp();
-        fastify.swagger();
+app.ready(err => {
+    if (err) return handleExit(undefined, err, 1, app);
+    app.listen(get('server.port'), get('server.host'), () => {
+        if (err) return handleExit(undefined, err, 1, app);
+        app.log.info(app.swagger({ yaml: true }));
+        app.log.info(app.printRoutes());
     });
 });

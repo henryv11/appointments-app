@@ -4,17 +4,16 @@ import { Algorithm, sign, verify } from 'jsonwebtoken';
 import { User } from '../@types';
 
 const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorithm }> = function (
-    fastify,
+    app,
     { secret, algorithm },
     done,
 ) {
-    const signToken: AuthFastifyInstance['signToken'] = ({ id }) => sign({ id }, secret, { algorithm });
+    const signToken: AuthInstance['signToken'] = ({ id }) => sign({ id }, secret, { algorithm });
 
-    fastify
-        .decorate('signToken', signToken)
+    app.decorate('signToken', signToken)
         .decorateRequest('user', undefined)
         .decorateRequest('tokenError', undefined)
-        .addHook('onRequest', function (req, _, done) {
+        .addHook('onRequest', (req, _, done) => {
             const headerToken = req.headers['authorization'];
             if (!headerToken) return done();
             const [, token] = headerToken.split(' ');
@@ -27,11 +26,11 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
                 done();
             }
         })
-        .addHook('onRoute', function (routeOptions) {
+        .addHook('onRoute', routeOptions => {
             if (routeOptions.authorize)
                 routeOptions.preValidation = [
-                    function (req, _, done) {
-                        if (!req.user) return done(fastify.errors.unauthorized(req.tokenError));
+                    (req, _, done) => {
+                        if (!req.user) return done(app.errors.unauthorized(req.tokenError));
                         done();
                     },
                     ...(routeOptions.preValidation
@@ -56,12 +55,13 @@ interface AuthRouteOptions {
     authorize?: boolean;
 }
 
-interface AuthFastifyInstance {
+interface AuthInstance {
     signToken: ({ id }: Pick<User, 'id'>) => string;
 }
 
 declare module 'fastify' {
     interface FastifyRequest extends AuthRequest {}
     interface RouteOptions extends AuthRouteOptions {}
-    interface FastifyInstance extends AuthFastifyInstance {}
+    interface RouteShorthandOptions extends AuthRouteOptions {}
+    interface FastifyInstance extends AuthInstance {}
 }

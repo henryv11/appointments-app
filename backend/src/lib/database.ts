@@ -4,11 +4,11 @@ import migrate, { RunnerOption } from 'node-pg-migrate';
 import { Client, ClientConfig, Pool, QueryResult } from 'pg';
 
 async function createDatabase(
-    { host, port, user, password, database }: Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>,
+    { database, ...connectionOptions }: DatabaseConnectionOptions,
     logger: FastifyInstance['log'],
 ) {
-    logger.info('attempting to create database');
-    const client = new Client({ host, port, user, password });
+    logger.info(`attempting to create database ${database}`);
+    const client = new Client(connectionOptions);
     try {
         await client.connect();
         const {
@@ -19,10 +19,10 @@ async function createDatabase(
             ) AS "dbExists"`,
             [database],
         );
-        if (dbExists) return logger.info('database already exists');
+        if (dbExists) return logger.info(`database ${database} already exists`);
         await client.query(`CREATE DATABASE ${database}`); // can't use parametrized query here
     } catch (error) {
-        logger.error(error, 'failed to create database');
+        logger.error(error, `failed to create database ${database}`);
         throw error;
     } finally {
         await client.end();
@@ -30,29 +30,20 @@ async function createDatabase(
 }
 
 async function runMigrations(
-    {
-        host,
-        port,
-        user,
-        password,
-        database,
-        dir,
-        migrationsTable,
-    }: Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'> &
-        Pick<RunnerOption, 'dir' | 'migrationsTable'>,
+    { dir, migrationsTable, ...connectionOptions }: DatabaseConnectionOptions & MigrationsOptions,
     logger: FastifyInstance['log'],
 ) {
     logger.info('attempting to run migrations');
-    const client = new Client({ host, port, user, password, database });
+    const client = new Client(connectionOptions);
     try {
         await client.connect();
         await migrate({
-            dbClient: client,
             dir,
             migrationsTable,
+            logger,
+            dbClient: client,
             direction: 'up',
             count: Infinity,
-            logger,
         });
     } catch (error) {
         logger.error(error, 'failed to run migrations');
@@ -62,41 +53,40 @@ async function runMigrations(
     }
 }
 
-const databasePlugin: FastifyPluginAsync<
-    Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'> &
-        Partial<Pick<RunnerOption, 'dir' | 'migrationsTable'>>
-> = async function (
-    fastify,
-    { dir = './migrations', migrationsTable = 'migrations', host, port, user, password, database },
+const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
+    app,
+    { dir = './migrations', migrationsTable = 'pgmigrations', ...connectionOptions },
 ) {
-    await createDatabase({ host, port, user, password, database }, fastify.log);
-    await runMigrations({ host, port, user, password, database, dir, migrationsTable }, fastify.log);
+    await createDatabase(connectionOptions, app.log);
+    await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
 
-    const pool = new Pool({ host, port, user, password, database }).on('error', err =>
-        fastify.log.error(err, 'database pool error'),
-    );
-
-    const query: DatabaseFastifyInstance['query'] = async function (query, replacements) {
-        const client = await pool.connect();
+    const query: DatabaseInstance['query'] = async function (query, replacements) {
+        const client = await app.database.connect();
         return client.query(query, replacements).finally(client.release);
     };
 
-    fastify
-        .decorate('database', pool)
+    app.decorate(
+        'database',
+        new Pool(connectionOptions).on('error', err => app.log.error(err, 'database pool error')),
+    )
         .decorate('query', query)
-        .addHook('onClose', async function () {
-            fastify.log.info('ending database pool ...');
-            await pool.end();
+        .addHook('onClose', async () => {
+            app.log.info('ending database pool ...');
+            await app.database.end();
         });
 };
 
 export const database = fp(databasePlugin);
 
-interface DatabaseFastifyInstance {
+type DatabaseConnectionOptions = Required<Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>>;
+
+type MigrationsOptions = Pick<RunnerOption, 'dir' | 'migrationsTable'>;
+
+interface DatabaseInstance {
     database: Pool;
     query: <T>(query: string, replacements?: (string | number)[]) => Promise<QueryResult<T>>;
 }
 
 declare module 'fastify' {
-    interface FastifyInstance extends DatabaseFastifyInstance {}
+    interface FastifyInstance extends DatabaseInstance {}
 }

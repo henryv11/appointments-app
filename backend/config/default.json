@@ -1,13 +1,14 @@
 {
     "db": {
         "host": "postgres_container",
-        "port": 5431,
+        "port": 5432,
         "user": "postgres",
         "password": "postgres",
         "database": "backend"
     },
     "server": {
-        "port": 8080
+        "port": 8080,
+        "host": "0.0.0.0"
     },
     "jwt": {
         "secret": "fwafwafwafwaf",
@@ -26,7 +27,7 @@
             }
         }
     },
-    "swagger": {
+    "docs": {
         "routePrefix": "/documentation",
         "exposeRoute": true,
         "swagger": {
