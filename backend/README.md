@@ -4,23 +4,23 @@
 
 `fastify` for the server framework
 
-> docs @ <https://www.fastify.io/docs/latest/>
+> [fastify docs](https://www.fastify.io/docs/latest/)
 
 ## Database
 
 _Postgres_ for database
 
-> docs @ <https://www.postgresql.org/docs/>
+> [postgres docs](https://www.postgresql.org/docs/)
 
 Client driver is `pg`
 
-> docs @ <https://node-postgres.com/>
+> [pg docs](https://node-postgres.com/)
 
 ## Migrations
 
 `node-pg-migrate` for migrations
 
-> docs @ <https://salsita.github.io/node-pg-migrate/#/>
+> [node-pg-migrate docs](https://salsita.github.io/node-pg-migrate/#/)
 
 ### To create a new migration
 

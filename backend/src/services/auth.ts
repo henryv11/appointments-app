@@ -1,47 +1,11 @@
 import { compare, hash } from 'bcrypt';
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
-import { User } from '../@types';
-
-const tags = ['auth'];
-
-const userSchema = {
-    description: "user's username and password",
-    type: 'object',
-    required: ['username', 'password'],
-    properties: {
-        username: { type: 'string' },
-        password: { type: 'string' },
-    },
-};
-
-const tokenSchema = { type: 'string', description: 'hello', summary: 'hello', example: 'fidget' };
-
-const baseSchema = {
-    tags,
-    body: userSchema,
-    response: { 200: tokenSchema },
-};
-
-const registrationSchema = {
-    description: 'Register a new user',
-    summary: 'Registration',
-    ...baseSchema,
-};
-
-const loginSchema = {
-    description: 'Login an existing user',
-    summary: 'Login',
-    ...baseSchema,
-};
+import { AuthService } from '../@types';
 
 const usersServicePlugin: FastifyPluginCallback = function (app, _, done) {
-    app.put<{ Body: Pick<User, 'username' | 'password'> }>(
-        '/auth',
-        {
-            schema: registrationSchema,
-        },
-        async function ({ body: { username, password } }) {
+    const authService: AuthService = {
+        async registerUser({ username, password }) {
             const hashedPassword = await hash(password, 10);
             const {
                 rows: [user],
@@ -50,12 +14,8 @@ const usersServicePlugin: FastifyPluginCallback = function (app, _, done) {
             });
             return app.signToken(user);
         },
-    ).post<{ Body: Pick<User, 'username' | 'password'> }>(
-        '/auth',
-        {
-            schema: loginSchema,
-        },
-        async function ({ body: { username, password } }) {
+
+        async loginUser({ username, password }) {
             const {
                 rows: [user],
             } = await app.usersRepository.findUserByUsername(username);
@@ -64,7 +24,8 @@ const usersServicePlugin: FastifyPluginCallback = function (app, _, done) {
             if (!isValidPassword) throw app.errors.badRequest();
             return app.signToken(user);
         },
-    );
+    };
+    app.decorate('authService', authService);
     done();
 };
 

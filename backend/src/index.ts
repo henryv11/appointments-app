@@ -6,6 +6,7 @@ import swagger from 'fastify-swagger';
 import pino from 'pino';
 import { database, errors, exitHandlers, handleExit, jwtAuth } from './lib';
 import { repositories } from './repositories';
+import { routes } from './routes';
 import { services } from './services';
 
 const app = Fastify({ logger: pino(get('logger')) })
@@ -17,6 +18,7 @@ const app = Fastify({ logger: pino(get('logger')) })
     .register(swagger, { ...get('docs') })
     .register(repositories)
     .register(services)
+    .register(routes)
     .register(database, get('db'));
 
 app.ready(err => {

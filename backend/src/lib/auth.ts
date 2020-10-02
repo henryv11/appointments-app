@@ -1,7 +1,6 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { Algorithm, sign, verify } from 'jsonwebtoken';
-import { User } from '../@types';
 
 const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorithm }> = function (
     app,
@@ -46,8 +45,12 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
 
 export const jwtAuth = fp(jwtAuthPlugin);
 
+interface TokenPayload {
+    id: number;
+}
+
 interface AuthRequest {
-    user?: Pick<User, 'id'>;
+    user?: TokenPayload;
     tokenError?: string;
 }
 
@@ -56,7 +59,7 @@ interface AuthRouteOptions {
 }
 
 interface AuthInstance {
-    signToken: ({ id }: Pick<User, 'id'>) => string;
+    signToken: (payload: TokenPayload) => string;
 }
 
 declare module 'fastify' {
