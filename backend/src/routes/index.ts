@@ -3,7 +3,7 @@ import fp from 'fastify-plugin';
 import { authRoutes } from './auth';
 
 const routesPlugin: FastifyPluginCallback = function (app, _, done) {
-    app.register(authRoutes);
+    [authRoutes].forEach(app.register);
     done();
 };
 

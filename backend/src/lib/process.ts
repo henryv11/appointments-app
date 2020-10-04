@@ -22,4 +22,4 @@ const exitHandlerPlugin: FastifyPluginCallback = function (app, _, done) {
     done();
 };
 
-export const exitHandlers = fp(exitHandlerPlugin);
+export const exitHandler = fp(exitHandlerPlugin);

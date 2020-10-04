@@ -8,17 +8,17 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
     done,
 ) {
     const signToken: AuthInstance['signToken'] = ({ id }) => sign({ id }, secret, { algorithm });
-
     app.decorate('signToken', signToken)
-        .decorateRequest('user', undefined)
-        .decorateRequest('tokenError', undefined)
+        .decorateRequest('user', null)
+        .decorateRequest('tokenError', '')
         .addHook('onRequest', (req, _, done) => {
             const headerToken = req.headers['authorization'];
             if (!headerToken) return done();
             const [, token] = headerToken.split(' ');
             try {
                 const decodedToken = verify(token, secret, { algorithms: [algorithm] });
-                if (typeof decodedToken === 'object') req.user = decodedToken as AuthRequest['user'];
+                if (typeof decodedToken === 'object') req.user = decodedToken as NonNullable<AuthRequest['user']>;
+                else req.tokenError = 'invalid token';
                 done();
             } catch (error) {
                 req.tokenError = error.message;
@@ -26,7 +26,20 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
             }
         })
         .addHook('onRoute', routeOptions => {
-            if (routeOptions.authorize)
+            if (routeOptions.authorize) {
+                routeOptions.schema = {
+                    ...routeOptions.schema,
+                    headers: {
+                        type: 'object',
+                        properties: {
+                            ...(routeOptions.schema?.headers as Record<string, Record<string, unknown>>)?.properties,
+                            Authorization: {
+                                type: 'string',
+                                description: 'Json Web Token',
+                            },
+                        },
+                    },
+                };
                 routeOptions.preValidation = [
                     (req, _, done) => {
                         if (!req.user) return done(app.errors.unauthorized(req.tokenError));
@@ -38,20 +51,27 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
                             : [routeOptions.preValidation]
                         : []),
                 ];
+            }
         });
-
     done();
 };
 
 export const jwtAuth = fp(jwtAuthPlugin);
+
+declare module 'fastify' {
+    interface FastifyRequest extends AuthRequest {}
+    interface RouteOptions extends AuthRouteOptions {}
+    interface RouteShorthandOptions extends AuthRouteOptions {}
+    interface FastifyInstance extends AuthInstance {}
+}
 
 interface TokenPayload {
     id: number;
 }
 
 interface AuthRequest {
-    user?: TokenPayload;
-    tokenError?: string;
+    user: (TokenPayload & { iat: number }) | null;
+    tokenError: string;
 }
 
 interface AuthRouteOptions {
@@ -60,11 +80,4 @@ interface AuthRouteOptions {
 
 interface AuthInstance {
     signToken: (payload: TokenPayload) => string;
-}
-
-declare module 'fastify' {
-    interface FastifyRequest extends AuthRequest {}
-    interface RouteOptions extends AuthRouteOptions {}
-    interface RouteShorthandOptions extends AuthRouteOptions {}
-    interface FastifyInstance extends AuthInstance {}
 }

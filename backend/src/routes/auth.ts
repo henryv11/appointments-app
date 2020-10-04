@@ -1,52 +1,62 @@
+import { User } from '@types';
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
-import { User } from '../@types';
 
 const tags = ['auth'];
 
 const userSchema = {
-    description: "user's username and password",
     type: 'object',
     required: ['username', 'password'],
     properties: {
         username: { type: 'string' },
         password: { type: 'string' },
     },
+    description: "User's username and password",
 };
 
-const tokenSchema = { type: 'string', description: 'hello', summary: 'hello', example: 'fidget' };
-
-const baseSchema = {
-    tags,
-    body: userSchema,
-    response: { 200: tokenSchema },
+const tokenSchema = {
+    type: 'string',
+    description: 'Valid Json Web Token',
+    summary: 'Json Web Token',
+    example:
+        'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0IiwiaWF0IjoxNjAxODE0Mzc4fQ.Cqo8aBPhJN-hVN9wpAYNnIbLZ8M8ORMAMj_6ZIQTGV_g1hx3dti5Qjelgup2eh2dEnbP3aNmLqHKA7vYrJZjBQ',
 };
 
-const registrationSchema = {
-    description: 'Register a new user',
-    summary: 'Registration',
-    ...baseSchema,
-};
-
-const loginSchema = {
-    description: 'Login an existing user',
-    summary: 'Login',
-    ...baseSchema,
+const badRequestSchema = {
+    type: 'string',
+    description: 'Login or registration attempt was unsuccessful',
+    example: 'Bad Request',
 };
 
 const authRoutesPlugin: FastifyPluginCallback = function (app, _, done) {
     app.put<{ Body: Pick<User, 'username' | 'password'> }>(
         '/auth',
         {
-            schema: registrationSchema,
+            schema: {
+                description: 'Register a new user',
+                summary: 'Registration',
+                tags,
+                body: userSchema,
+                response: { 201: tokenSchema, 400: badRequestSchema },
+            },
         },
-        ({ body }) => app.authService.registerUser(body),
+        async function (req, res) {
+            const token = await app.services.auth.registerUser(req.body);
+            res.status(201);
+            return token;
+        },
     ).post<{ Body: Pick<User, 'username' | 'password'> }>(
         '/auth',
         {
-            schema: loginSchema,
+            schema: {
+                description: 'Login an existing user',
+                summary: 'Login',
+                tags,
+                body: userSchema,
+                response: { 200: tokenSchema, 400: badRequestSchema },
+            },
         },
-        ({ body }) => app.authService.loginUser(body),
+        ({ body }) => app.services.auth.loginUser(body),
     );
     done();
 };
