@@ -48,6 +48,7 @@ const authRoutesPlugin: FastifyPluginCallback = function (app, _, done) {
     ).post<{ Body: Pick<User, 'username' | 'password'> }>(
         '/auth',
         {
+            authorize: true,
             schema: {
                 description: 'Login an existing user',
                 summary: 'Login',

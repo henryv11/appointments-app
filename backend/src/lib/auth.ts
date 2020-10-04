@@ -2,6 +2,13 @@ import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { Algorithm, sign, verify } from 'jsonwebtoken';
 
+const tokenSchema = {
+    type: 'string',
+    description: 'Json Web Token',
+    example:
+        'Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0IiwiaWF0IjoxNjAxODE0Mzc4fQ.Cqo8aBPhJN-hVN9wpAYNnIbLZ8M8ORMAMj_6ZIQTGV_g1hx3dti5Qjelgup2eh2dEnbP3aNmLqHKA7vYrJZjBQ',
+};
+
 const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorithm }> = function (
     app,
     { secret, algorithm },
@@ -31,12 +38,13 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
                     ...routeOptions.schema,
                     headers: {
                         type: 'object',
+                        required: [
+                            ...((routeOptions.schema?.headers as { required?: string[] })?.required || []),
+                            'authorization',
+                        ],
                         properties: {
-                            ...(routeOptions.schema?.headers as Record<string, Record<string, unknown>>)?.properties,
-                            Authorization: {
-                                type: 'string',
-                                description: 'Json Web Token',
-                            },
+                            ...(routeOptions.schema?.headers as { properties?: Record<string, unknown> })?.properties,
+                            authorization: tokenSchema,
                         },
                     },
                 };
