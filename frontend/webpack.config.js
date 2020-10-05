@@ -1,25 +1,40 @@
 const path = require('path');
-
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 module.exports = {
-  mode: 'none',
-  entry: {
-    app: path.join(__dirname, 'src', 'index.tsx'),
-  },
+  entry: './src/index.tsx',
   target: 'web',
+  mode: 'development',
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'bundle.js',
+  },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js'],
+    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
   },
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: '/node_modules/',
+        test: /\.(ts|tsx)$/,
+        loader: 'awesome-typescript-loader',
+      },
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        loader: 'source-map-loader',
+      },
+      {
+        test: /\.css$/,
+        loader: 'css-loader',
       },
     ],
   },
-  output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, 'dist'),
-  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'src', 'index.html'),
+    }),
+    new MiniCssExtractPlugin({
+      filename: './src/yourfile.css',
+    }),
+  ],
 };
