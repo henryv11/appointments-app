@@ -20,7 +20,7 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
         .decorateRequest('tokenError', '')
         .addHook('onRequest', (req, _, done) => {
             const headerToken = req.headers['authorization'];
-            if (!headerToken) return done();
+            if (!headerToken) return (req.tokenError = 'missing token'), done();
             const [, token] = headerToken.split(' ');
             try {
                 const decodedToken = verify(token, secret, { algorithms: [algorithm] });
@@ -28,8 +28,7 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
                 else req.tokenError = 'invalid token';
                 done();
             } catch (error) {
-                req.tokenError = error.message;
-                done();
+                (req.tokenError = error.message), done();
             }
         })
         .addHook('onRoute', routeOptions => {
@@ -49,10 +48,7 @@ const jwtAuthPlugin: FastifyPluginCallback<{ secret: string; algorithm: Algorith
                     },
                 };
                 routeOptions.preValidation = [
-                    (req, _, done) => {
-                        if (!req.user) return done(app.errors.unauthorized(req.tokenError));
-                        done();
-                    },
+                    (req, _, done) => (req.user ? done() : done(app.errors.unauthorized(req.tokenError))),
                     ...(routeOptions.preValidation
                         ? Array.isArray(routeOptions.preValidation)
                             ? routeOptions.preValidation

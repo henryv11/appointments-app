@@ -1,7 +1,4 @@
-# Build the base image
 FROM node:lts-alpine as build
-
-ARG ENV=development
 
 WORKDIR /usr/src/app
 
