@@ -1,16 +1,12 @@
 import CssBaseline from '@material-ui/core/CssBaseline';
-import * as React from 'react';
-import Home from './pages/home';
+import React from 'react';
+import LoginPage from './pages/LoginPage';
 
 export default function App() {
   return (
     <React.Fragment>
       <CssBaseline />
-      {/* <authContext.Consumer> */}
-      {/* {auth => (auth.isAuthenticated ? <Home /> : <Redirect to='/login'></Redirect>)} */}
-
-      {<Home />}
-      {/* </authContext.Consumer> */}
+      <LoginPage></LoginPage>
     </React.Fragment>
   );
 }

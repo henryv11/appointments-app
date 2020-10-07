@@ -28,7 +28,7 @@ const badRequestSchema = {
     example: 'Bad Request',
 };
 
-const authRoutesPlugin: FastifyPluginCallback = function (app, _, done) {
+const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     app.put<{ Body: Pick<User, 'username' | 'password'> }>(
         '/auth',
         {
@@ -62,4 +62,4 @@ const authRoutesPlugin: FastifyPluginCallback = function (app, _, done) {
     done();
 };
 
-export const authRoutes = fp(authRoutesPlugin);
+export const authControllers = fp(authControllersPlugin);

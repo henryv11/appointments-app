@@ -4,9 +4,9 @@ import cors from 'fastify-cors';
 import helmet from 'fastify-helmet';
 import swagger from 'fastify-swagger';
 import pino from 'pino';
+import { controllers } from './controllers';
 import { database, errors, exitHandler, handleExit, healthCheck, jwtAuth } from './lib';
 import { repositories } from './repositories';
-import { routes } from './routes';
 import { services } from './services';
 
 const app = Fastify({ logger: pino(get('logger')) })
@@ -20,7 +20,7 @@ const app = Fastify({ logger: pino(get('logger')) })
     .register(swagger, { ...get('docs') })
     .register(repositories)
     .register(services)
-    .register(routes);
+    .register(controllers);
 
 app.ready(err => {
     if (err) return handleExit(undefined, err, 1, app);

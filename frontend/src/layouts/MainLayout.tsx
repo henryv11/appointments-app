@@ -1,7 +1,7 @@
 import Container from '@material-ui/core/Container';
 import React from 'react';
-import AppBarImpl from '../components/app-bar';
-import DrawerImpl from '../components/drawer';
+import AppBarImpl from '../components/AppBar';
+import DrawerImpl from '../components/Drawer';
 
 export default function MainLayout({
   TopBar = AppBarImpl,
