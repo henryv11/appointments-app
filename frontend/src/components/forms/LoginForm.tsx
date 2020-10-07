@@ -1,4 +1,4 @@
-import { Button } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -27,15 +27,15 @@ export default function LoginForm({ onSuccess = () => void 0, onError = () => vo
       <TextField
         name='username'
         type='text'
-        label={!!errors.username ? 'Please enter your username' : 'Username'}
-        inputRef={register({ required: true })}
+        label={errors.username?.message || 'Username'}
+        inputRef={register({ required: 'Please enter your username' })}
         error={!!errors.username}
       />
       <TextField
         name='password'
         type='password'
-        label={!!errors.password ? 'Please enter your password' : 'Password'}
-        inputRef={register({ required: true })}
+        label={errors.username?.message || 'Password'}
+        inputRef={register({ required: 'Please enter your password' })}
         error={!!errors.username}
       />
       <Button type='submit'>Login</Button>
