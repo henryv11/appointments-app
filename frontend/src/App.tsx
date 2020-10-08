@@ -1,6 +1,6 @@
 import CssBaseline from '@material-ui/core/CssBaseline';
 import React from 'react';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/Login';
 
 export default function App() {
   return (

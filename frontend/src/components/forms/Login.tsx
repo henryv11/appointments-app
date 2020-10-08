@@ -10,11 +10,13 @@ interface LoginFormProps {
   onError?: (error: string) => void;
 }
 
+type LoginForm = Pick<User, 'username' | 'password'>;
+
 export default function LoginForm({ onSuccess = () => void 0, onError = () => void 0 }: LoginFormProps) {
-  const { register, handleSubmit, errors } = useForm<Pick<User, 'username' | 'password'>>();
+  const { register, handleSubmit, errors } = useForm<LoginForm>();
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
 
-  const onSubmit = (data: Pick<User, 'username' | 'password'>) =>
+  const onSubmit = (data: LoginForm) =>
     loginUser(data)
       .catch(({ message = 'login failed' }) => {
         onError(message);
@@ -28,14 +30,26 @@ export default function LoginForm({ onSuccess = () => void 0, onError = () => vo
         name='username'
         type='text'
         label={errors.username?.message || 'Username'}
-        inputRef={register({ required: 'Please enter your username' })}
+        inputRef={register({
+          required: 'Please enter your username',
+          minLength: {
+            value: '6',
+            message: 'Username has to be atleast 6 characters long',
+          },
+        })}
         error={!!errors.username}
       />
       <TextField
         name='password'
         type='password'
         label={errors.username?.message || 'Password'}
-        inputRef={register({ required: 'Please enter your password' })}
+        inputRef={register({
+          required: 'Please enter your password',
+          minLength: {
+            value: 8,
+            message: 'Password has to be atleast 8 characters long',
+          },
+        })}
         error={!!errors.username}
       />
       <Button type='submit'>Login</Button>

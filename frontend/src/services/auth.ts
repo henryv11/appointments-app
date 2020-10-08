@@ -1,8 +1,8 @@
+import { join } from 'path';
 import { User } from '../@types/user';
 
-const host = 'localhost';
-const port = 8080;
-const getUrl = (path: string = '') => `http://${host}:${port}${path}`;
+const basePath = 'http://localhost:8080/';
+const getUrl = (path: string = '') => join(basePath, path);
 
 export const loginUser = ({ username, password }: Pick<User, 'username' | 'password'>) =>
   fetch(getUrl('/auth'), {
