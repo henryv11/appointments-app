@@ -1,6 +1,7 @@
 import React from 'react';
-import MainLayout from '../layouts/Main';
 
 export default function HomePage() {
-  return <MainLayout Content={() => <div></div>}></MainLayout>;
+    // return <MainLayout Content={() => <div></div>}></MainLayout>;
+
+    return <div>Home Page</div>;
 }

@@ -1,22 +1,34 @@
-import Container from '@material-ui/core/Container';
+import { createStyles, makeStyles, Theme } from '@material-ui/core';
 import React from 'react';
-import AppBarImpl from '../components/AppBar';
-import DrawerImpl from '../components/Drawer';
+import AppBar from '../components/AppBar';
+import Drawer from '../components/Drawer';
+import { LayoutContextProvider } from '../contexts/Layout';
 
-export default function MainLayout({
-  TopBar = AppBarImpl,
-  Drawer = DrawerImpl,
-  Content,
-}: {
-  TopBar?: React.ComponentType;
-  Drawer?: React.ComponentType;
-  Content: React.ComponentType;
-}) {
-  return (
-    <Container maxWidth={false}>
-      <TopBar />
-      <Drawer />
-      <Content />
-    </Container>
-  );
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        root: {
+            display: 'flex',
+        },
+        content: {
+            flexGrow: 1,
+            padding: theme.spacing(3),
+        },
+    }),
+);
+
+interface MainLayoutProps {
+    content: JSX.Element;
+}
+
+export default function MainLayout({ content }: MainLayoutProps) {
+    const classes = useStyles();
+    return (
+        <LayoutContextProvider>
+            <div className={classes.root}>
+                <AppBar />
+                <Drawer />
+                <main className={classes.content}>{content}</main>
+            </div>
+        </LayoutContextProvider>
+    );
 }

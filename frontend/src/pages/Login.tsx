@@ -1,7 +1,11 @@
 import React from 'react';
-import LoginForm from '../components/forms/Login';
+import { useAuthContext } from '../contexts/Auth';
 import MainLayout from '../layouts/Main';
 
-export default function LoginPage() {
-  return <MainLayout Content={() => <LoginForm />}></MainLayout>;
+export default function HomePage() {
+    const [state, dispatch] = useAuthContext();
+
+    console.log({ state, dispatch });
+
+    return <MainLayout content={<div>helllo</div>} />;
 }
