@@ -1,17 +1,20 @@
-import { buildContext } from '../higher-order/Build';
+import BuildContext from '../higher-order-components/BuildContext';
 
-const [LayoutContextProvider, useLayoutContext] = buildContext(
+const [LayoutContextProvider, useLayoutContext] = BuildContext(
     { isSidebarOpen: true },
-    (state, { type }: { type: 'OPEN_SIDEBAR' | 'CLOSE_SIDEBAR' }) => {
-        switch (type) {
+    (state: LayoutState, action: LayoutAction) => {
+        switch (action.type) {
             case 'OPEN_SIDEBAR':
                 return { ...state, isSidebarOpen: true };
+
             case 'CLOSE_SIDEBAR':
                 return { ...state, isSidebarOpen: false };
-            default:
-                throw Error(`invalid action type "${type}" for layoutContextDispatch`);
         }
     },
 );
+
+type LayoutState = { isSidebarOpen: boolean };
+
+type LayoutAction = { type: 'OPEN_SIDEBAR' | 'CLOSE_SIDEBAR' };
 
 export { LayoutContextProvider, useLayoutContext };

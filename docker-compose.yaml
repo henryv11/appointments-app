@@ -2,13 +2,13 @@ version: "3.7"
 
 services:
   backend:
+    build:
+      context: "./backend/"
+      dockerfile: ".dev.Dockerfile"
     container_name: backend_container
-    image: node:12-alpine
     volumes:
-      - ./backend:/app
-    working_dir: /app
-    command: [sh, -c, "npm ci && npm run dev"]
-    # command: [sh, -c, "npm run dev"]
+      - ./backend/src:/usr/src/app/src
+      - ./backend/migrations:/usr/src/app/migrations
     ports:
       - "8080:8080"
     depends_on:

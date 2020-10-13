@@ -8,34 +8,6 @@ import clsx from 'clsx';
 import React from 'react';
 import { useLayoutContext } from '../contexts/Layout';
 
-const drawerWidth = 240;
-
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        appBar: {
-            zIndex: theme.zIndex.drawer + 1,
-            transition: theme.transitions.create(['width', 'margin'], {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-            }),
-        },
-        appBarShift: {
-            marginLeft: drawerWidth,
-            width: `calc(100% - ${drawerWidth}px)`,
-            transition: theme.transitions.create(['width', 'margin'], {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-            }),
-        },
-        menuButton: {
-            marginRight: 36,
-        },
-        hide: {
-            display: 'none',
-        },
-    }),
-);
-
 export default function AppBar() {
     const classes = useStyles();
     const [{ isSidebarOpen }, dispatch] = useLayoutContext();
@@ -66,3 +38,29 @@ export default function AppBar() {
         </MuiAppBar>
     );
 }
+
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        appBar: {
+            zIndex: theme.zIndex.drawer + 1,
+            transition: theme.transitions.create(['width', 'margin'], {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+            }),
+        },
+        appBarShift: {
+            marginLeft: theme.mixins.drawer.width,
+            width: `calc(100% - ${theme.mixins.drawer.width}px)`,
+            transition: theme.transitions.create(['width', 'margin'], {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+            }),
+        },
+        menuButton: {
+            marginRight: 36,
+        },
+        hide: {
+            display: 'none',
+        },
+    }),
+);

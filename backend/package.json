@@ -6,7 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "tsc",
-        "dev": "ts-node-dev src/index.ts --poll",
+        "dev": "nodemon",
         "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts"
     },
     "keywords": [],
@@ -39,6 +39,7 @@
         "eslint": "^7.10.0",
         "eslint-config-prettier": "^6.12.0",
         "eslint-plugin-prettier": "^3.1.4",
+        "nodemon": "^2.0.4",
         "prettier": "^2.1.2",
         "ts-node": "^9.0.0",
         "ts-node-dev": "^1.0.0-pre.63",

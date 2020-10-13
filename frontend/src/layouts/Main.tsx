@@ -1,8 +1,18 @@
 import { createStyles, makeStyles, Theme } from '@material-ui/core';
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 import AppBar from '../components/AppBar';
 import Drawer from '../components/Drawer';
-import { LayoutContextProvider } from '../contexts/Layout';
+
+export default function MainLayout({ children }: PropsWithChildren<unknown>) {
+    const classes = useStyles();
+    return (
+        <div className={classes.root}>
+            <AppBar />
+            <Drawer />
+            <main className={classes.content}>{children}</main>
+        </div>
+    );
+}
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -10,25 +20,8 @@ const useStyles = makeStyles((theme: Theme) =>
             display: 'flex',
         },
         content: {
-            flexGrow: 1,
             padding: theme.spacing(3),
+            marginTop: theme.mixins.toolbar.height,
         },
     }),
 );
-
-interface MainLayoutProps {
-    content: JSX.Element;
-}
-
-export default function MainLayout({ content }: MainLayoutProps) {
-    const classes = useStyles();
-    return (
-        <LayoutContextProvider>
-            <div className={classes.root}>
-                <AppBar />
-                <Drawer />
-                <main className={classes.content}>{content}</main>
-            </div>
-        </LayoutContextProvider>
-    );
-}

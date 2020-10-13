@@ -1,58 +1,62 @@
 import Button from '@material-ui/core/Button';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { User } from '../../@types/user';
-import { loginUser } from '../../services/auth';
 
-interface LoginFormProps {
-    onSuccess?: (token: string) => void;
-    onError?: (error: string) => void;
-}
-
-type LoginForm = Pick<User, 'username' | 'password'>;
-
-export default function LoginForm({ onSuccess = () => void 0, onError = () => void 0 }: LoginFormProps) {
+export default function LoginForm({ onSubmit = () => void 0 }: LoginFormProps) {
+    const classes = useStyles();
     const { register, handleSubmit, errors } = useForm<LoginForm>();
-    const [loginErrorMessage, setLoginErrorMessage] = useState('');
-
-    const onSubmit = (data: LoginForm) =>
-        loginUser(data)
-            .catch(({ message = 'login failed' }) => {
-                onError(message);
-                setLoginErrorMessage(message);
-            })
-            .then(onSuccess);
 
     return (
-        <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
+        <form noValidate autoComplete='off' onSubmit={handleSubmit(data => onSubmit(data))} className={classes.root}>
             <TextField
                 name='username'
                 type='text'
-                label={errors.username?.message || 'Username'}
+                label={'Username'}
+                required
                 inputRef={register({
-                    required: 'Please enter your username',
-                    minLength: {
-                        value: '6',
-                        message: 'Username has to be atleast 6 characters long',
-                    },
+                    required: 'Username is required',
                 })}
                 error={!!errors.username}
+                helperText={errors.username?.message}
             />
             <TextField
                 name='password'
                 type='password'
-                label={errors.username?.message || 'Password'}
+                label={'Password'}
+                required
                 inputRef={register({
-                    required: 'Please enter your password',
-                    minLength: {
-                        value: 8,
-                        message: 'Password has to be atleast 8 characters long',
-                    },
+                    required: 'Password is required',
                 })}
-                error={!!errors.username}
+                error={!!errors.password}
+                helperText={errors.password?.message}
             />
-            <Button type='submit'>Login</Button>
+            <Button variant='contained' color='primary' type='submit'>
+                Log In
+            </Button>
         </form>
     );
 }
+
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        root: {
+            display: 'flex',
+            flexDirection: 'column',
+            '& input': {
+                marginTop: theme.spacing(1),
+            },
+            '& button': {
+                marginTop: theme.spacing(3),
+            },
+        },
+    }),
+);
+
+interface LoginFormProps {
+    onSubmit?: (data: LoginForm) => void;
+}
+
+type LoginForm = Pick<User, 'username' | 'password'>;

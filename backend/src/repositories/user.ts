@@ -1,0 +1,17 @@
+import { CreateUser, PublicUser, UserAuth } from '@types';
+import { FastifyInstance } from 'fastify';
+
+export const userRepository = ({
+  database: { query, firstRow },
+}: FastifyInstance) => ({
+  create: ({ username, password, personId }: CreateUser, queryMethod = query) =>
+    queryMethod<PublicUser>(
+      'INSERT INTO app_user (username, password, person_id) VALUES ($1, $2, $3) RETURNING id, username',
+      [username, password, personId],
+    ).then(firstRow),
+  findByUsername: (username: string, queryMethod = query) =>
+    queryMethod<UserAuth>(
+      'SELECT id, username, password FROM app_user WHERE username = $1',
+      [username],
+    ).then(firstRow),
+});

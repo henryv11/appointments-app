@@ -1,6 +1,6 @@
 import React, { Context, createContext, Dispatch, PropsWithChildren, Reducer, useContext, useReducer } from 'react';
 
-export function buildContext<T, D>(
+export default function BuildContext<T, D>(
     initialState: T,
     reducer: Reducer<T, D>,
 ): [(props: PropsWithChildren<Partial<T>>) => JSX.Element, () => [T, Dispatch<D>]] {

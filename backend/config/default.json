@@ -3,7 +3,7 @@
         "host": "postgres_container",
         "port": 5432,
         "user": "postgres",
-        "password": "postgres",
+        "password": "users_backend",
         "database": "backend"
     },
     "server": {
