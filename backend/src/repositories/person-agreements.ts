@@ -10,8 +10,16 @@ export const personAgreementsRepository = ({
   ) =>
     queryMethod<CreatedPersonAgreement>(
       `
-        INSERT INTO person_agreements (person_id, agreement_type, has_accepted)
-        VALUES ($1, $2, $3)
+        INSERT INTO person_agreements (
+          person_id,
+          agreement_type,
+          has_accepted
+        )
+        VALUES (
+          $1,
+          $2,
+          $3
+        )
         RETURNING
           person_id AS "personId",
           agreement_type AS "agreementType",

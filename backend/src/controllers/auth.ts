@@ -1,4 +1,3 @@
-import { CreateUser } from '@types';
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
@@ -15,6 +14,7 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
           tags,
           body: {
             type: 'object',
+            description: "User's registration details",
             required: [
               'username',
               'password',
@@ -32,28 +32,27 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
               dateOfBirth: { type: 'string' },
               hasAcceptedTermsAndConditions: { type: 'boolean' },
             },
-            description: "User's username and password",
           },
         },
       },
       (req, res) => (res.status(201), app.services.auth.registerUser(req.body)),
     )
-    .post<{ Body: CreateUser }>(
+    .post<{ Body: Parameters<typeof app.services.auth.loginUser>[0] }>(
       '/auth',
       {
-        authorize: true,
         schema: {
           description: 'Login an existing user',
           summary: 'Login',
           tags,
           body: {
             type: 'object',
-            required: ['username', 'password'],
+            description: "User's login details",
+            required: ['password'],
             properties: {
               username: { type: 'string' },
               password: { type: 'string' },
+              email: { type: 'string' },
             },
-            description: "User's username and password",
           },
         },
       },

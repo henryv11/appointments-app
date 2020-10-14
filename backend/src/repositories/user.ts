@@ -6,12 +6,54 @@ export const userRepository = ({
 }: FastifyInstance) => ({
   create: ({ username, password, personId }: CreateUser, queryMethod = query) =>
     queryMethod<PublicUser>(
-      'INSERT INTO app_user (username, password, person_id) VALUES ($1, $2, $3) RETURNING id, username',
+      `
+      INSERT INTO app_user (
+        username,
+        password,
+        person_id
+      )
+      VALUES (
+        $1,
+        $2,
+        $3
+      )
+      RETURNING
+        id,
+        username
+      `,
       [username, password, personId],
     ).then(firstRow),
   findByUsername: (username: string, queryMethod = query) =>
     queryMethod<UserAuth>(
-      'SELECT id, username, password FROM app_user WHERE username = $1',
+      `
+      SELECT
+        id,
+        username,
+        password
+      FROM
+        app_user
+      WHERE
+        username = $1
+      LIMIT 1
+      `,
       [username],
+    ).then(firstRow),
+  findByEmail: (email: string, queryMethod = query) =>
+    queryMethod<UserAuth>(
+      `
+      WITH person_by_email AS (
+        SELECT id FROM person WHERE email = $1
+      )
+      SELECT
+        id,
+        username,
+        password
+      FROM
+        app_user
+      WHERE
+        email IN (SELECT id FROM person_by_email)
+      LIMIT 1
+      `,
+      [email],
     ).then(firstRow),
 });

@@ -81,7 +81,7 @@ interface TokenPayload {
 
 interface AuthRequest {
   user: (TokenPayload & { iat: number }) | null;
-  tokenError: string;
+  tokenError: string | '';
 }
 
 interface AuthRouteOptions {

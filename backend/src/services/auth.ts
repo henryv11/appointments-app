@@ -1,4 +1,4 @@
-import { CreatePerson, UserLogin } from '@types';
+import { CreatePerson, Person, User, UserAuth, UserLogin } from '@types';
 import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
 
@@ -9,16 +9,20 @@ export const authService = ({
   database,
   log,
 }: FastifyInstance) => ({
+  async startSession({ user }: { user: UserAuth }) {
+    const token = signToken(user);
+    await repositories.session.create({ userId: user.id, token });
+    return token;
+  },
+
   async registerUser({
     username,
     password,
     hasAcceptedTermsAndConditions,
     ...personCreation
   }: UserLogin & CreatePerson & { hasAcceptedTermsAndConditions: boolean }) {
-    const [hashedPassword, connection] = await Promise.all([
-      hash(password, 10),
-      database.connect(),
-    ]);
+    const hashedPassword = await hash(password, 10);
+    const connection = await database.connect();
     try {
       await connection.query('BEGIN');
       const person = await repositories.person.create(
@@ -42,21 +46,27 @@ export const authService = ({
         connection.query,
       );
       await connection.query('COMMIT');
-      return { user, token: signToken(user) };
+      return this.startSession({ user: { ...user, password: hashedPassword } });
     } catch (error) {
       await connection.query('ROLLBACK');
       log.error('failed to register user', error);
       throw errors.badRequest();
     }
   },
-  async loginUser({ username, password }: UserLogin) {
-    const user = await repositories.user.findByUsername(username);
-    if (!user) throw errors.badRequest();
-    const isValidPassword = await compare(password, user.password);
-    if (!isValidPassword) throw errors.badRequest();
-    return {
-      user: { id: user.id, username: user.username },
-      token: signToken(user),
-    };
+  async loginUser({
+    username,
+    email,
+    password,
+  }: {
+    username?: Person['email'];
+    email?: User['username'];
+    password: User['password'];
+  }) {
+    let user: UserAuth | undefined | '' =
+      username && (await repositories.user.findByUsername(username));
+    if (!user && email) user = await repositories.user.findByEmail(email);
+    if (!user || !(await compare(password, user.password)))
+      throw errors.badRequest();
+    return this.startSession({ user });
   },
 });

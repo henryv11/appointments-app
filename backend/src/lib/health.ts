@@ -3,7 +3,7 @@ import fp from 'fastify-plugin';
 
 const healthCheckPlugin: FastifyPluginCallback = function (app, _, done) {
   app.get('/ping', {}, async () => {
-    await app.database.query('select 1 + 1');
+    await app.database?.query?.('select 1 + 1');
     return 'pong';
   });
   done();

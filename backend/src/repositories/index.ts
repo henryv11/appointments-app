@@ -2,12 +2,14 @@ import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { personRepository } from './person';
 import { personAgreementsRepository } from './person-agreements';
+import { sessionRepository } from './session';
 import { userRepository } from './user';
 
 const getRepositories = (app: FastifyInstance) => ({
   user: userRepository(app),
   person: personRepository(app),
   personAgreements: personAgreementsRepository(app),
+  session: sessionRepository(app),
 });
 
 const repositoriesPlugin: FastifyPluginCallback = function (app, _, done) {
