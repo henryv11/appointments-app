@@ -30,11 +30,7 @@ async function createDatabase(
 }
 
 async function runMigrations(
-  {
-    dir,
-    migrationsTable,
-    ...connectionOptions
-  }: DatabaseConnectionOptions & MigrationsOptions,
+  { dir, migrationsTable, ...connectionOptions }: DatabaseConnectionOptions & MigrationsOptions,
   logger: FastifyInstance['log'],
 ) {
   logger.info('attempting to run migrations');
@@ -57,21 +53,13 @@ async function runMigrations(
   }
 }
 
-const databasePlugin: FastifyPluginAsync<
-  DatabaseConnectionOptions & Partial<MigrationsOptions>
-> = async function (
+const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
   app,
-  {
-    dir = './migrations',
-    migrationsTable = 'pgmigrations',
-    ...connectionOptions
-  },
+  { dir = './migrations', migrationsTable = 'pgmigrations', ...connectionOptions },
 ) {
   await createDatabase(connectionOptions, app.log);
   await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
-  const pool = new Pool(connectionOptions).on('error', err =>
-    app.log.error(err, 'database pool error'),
-  );
+  const pool = new Pool(connectionOptions).on('error', err => app.log.error(err, 'database pool error'));
   const database: Database = {
     async query(query, replacements) {
       const client = await pool.connect();
@@ -95,17 +83,12 @@ declare module 'fastify' {
   }
 }
 
-type DatabaseConnectionOptions = Required<
-  Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>
->;
+type DatabaseConnectionOptions = Required<Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>>;
 
 type MigrationsOptions = Pick<RunnerOption, 'dir' | 'migrationsTable'>;
 
 interface Database {
-  query: <T>(
-    query: string,
-    replacements?: (string | number | boolean)[],
-  ) => Promise<QueryResult<T>>;
+  query: <T>(query: string, replacements?: (string | number | boolean)[]) => Promise<QueryResult<T>>;
   connect: Pool['connect'];
   firstRow: <T>(queryResult: QueryResult<T>) => T;
   allRows: <T>(queryResult: QueryResult<T>) => T[];

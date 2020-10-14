@@ -10,9 +10,6 @@ export interface PersonAgreement {
   updatedAt: string;
 }
 
-export type CreatePersonAgreement = Pick<
-  PersonAgreement,
-  'agreementType' | 'personId' | 'hasAccepted'
->;
+export type CreatePersonAgreement = Pick<PersonAgreement, 'agreementType' | 'personId' | 'hasAccepted'>;
 
 export type CreatedPersonAgreement = CreatePersonAgreement;

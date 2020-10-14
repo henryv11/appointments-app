@@ -1,13 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { CreatedPerson, CreatePerson } from '../@types';
 
-export const personRepository = ({
-  database: { query, firstRow },
-}: FastifyInstance) => ({
-  create: (
-    { firstName, lastName, email, dateOfBirth }: CreatePerson,
-    queryMethod = query,
-  ) =>
+export const personRepository = ({ database: { query, firstRow } }: FastifyInstance) => ({
+  create: ({ firstName, lastName, email, dateOfBirth }: CreatePerson, queryMethod = query) =>
     queryMethod<CreatedPerson>(
       `
         INSERT INTO person (

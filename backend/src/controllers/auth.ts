@@ -15,14 +15,7 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
           body: {
             type: 'object',
             description: "User's registration details",
-            required: [
-              'username',
-              'password',
-              'firstName',
-              'lastName',
-              'dateOfBirth',
-              'email',
-            ],
+            required: ['username', 'password', 'firstName', 'lastName', 'dateOfBirth', 'email'],
             properties: {
               username: { type: 'string' },
               password: { type: 'string' },

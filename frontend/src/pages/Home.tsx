@@ -3,9 +3,9 @@ import RequireAuthentication from '../higher-order-components/RequireAuthenticat
 import MainLayout from '../layouts/Main';
 
 export default function HomePage() {
-    return (
-        <RequireAuthentication>
-            <MainLayout>hello there</MainLayout>
-        </RequireAuthentication>
-    );
+  return (
+    <RequireAuthentication>
+      <MainLayout>hello there</MainLayout>
+    </RequireAuthentication>
+  );
 }

@@ -8,9 +8,6 @@ export interface Person {
   updatedAt: string;
 }
 
-export type CreatePerson = Pick<
-  Person,
-  'firstName' | 'lastName' | 'email' | 'dateOfBirth'
->;
+export type CreatePerson = Pick<Person, 'firstName' | 'lastName' | 'email' | 'dateOfBirth'>;
 
 export type CreatedPerson = Pick<Person, 'id'> & CreatePerson;

@@ -5,14 +5,7 @@ import helmet from 'fastify-helmet';
 import swagger from 'fastify-swagger';
 import pino from 'pino';
 import { controllers } from './controllers';
-import {
-  database,
-  errors,
-  exitHandler,
-  handleExit,
-  healthCheck,
-  jwtAuth,
-} from './lib';
+import { database, errors, exitHandler, handleExit, healthCheck, jwtAuth } from './lib';
 import { repositories } from './repositories';
 import { services } from './services';
 

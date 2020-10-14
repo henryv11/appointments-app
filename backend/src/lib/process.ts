@@ -18,9 +18,7 @@ const exitHandlerPlugin: FastifyPluginCallback = function (app, _, done) {
   ['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal =>
     process.on(signal, signal => handleExit(signal, undefined, 0, app)),
   );
-  process.on('uncaughtException', error =>
-    handleExit(undefined, error, 1, app),
-  );
+  process.on('uncaughtException', error => handleExit(undefined, error, 1, app));
   done();
 };
 
