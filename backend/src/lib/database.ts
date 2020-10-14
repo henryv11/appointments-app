@@ -11,14 +11,19 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
   await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
   const pool = new Pool(connectionOptions).on('error', err => app.log.error(err, 'database pool error'));
   const database: Database = {
-    // async query(query, replacements) {
-    //   const connection = await pool.connect();
-    //   return connection.query(query, replacements).finally(connection.release);
-    // },
     query: pool.query.bind(pool),
     connect: pool.connect.bind(pool),
     firstRow: queryResult => queryResult.rows[0],
     allRows: queryResult => queryResult.rows,
+    async transaction() {
+      const connection = await pool.connect();
+      return {
+        begin: async () => (await connection.query('BEGIN'), void 0),
+        commit: async () => (await connection.query('COMMIT'), connection.release()),
+        rollback: async () => (await connection.query('ROLLBACK'), connection.release()),
+        query: connection.query.bind(connection),
+      };
+    },
   };
   app.decorate('database', database);
   app.addHook('onClose', async () => {
@@ -89,10 +94,17 @@ type DatabaseConnectionOptions = Required<Pick<ClientConfig, 'host' | 'port' | '
 
 type MigrationsOptions = Pick<RunnerOption, 'dir' | 'migrationsTable'>;
 
+interface Transaction {
+  query: Pool['query'];
+  commit: () => Promise<void>;
+  rollback: () => Promise<void>;
+  begin: () => Promise<void>;
+}
+
 interface Database {
-  // query: <T>(query: string, replacements?: (string | number | boolean | null | undefined)[]) => Promise<QueryResult<T>>;
   query: Pool['query'];
   connect: Pool['connect'];
+  transaction: () => Promise<Transaction>;
   firstRow: <T>(queryResult: QueryResult<T>) => T;
   allRows: <T>(queryResult: QueryResult<T>) => T[];
 }

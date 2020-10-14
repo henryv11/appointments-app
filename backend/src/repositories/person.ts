@@ -22,7 +22,7 @@ export const personRepository = ({ database: { query, firstRow } }: FastifyInsta
           first_name as "firstName",
           last_name as "lastName",
           email as "email",
-          date_of_birth as "dateOfBirth",
+          date_of_birth as "dateOfBirth"
     `,
       [firstName, lastName, email, dateOfBirth],
     ).then(firstRow),

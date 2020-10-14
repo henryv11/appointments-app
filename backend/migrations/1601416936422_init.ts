@@ -29,7 +29,7 @@ export function up(pgm: MigrationBuilder) {
   pgm.sql(`CREATE TABLE person_agreements (
         agreement_type person_agreement_type NOT NULL,
         person_id BIGINT NOT NULL REFERENCES person (id),
-        hasAccepted BOOLEAN NOT NULL DEFAULT FALSE,
+        has_accepted BOOLEAN NOT NULL DEFAULT FALSE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 

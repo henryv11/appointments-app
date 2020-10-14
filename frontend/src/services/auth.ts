@@ -1,18 +1,18 @@
 import { UserLogin, UserRegistration } from '../@types/user';
 import { join } from '../lib/path';
 
-const basePath = 'http://localhost/backend';
+const basePath = 'http://localhost/backend/auth';
 const getUrl = (...path: string[]) => join(basePath, ...path);
 
 export const loginUser = ({ username, password }: UserLogin) =>
-  fetch(getUrl('/auth'), {
+  fetch(getUrl(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      username,
       password,
+      username,
     }),
   }).then(resp => {
     if (resp.status !== 201) throw new Error('login failed');
@@ -20,27 +20,27 @@ export const loginUser = ({ username, password }: UserLogin) =>
   });
 
 export const registerUser = ({
-  username,
-  password,
   dateOfBirth,
   email,
   firstName,
-  lastName,
   hasAcceptedTermsAndConditions,
+  lastName,
+  password,
+  username,
 }: UserRegistration) =>
-  fetch(getUrl('/auth'), {
+  fetch(getUrl(), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      username,
-      password,
       dateOfBirth,
       email,
-      hasAcceptedTermsAndConditions,
       firstName,
+      hasAcceptedTermsAndConditions,
       lastName,
+      password,
+      username,
     }),
   }).then(resp => {
     if (resp.status !== 201) throw new Error('registration failed');

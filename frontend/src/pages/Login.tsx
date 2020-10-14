@@ -7,32 +7,14 @@ import Typography from '@material-ui/core/Typography/Typography';
 import PersonIcon from '@material-ui/icons/Person';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import Alert from '@material-ui/lab/Alert';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import LoginForm from '../components/forms/Login';
 import RegistrationForm from '../components/forms/Registration';
 import { useAuthContext } from '../contexts/Auth';
+import { useTimeout } from '../hooks/timeout';
 import SimpleLayout from '../layouts/Simple';
 import { loginUser, registerUser } from '../services/auth';
-
-function useTimeout({ callback, ms }: { callback?: () => void; ms: number }) {
-  const timeoutRef = useRef<NodeJS.Timeout>(callback ? setTimeout(callback, ms) : undefined);
-
-  function clear() {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = undefined;
-    }
-  }
-
-  return {
-    clear,
-    set(callback: () => void, timeMs = ms) {
-      clear();
-      timeoutRef.current = setTimeout(callback, timeMs);
-    },
-  };
-}
 
 export default function LoginPage() {
   const classes = useStyles();

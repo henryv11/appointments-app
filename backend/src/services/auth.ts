@@ -2,7 +2,7 @@ import { CreatePerson, Person, User, UserAuth, UserLogin } from '@types';
 import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
 
-export const authService = ({ errors, repositories, signToken, database }: FastifyInstance) => ({
+export const authService = ({ errors, repositories, signToken, database, log }: FastifyInstance) => ({
   async startSession({ user }: { user: UserAuth }) {
     const token = signToken(user);
     await repositories.session.create({ userId: user.id, token });
@@ -15,17 +15,17 @@ export const authService = ({ errors, repositories, signToken, database }: Fasti
     ...personCreation
   }: UserLogin & CreatePerson & { hasAcceptedTermsAndConditions: boolean }) {
     const hashedPassword = await hash(password, 10);
-    const connection = await database.connect();
+    const transaction = await database.transaction();
     try {
-      await connection.query('BEGIN');
-      const person = await repositories.person.create(personCreation, connection.query);
+      await transaction.begin();
+      const person = await repositories.person.create(personCreation, transaction.query);
       await repositories.personAgreements.create(
         {
           personId: person.id,
           agreementType: 'TERMS_AND_CONDITIONS',
           hasAccepted: hasAcceptedTermsAndConditions,
         },
-        connection.query,
+        transaction.query,
       );
       const user = await repositories.user.create(
         {
@@ -33,15 +33,14 @@ export const authService = ({ errors, repositories, signToken, database }: Fasti
           password: hashedPassword,
           personId: person.id,
         },
-        connection.query,
+        transaction.query,
       );
-      await connection.query('COMMIT');
+      await transaction.commit();
       return this.startSession({ user: { ...user, password: hashedPassword } });
     } catch (error) {
-      await connection.query('ROLLBACK');
+      log.error(error, 'failed to create user');
+      await transaction.rollback();
       throw errors.badRequest();
-    } finally {
-      connection.release();
     }
   },
   async loginUser({
