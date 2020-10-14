@@ -10,8 +10,8 @@ const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
       Array.isArray(method) ? method.forEach(routeMethods[path].add) : routeMethods[path].add(method);
     else routeMethods[path] = new Set(Array.isArray(method) ? method : [method]);
   });
-  app.setNotFoundHandler(({ url, method }, res) =>
-    routeMethods[url] && !routeMethods[url].has(method as HTTPMethods)
+  app.setNotFoundHandler((req, res) =>
+    routeMethods[req.url] && !routeMethods[req.url].has(req.method as HTTPMethods)
       ? res.status(405).send('Method Not Allowed')
       : res.status(404).send('Not Found'),
   );
@@ -24,10 +24,10 @@ const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
             error: { stack: error.stack, ...error.output },
             request: formatRequest(req),
           })
-      : res
-          .status(500)
-          .send('Internal Server Error')
-          .log.error({ error, request: formatRequest(req) }),
+      : (error.validation
+          ? res.status(422).send(error.validation)
+          : res.status(500).send('Internal Server Error')
+        ).log.error({ error, request: formatRequest(req) }),
   );
   done();
 };

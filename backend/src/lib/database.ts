@@ -15,8 +15,8 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
     //   const connection = await pool.connect();
     //   return connection.query(query, replacements).finally(connection.release);
     // },
-    query: pool.query,
-    connect: pool.connect,
+    query: pool.query.bind(pool),
+    connect: pool.connect.bind(pool),
     firstRow: queryResult => queryResult.rows[0],
     allRows: queryResult => queryResult.rows,
   };

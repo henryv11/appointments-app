@@ -3,12 +3,12 @@ import { FieldName, useForm } from 'react-hook-form';
 
 export function useMultiStepForm<T>({ steps }: { steps: number }) {
   const form = useForm<T>({ shouldUnregister: false, mode: 'onChange' });
-  const [activePart, setActivePart] = useState(0);
+  const [activeStep, setActivePart] = useState(0);
   const [canContinue, setCanContinue] = useState(false);
   const registeredFields = useRef<Set<FieldName<T>>[]>([]);
 
   useEffect(() => {
-    const activeFields = Array.from(registeredFields.current[activePart] || []) as (keyof T)[];
+    const activeFields = Array.from(registeredFields.current[activeStep] || []) as (keyof T)[];
     const values = form.getValues(activeFields);
     setCanContinue(!activeFields.some(field => !values[field] || form.errors[field]));
   });
@@ -18,9 +18,9 @@ export function useMultiStepForm<T>({ steps }: { steps: number }) {
     return function () {
       const name = arguments[0]?.name;
       if (name)
-        registeredFields.current[activePart]
-          ? registeredFields.current[activePart].add(name)
-          : (registeredFields.current[activePart] = new Set([name]));
+        registeredFields.current[activeStep]
+          ? registeredFields.current[activeStep].add(name)
+          : (registeredFields.current[activeStep] = new Set([name]));
       return fn.apply(null, arguments);
     };
   };
@@ -28,18 +28,18 @@ export function useMultiStepForm<T>({ steps }: { steps: number }) {
   return {
     ...form,
     register,
-    activePart,
+    activeStep,
     isNextButtonDisabled: !canContinue,
-    isPreviousButtonVisible: activePart > 0,
-    isNextButtonVisible: activePart < steps - 1,
-    isSubmitButtonVisible: activePart === steps - 1,
+    isPreviousButtonVisible: activeStep > 0,
+    isNextButtonVisible: activeStep < steps - 1,
+    isSubmitButtonVisible: activeStep === steps - 1,
     nextStep() {
       form
-        .trigger(Array.from(registeredFields.current[activePart] || []))
-        .then(isValid => isValid && setActivePart(activePart + 1));
+        .trigger(Array.from(registeredFields.current[activeStep] || []))
+        .then(isValid => isValid && setActivePart(activeStep + 1));
     },
     previousStep() {
-      setActivePart(activePart - 1);
+      setActivePart(activeStep - 1);
     },
   };
 }

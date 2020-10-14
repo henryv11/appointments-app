@@ -6,17 +6,40 @@ import Paper from '@material-ui/core/Paper/Paper';
 import Typography from '@material-ui/core/Typography/Typography';
 import PersonIcon from '@material-ui/icons/Person';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import React, { useState } from 'react';
+import Alert from '@material-ui/lab/Alert';
+import React, { useRef, useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import LoginForm from '../components/forms/Login';
 import RegistrationForm from '../components/forms/Registration';
 import { useAuthContext } from '../contexts/Auth';
 import SimpleLayout from '../layouts/Simple';
+import { loginUser, registerUser } from '../services/auth';
+
+function useTimeout({ callback, ms }: { callback?: () => void; ms: number }) {
+  const timeoutRef = useRef<NodeJS.Timeout>(callback ? setTimeout(callback, ms) : undefined);
+
+  function clear() {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
+    }
+  }
+
+  return {
+    clear,
+    set(callback: () => void, timeMs = ms) {
+      clear();
+      timeoutRef.current = setTimeout(callback, timeMs);
+    },
+  };
+}
 
 export default function LoginPage() {
   const classes = useStyles();
   const [{ isAuthenticated }, dispatch] = useAuthContext();
   const [isRegistration, setIsRegistration] = useState(true);
+  const [error, setError] = useState('');
+  const { set: setTimeout } = useTimeout({ ms: 5000 });
 
   if (isAuthenticated) {
     return <Redirect to='/' />;
@@ -25,7 +48,7 @@ export default function LoginPage() {
   return (
     <SimpleLayout>
       <Paper className={classes.root}>
-        <Box display='flex' px={2} py={1}>
+        <Box display='flex' mx={2} py={1}>
           <Typography variant='h4'>{isRegistration ? 'Registration' : 'Login'}</Typography>
           {isRegistration ? (
             <PersonAddIcon className={classes.headerIcon} />
@@ -35,10 +58,31 @@ export default function LoginPage() {
         </Box>
         <Divider></Divider>
         <Box mx={6} my={4}>
+          {error && <Alert severity='error'>{error}</Alert>}
           {isRegistration ? (
-            <RegistrationForm onSubmit={console.log}></RegistrationForm>
+            <RegistrationForm
+              onSubmit={async data => {
+                try {
+                  const token = await registerUser(data);
+                  console.log(token);
+                } catch (error) {
+                  setError(error.message);
+                  setTimeout(() => setError(''));
+                }
+              }}
+            ></RegistrationForm>
           ) : (
-            <LoginForm onSubmit={console.log}></LoginForm>
+            <LoginForm
+              onSubmit={async data => {
+                try {
+                  const token = await loginUser(data);
+                  console.log(token);
+                } catch (error) {
+                  setError('login failed');
+                  setTimeout(() => setError(''));
+                }
+              }}
+            ></LoginForm>
           )}
         </Box>
         <Button color='primary' fullWidth onClick={() => setIsRegistration(!isRegistration)}>

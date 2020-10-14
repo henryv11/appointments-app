@@ -2,7 +2,7 @@ import { CreatePerson, Person, User, UserAuth, UserLogin } from '@types';
 import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
 
-export const authService = ({ errors, repositories, signToken, database, log }: FastifyInstance) => ({
+export const authService = ({ errors, repositories, signToken, database }: FastifyInstance) => ({
   async startSession({ user }: { user: UserAuth }) {
     const token = signToken(user);
     await repositories.session.create({ userId: user.id, token });
@@ -39,7 +39,6 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
       return this.startSession({ user: { ...user, password: hashedPassword } });
     } catch (error) {
       await connection.query('ROLLBACK');
-      log.error('failed to register user', error);
       throw errors.badRequest();
     } finally {
       connection.release();

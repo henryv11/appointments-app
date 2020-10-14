@@ -14,13 +14,13 @@ import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import clsx from 'clsx';
 import React, { Fragment } from 'react';
 import { UseFormMethods } from 'react-hook-form';
-import { User } from '../../@types/user';
+import { UserRegistration } from '../../@types/user';
 import { useMultiStepForm } from '../../hooks/multi-step-form';
 
 export default function RegistrationForm({ onSubmit = () => void 0 }: RegistrationFormProps) {
   const classes = useStyles();
   const {
-    activePart,
+    activeStep,
     previousStep,
     nextStep,
     isPreviousButtonVisible,
@@ -34,7 +34,7 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
     <form noValidate autoComplete='off' onSubmit={form.handleSubmit(data => onSubmit(data))} className={classes.root}>
       <Box mb={1}>
         <Typography variant='subtitle1'>
-          {['Personal information', 'Account information', 'Almost there...'][activePart]}
+          {['Personal information', 'Account information', 'Almost there...'][activeStep]}
         </Typography>
         <Divider />
         <Typography variant='caption'>
@@ -43,13 +43,13 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
               'Please tell us about yourself',
               'Please choose your username and password',
               'We need to know this shit man',
-            ][activePart]
+            ][activeStep]
           }
         </Typography>
       </Box>
-      {activePart === 0 && <RegistrationFormPartOne form={form} classes={classes} />}
-      {activePart === 1 && <RegistrationFormPartTwo form={form} classes={classes} />}
-      {activePart === 2 && <RegistrationFormPartThree form={form} classes={classes} />}
+      {activeStep === 0 && <RegistrationFormPartOne form={form} classes={classes} />}
+      {activeStep === 1 && <RegistrationFormPartTwo form={form} classes={classes} />}
+      {activeStep === 2 && <RegistrationFormPartThree form={form} classes={classes} />}
       <Box display='flex' mt={1} justifyContent='space-between'>
         {isPreviousButtonVisible && (
           <Button
@@ -217,7 +217,7 @@ function RegistrationFormPartThree({
         className={classes.input}
         control={
           <Checkbox
-            name='acceptedTermsAndConditions'
+            name='hasAcceptedTermsAndConditions'
             icon={<CheckBoxOutlineBlankIcon fontSize='small' />}
             checkedIcon={<CheckBoxIcon fontSize='small' />}
             inputRef={register({
@@ -226,8 +226,8 @@ function RegistrationFormPartThree({
           />
         }
       />
-      {!!errors.acceptedTermsAndConditions && (
-        <FormHelperText>{errors.acceptedTermsAndConditions?.message}</FormHelperText>
+      {!!errors.hasAcceptedTermsAndConditions && (
+        <FormHelperText>{errors.hasAcceptedTermsAndConditions?.message}</FormHelperText>
       )}
     </Fragment>
   );
@@ -264,6 +264,4 @@ interface RegistrationFormProps {
   onSubmit?: (data: RegistrationForm) => void;
 }
 
-type RegistrationForm = Pick<User, 'username' | 'password' | 'dateOfBirth' | 'email' | 'firstName' | 'lastName'> & {
-  acceptedTermsAndConditions: boolean;
-};
+type RegistrationForm = UserRegistration;

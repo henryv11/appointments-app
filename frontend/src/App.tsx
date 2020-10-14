@@ -6,28 +6,32 @@ import { AuthContextProvider } from './contexts/Auth';
 import { LayoutContextProvider } from './contexts/Layout';
 import HomePage from './pages/Home';
 import LoginPage from './pages/Login';
+import NotFoundPage from './pages/NotFound';
 import { mainTheme } from './themes/main';
 
 export default function App() {
-    return (
-        <React.Fragment>
-            <CssBaseline />
-            <ThemeProvider theme={mainTheme}>
-                <AuthContextProvider>
-                    <LayoutContextProvider>
-                        <Router>
-                            <Switch>
-                                <Route exact path='/'>
-                                    <HomePage></HomePage>
-                                </Route>
-                                <Route path='/login'>
-                                    <LoginPage></LoginPage>
-                                </Route>
-                            </Switch>
-                        </Router>
-                    </LayoutContextProvider>
-                </AuthContextProvider>
-            </ThemeProvider>
-        </React.Fragment>
-    );
+  return (
+    <React.Fragment>
+      <CssBaseline />
+      <ThemeProvider theme={mainTheme}>
+        <AuthContextProvider>
+          <LayoutContextProvider>
+            <Router>
+              <Switch>
+                <Route exact path='/'>
+                  <HomePage />
+                </Route>
+                <Route path='/login'>
+                  <LoginPage />
+                </Route>
+                <Route>
+                  <NotFoundPage />
+                </Route>
+              </Switch>
+            </Router>
+          </LayoutContextProvider>
+        </AuthContextProvider>
+      </ThemeProvider>
+    </React.Fragment>
+  );
 }

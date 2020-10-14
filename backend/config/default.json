@@ -1,43 +1,43 @@
 {
-    "db": {
-        "host": "postgres_container",
-        "port": 5432,
-        "user": "postgres",
-        "password": "users_backend",
-        "database": "backend"
-    },
-    "server": {
-        "port": 8080,
-        "host": "0.0.0.0"
-    },
-    "jwt": {
-        "secret": "fwafwafwafwaf",
-        "algorithm": "HS512"
-    },
-    "logger": {
-        "prettyPrint": true
-    },
-    "helmet": {
-        "contentSecurityPolicy": {
-            "directives": {
-                "defaultSrc": ["'self'"],
-                "styleSrc": ["'self'", "'unsafe-inline'"],
-                "imgSrc": ["'self'", "data:", "validator.swagger.io"],
-                "scriptSrc": ["'self'", "https: 'unsafe-inline'"]
-            }
-        }
-    },
-    "docs": {
-        "routePrefix": "/documentation",
-        "exposeRoute": true,
-        "swagger": {
-            "info": {
-                "title": "Fastify API",
-                "description": "Backend service for appointments using NodeJS, fastify and postgres",
-                "version": "1.0.0"
-            },
-            "consumes": ["application/json"],
-            "produces": ["application/json"]
-        }
+  "db": {
+    "host": "postgres_container",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "database": "backend"
+  },
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  },
+  "jwt": {
+    "secret": "fwafwafwafwaf",
+    "algorithm": "HS512"
+  },
+  "logger": {
+    "prettyPrint": true
+  },
+  "helmet": {
+    "contentSecurityPolicy": {
+      "directives": {
+        "defaultSrc": ["'self'"],
+        "styleSrc": ["'self'", "'unsafe-inline'"],
+        "imgSrc": ["'self'", "data:", "validator.swagger.io"],
+        "scriptSrc": ["'self'", "https: 'unsafe-inline'"]
+      }
     }
+  },
+  "docs": {
+    "routePrefix": "/documentation",
+    "exposeRoute": true,
+    "swagger": {
+      "info": {
+        "title": "Fastify API",
+        "description": "Backend service for appointments using NodeJS, fastify and postgres",
+        "version": "1.0.0"
+      },
+      "consumes": ["application/json"],
+      "produces": ["application/json"]
+    }
+  }
 }
