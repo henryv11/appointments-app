@@ -41,6 +41,8 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
       await connection.query('ROLLBACK');
       log.error('failed to register user', error);
       throw errors.badRequest();
+    } finally {
+      connection.release();
     }
   },
   async loginUser({
@@ -55,6 +57,8 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
     let user: UserAuth | undefined | '' = username && (await repositories.user.findByUsername(username));
     if (!user && email) user = await repositories.user.findByEmail(email);
     if (!user || !(await compare(password, user.password))) throw errors.badRequest();
+    const activeSession = await repositories.session.findActiveForUser(user.id);
+    if (activeSession) return activeSession.token;
     return this.startSession({ user });
   },
 });

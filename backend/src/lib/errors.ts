@@ -2,18 +2,6 @@ import Boom from '@hapi/boom';
 import { FastifyPluginCallback, FastifyRequest, HTTPMethods } from 'fastify';
 import fp from 'fastify-plugin';
 
-const formatRequest = ({ id, body, query, method, headers, url, hostname, ip, user }: FastifyRequest) => ({
-  id,
-  hostname,
-  ip,
-  headers,
-  body,
-  query,
-  method,
-  url,
-  user,
-});
-
 const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
   const routeMethods: Record<string, Set<HTTPMethods>> = {};
   app.decorate('errors', Boom);
@@ -44,12 +32,24 @@ const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
   done();
 };
 
-export const errors = fp(errorsPluginCallback);
+const formatRequest = ({ id, body, query, method, headers, url, hostname, ip, user }: FastifyRequest) => ({
+  id,
+  hostname,
+  ip,
+  headers,
+  body,
+  query,
+  method,
+  url,
+  user,
+});
 
-interface ErrorsInstance {
-  errors: typeof Boom;
-}
+export const errors = fp(errorsPluginCallback);
 
 declare module 'fastify' {
   interface FastifyInstance extends ErrorsInstance {}
+}
+
+interface ErrorsInstance {
+  errors: typeof Boom;
 }

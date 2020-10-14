@@ -3,6 +3,30 @@ import fp from 'fastify-plugin';
 import migrate, { RunnerOption } from 'node-pg-migrate';
 import { Client, ClientConfig, Pool, QueryResult } from 'pg';
 
+const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
+  app,
+  { dir = './migrations', migrationsTable = 'pgmigrations', ...connectionOptions },
+) {
+  await createDatabase(connectionOptions, app.log);
+  await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
+  const pool = new Pool(connectionOptions).on('error', err => app.log.error(err, 'database pool error'));
+  const database: Database = {
+    // async query(query, replacements) {
+    //   const connection = await pool.connect();
+    //   return connection.query(query, replacements).finally(connection.release);
+    // },
+    query: pool.query,
+    connect: pool.connect,
+    firstRow: queryResult => queryResult.rows[0],
+    allRows: queryResult => queryResult.rows,
+  };
+  app.decorate('database', database);
+  app.addHook('onClose', async () => {
+    app.log.info('ending database pool ...');
+    await pool.end();
+  });
+};
+
 async function createDatabase(
   { database, ...connectionOptions }: DatabaseConnectionOptions,
   logger: FastifyInstance['log'],
@@ -53,28 +77,6 @@ async function runMigrations(
   }
 }
 
-const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
-  app,
-  { dir = './migrations', migrationsTable = 'pgmigrations', ...connectionOptions },
-) {
-  await createDatabase(connectionOptions, app.log);
-  await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
-  const pool = new Pool(connectionOptions).on('error', err => app.log.error(err, 'database pool error'));
-  const database: Database = {
-    async query(query, replacements) {
-      const client = await pool.connect();
-      return client.query(query, replacements).finally(client.release);
-    },
-    connect: pool.connect,
-    firstRow: queryResult => queryResult.rows[0],
-    allRows: queryResult => queryResult.rows,
-  };
-  app.decorate('database', database).addHook('onClose', async () => {
-    app.log.info('ending database pool ...');
-    await pool.end();
-  });
-};
-
 export const database = fp(databasePlugin);
 
 declare module 'fastify' {
@@ -88,7 +90,8 @@ type DatabaseConnectionOptions = Required<Pick<ClientConfig, 'host' | 'port' | '
 type MigrationsOptions = Pick<RunnerOption, 'dir' | 'migrationsTable'>;
 
 interface Database {
-  query: <T>(query: string, replacements?: (string | number | boolean)[]) => Promise<QueryResult<T>>;
+  // query: <T>(query: string, replacements?: (string | number | boolean | null | undefined)[]) => Promise<QueryResult<T>>;
+  query: Pool['query'];
   connect: Pool['connect'];
   firstRow: <T>(queryResult: QueryResult<T>) => T;
   allRows: <T>(queryResult: QueryResult<T>) => T[];

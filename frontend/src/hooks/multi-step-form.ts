@@ -10,17 +10,17 @@ export function useMultiStepForm<T>({ steps }: { steps: number }) {
   useEffect(() => {
     const activeFields = Array.from(registeredFields.current[activePart] || []) as (keyof T)[];
     const values = form.getValues(activeFields);
-    setCanContinue(activeFields.every(field => !!values[field] && !form.errors[field]));
+    setCanContinue(!activeFields.some(field => !values[field] || form.errors[field]));
   });
 
   const register: typeof form.register = function () {
     const fn = form.register.apply(null, arguments);
     return function () {
       const name = arguments[0]?.name;
-      name &&
-        (registeredFields.current[activePart]
+      if (name)
+        registeredFields.current[activePart]
           ? registeredFields.current[activePart].add(name)
-          : (registeredFields.current[activePart] = new Set([name])));
+          : (registeredFields.current[activePart] = new Set([name]));
       return fn.apply(null, arguments);
     };
   };
@@ -33,12 +33,12 @@ export function useMultiStepForm<T>({ steps }: { steps: number }) {
     isPreviousButtonVisible: activePart > 0,
     isNextButtonVisible: activePart < steps - 1,
     isSubmitButtonVisible: activePart === steps - 1,
-    nextPart() {
+    nextStep() {
       form
         .trigger(Array.from(registeredFields.current[activePart] || []))
         .then(isValid => isValid && setActivePart(activePart + 1));
     },
-    previousPart() {
+    previousStep() {
       setActivePart(activePart - 1);
     },
   };

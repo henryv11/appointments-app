@@ -21,8 +21,8 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
   const classes = useStyles();
   const {
     activePart,
-    previousPart,
-    nextPart,
+    previousStep,
+    nextStep,
     isPreviousButtonVisible,
     isNextButtonDisabled,
     isNextButtonVisible,
@@ -55,7 +55,7 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
           <Button
             variant='contained'
             className={classes.button}
-            onClick={previousPart}
+            onClick={previousStep}
             startIcon={<NavigateBeforeIcon />}
           >
             Previous
@@ -66,7 +66,7 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
             variant='contained'
             disabled={isNextButtonDisabled}
             className={classes.button}
-            onClick={nextPart}
+            onClick={nextStep}
             endIcon={<NavigateNextIcon />}
           >
             Next
@@ -129,7 +129,7 @@ function RegistrationFormPartOne({
           validate(value) {
             const age = new Date().getFullYear() - new Date(value).getFullYear();
             if (isNaN(age) || age <= 0) return 'Please enter correct date';
-            if (age <= 12) return 'You must be atleast 12 years old to register';
+            if (age <= 12) return 'You must be at least 12 years old to register';
             if (age >= 120) return "You can't possibly be older than 120";
           },
         })}
@@ -162,7 +162,7 @@ function RegistrationFormPartTwo({
           required: 'Please enter your username',
           minLength: {
             value: 6,
-            message: 'Username has to be atleast 6 characters long',
+            message: 'Username has to be at least 6 characters long',
           },
         })}
       ></TextField>
@@ -178,7 +178,7 @@ function RegistrationFormPartTwo({
           required: 'Please enter your password',
           minLength: {
             value: 8,
-            message: 'Password has to be atleast 8 characters long',
+            message: 'Password has to be at least 8 characters long',
           },
           pattern: {
             value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/,

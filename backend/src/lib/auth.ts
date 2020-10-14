@@ -14,48 +14,47 @@ const jwtAuthPlugin: FastifyPluginCallback<{
   algorithm: Algorithm;
 }> = function (app, { secret, algorithm }, done) {
   const signToken: AuthInstance['signToken'] = ({ id }) => sign({ id }, secret, { algorithm });
-  app
-    .decorate('signToken', signToken)
-    .decorateRequest('user', null)
-    .decorateRequest('tokenError', '')
-    .addHook('onRequest', (req, _, done) => {
-      const headerToken = req.headers['authorization'];
-      if (!headerToken) return (req.tokenError = 'missing token'), done();
-      const [, token] = headerToken.split(' ');
-      try {
-        const decodedToken = verify(token, secret, { algorithms: [algorithm] });
-        if (typeof decodedToken === 'object') req.user = decodedToken as NonNullable<AuthRequest['user']>;
-        else req.tokenError = 'invalid token';
-        done();
-      } catch (error) {
-        (req.tokenError = error.message), done();
-      }
-    })
-    .addHook('onRoute', routeOptions => {
-      if (routeOptions.authorize) {
-        routeOptions.schema = {
-          ...routeOptions.schema,
-          headers: {
-            type: 'object',
-            required: [...((routeOptions.schema?.headers as { required?: string[] })?.required || []), 'authorization'],
-            properties: {
-              ...(routeOptions.schema?.headers as {
-                properties?: Record<string, unknown>;
-              })?.properties,
-              authorization: tokenSchema,
-            },
+  app.decorate('signToken', signToken);
+  app.decorateRequest('user', null);
+  app.decorateRequest('tokenError', '');
+  app.addHook('onRequest', (req, _, done) => {
+    const headerToken = req.headers['authorization'];
+    if (!headerToken) return (req.tokenError = 'missing token'), done();
+    const [, token] = headerToken.split(' ');
+    try {
+      const decodedToken = verify(token, secret, { algorithms: [algorithm] });
+      if (typeof decodedToken === 'object') req.user = decodedToken as NonNullable<AuthRequest['user']>;
+      else req.tokenError = 'invalid token';
+      done();
+    } catch (error) {
+      (req.tokenError = error.message), done();
+    }
+  });
+  app.addHook('onRoute', routeOptions => {
+    if (routeOptions.authorize) {
+      routeOptions.schema = {
+        ...routeOptions.schema,
+        headers: {
+          type: 'object',
+          required: [...((routeOptions.schema?.headers as { required?: string[] })?.required || []), 'authorization'],
+          properties: {
+            ...(routeOptions.schema?.headers as {
+              properties?: Record<string, unknown>;
+            })?.properties,
+            authorization: tokenSchema,
           },
-        };
-        routeOptions.preValidation = [
-          (req, _, done) => (req.user ? done() : done(app.errors.unauthorized(req.tokenError))),
-          ...(routeOptions.preValidation
-            ? Array.isArray(routeOptions.preValidation)
-              ? routeOptions.preValidation
-              : [routeOptions.preValidation]
-            : []),
-        ];
-      }
-    });
+        },
+      };
+      routeOptions.preValidation = [
+        (req, _, done) => (req.user ? done() : done(app.errors.unauthorized(req.tokenError))),
+        ...(routeOptions.preValidation
+          ? Array.isArray(routeOptions.preValidation)
+            ? routeOptions.preValidation
+            : [routeOptions.preValidation]
+          : []),
+      ];
+    }
+  });
   done();
 };
 
