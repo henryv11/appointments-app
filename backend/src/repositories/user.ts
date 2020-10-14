@@ -51,7 +51,7 @@ export const userRepository = ({
       FROM
         app_user
       WHERE
-        email IN (SELECT id FROM person_by_email)
+        person_id IN (SELECT id FROM person_by_email)
       LIMIT 1
       `,
       [email],
