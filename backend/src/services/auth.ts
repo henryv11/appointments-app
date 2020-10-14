@@ -12,29 +12,30 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
     username,
     password,
     hasAcceptedTermsAndConditions,
-    ...personCreation
+    ...createPerson
   }: UserLogin & CreatePerson & { hasAcceptedTermsAndConditions: boolean }) {
-    const hashedPassword = await hash(password, 10);
-    const transaction = await database.transaction();
+    const [hashedPassword, transaction] = await Promise.all([hash(password, 10), database.transaction()]);
     try {
       await transaction.begin();
-      const person = await repositories.person.create(personCreation, transaction.query);
-      await repositories.personAgreements.create(
-        {
-          personId: person.id,
-          agreementType: 'TERMS_AND_CONDITIONS',
-          hasAccepted: hasAcceptedTermsAndConditions,
-        },
-        transaction.query,
-      );
-      const user = await repositories.user.create(
-        {
-          username,
-          password: hashedPassword,
-          personId: person.id,
-        },
-        transaction.query,
-      );
+      const { id: personId } = await repositories.person.create(createPerson, transaction.query);
+      const [user] = await Promise.all([
+        repositories.user.create(
+          {
+            password: hashedPassword,
+            personId,
+            username,
+          },
+          transaction.query,
+        ),
+        repositories.personAgreements.create(
+          {
+            agreementType: 'TERMS_AND_CONDITIONS',
+            hasAccepted: hasAcceptedTermsAndConditions,
+            personId,
+          },
+          transaction.query,
+        ),
+      ]);
       await transaction.commit();
       return this.startSession({ user: { ...user, password: hashedPassword } });
     } catch (error) {
@@ -44,13 +45,13 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
     }
   },
   async loginUser({
-    username,
     email,
     password,
+    username,
   }: {
-    username?: Person['email'];
     email?: User['username'];
     password: User['password'];
+    username?: Person['email'];
   }) {
     let user: UserAuth | undefined | '' = username && (await repositories.user.findByUsername(username));
     if (!user && email) user = await repositories.user.findByEmail(email);

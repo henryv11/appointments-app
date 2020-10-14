@@ -15,15 +15,13 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
     connect: pool.connect.bind(pool),
     firstRow: queryResult => queryResult.rows[0],
     allRows: queryResult => queryResult.rows,
-    async transaction() {
-      const connection = await pool.connect();
-      return {
+    transaction: () =>
+      pool.connect().then(connection => ({
         begin: async () => (await connection.query('BEGIN'), void 0),
         commit: async () => (await connection.query('COMMIT'), connection.release()),
         rollback: async () => (await connection.query('ROLLBACK'), connection.release()),
         query: connection.query.bind(connection),
-      };
-    },
+      })),
   };
   app.decorate('database', database);
   app.addHook('onClose', async () => {
