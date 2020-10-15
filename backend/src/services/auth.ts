@@ -3,9 +3,9 @@ import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
 
 export const authService = ({ errors, repositories, signToken, database, log }: FastifyInstance) => ({
-  async startSession({ user }: { user: UserAuth }) {
-    const token = signToken(user);
-    await repositories.session.create({ userId: user.id, token });
+  async startSession({ tokenPayload }: { tokenPayload: Parameters<FastifyInstance['signToken']>[0] }) {
+    const token = signToken(tokenPayload);
+    await repositories.session.create({ userId: tokenPayload.id, token });
     return token;
   },
   async registerUser({
@@ -37,7 +37,7 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
         ),
       ]);
       await transaction.commit();
-      return this.startSession({ user: { ...user, password: hashedPassword } });
+      return this.startSession({ tokenPayload: user });
     } catch (error) {
       log.error(error, 'failed to create user');
       await transaction.rollback();
@@ -58,6 +58,6 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
     if (!user || !(await compare(password, user.password))) throw errors.badRequest();
     const activeSession = await repositories.session.findActiveForUser(user.id);
     if (activeSession) return activeSession.token;
-    return this.startSession({ user });
+    return this.startSession({ tokenPayload: user });
   },
 });
