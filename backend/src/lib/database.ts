@@ -9,7 +9,8 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
 ) {
   await createDatabase(connectionOptions, app.log);
   await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
-  const pool = new Pool(connectionOptions).on('error', err => app.log.error(err, 'database pool error'));
+  const pool = new Pool(connectionOptions);
+  pool.on('error', err => app.log.error(err, 'database pool error'));
   const database: Database = {
     query: pool.query.bind(pool),
     connect: pool.connect.bind(pool),
@@ -24,10 +25,7 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
       })),
   };
   app.decorate('database', database);
-  app.addHook('onClose', async () => {
-    app.log.info('ending database pool ...');
-    await pool.end();
-  });
+  app.addHook('onClose', async () => (app.log.info('ending database pool ...'), await pool.end()));
 };
 
 async function createDatabase(
@@ -40,10 +38,17 @@ async function createDatabase(
     await client.connect();
     const {
       rows: [{ dbExists }],
-    } = await client.query(
-      `SELECT EXISTS(
-                SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower($1)
-            ) AS "dbExists"`,
+    } = await client.query<{ dbExists: boolean }>(
+      `
+      SELECT EXISTS (
+        SELECT
+          datname
+        FROM
+          pg_catalog.pg_database
+        WHERE
+          lower(datname) = lower($1)
+      ) AS "dbExists"
+      `,
       [database],
     );
     if (dbExists) return logger.info(`database "${database}" already exists`);

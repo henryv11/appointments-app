@@ -6,10 +6,7 @@ const getServices = (app: FastifyInstance) => ({
   auth: authService(app),
 });
 
-const servicesPlugin: FastifyPluginCallback = function (app, _, done) {
-  app.decorate('services', getServices(app));
-  done();
-};
+const servicesPlugin: FastifyPluginCallback = (app, _, done) => (app.decorate('services', getServices(app)), done());
 
 export const services = fp(servicesPlugin);
 

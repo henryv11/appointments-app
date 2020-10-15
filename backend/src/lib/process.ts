@@ -1,13 +1,13 @@
 import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
-const exitHandlerPlugin: FastifyPluginCallback = function (app, _, done) {
+const exitHandlerPlugin: FastifyPluginCallback = (app, _, done) => (
   ['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal =>
     process.on(signal, signal => handleExit(signal, undefined, 0, app)),
-  );
-  process.on('uncaughtException', error => handleExit(undefined, error, 1, app));
-  done();
-};
+  ),
+  process.on('uncaughtException', error => handleExit(undefined, error, 1, app)),
+  done()
+);
 
 export async function handleExit(
   signal: NodeJS.Signals | undefined,

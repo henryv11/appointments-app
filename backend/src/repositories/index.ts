@@ -12,10 +12,9 @@ const getRepositories = (app: FastifyInstance) => ({
   session: sessionRepository(app),
 });
 
-const repositoriesPlugin: FastifyPluginCallback = function (app, _, done) {
-  app.decorate('repositories', getRepositories(app));
-  done();
-};
+const repositoriesPlugin: FastifyPluginCallback = (app, _, done) => (
+  app.decorate('repositories', getRepositories(app)), done()
+);
 
 export const repositories = fp(repositoriesPlugin);
 
