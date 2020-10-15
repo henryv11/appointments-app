@@ -6,8 +6,8 @@ export interface PersonAgreement {
   agreementType: AgreementType;
   personId: Person['id'];
   hasAccepted: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export type CreatePersonAgreement = Pick<PersonAgreement, 'agreementType' | 'personId' | 'hasAccepted'>;

@@ -6,9 +6,11 @@ const [AuthContextProvider, useAuthContext] = BuildContext(
   (state: AuthState, action: AuthAction) => {
     switch (action.type) {
       case 'LOG_IN':
+        localStorage.setItem('token', action.payload.token);
         return { ...state, isAuthenticated: true, ...action.payload };
 
       case 'LOG_OUT':
+        localStorage.removeItem('token');
         return { ...state, isAuthenticated: false, token: undefined, user: undefined };
     }
   },

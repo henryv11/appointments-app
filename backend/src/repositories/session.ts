@@ -1,4 +1,4 @@
-import { CreatedSession, CreateSession, User } from '@types';
+import { CreatedSession, CreateSession, Session, UpdateSession, User } from '@types';
 import { FastifyInstance } from 'fastify';
 
 export const sessionRepository = ({ database: { query, firstRow } }: FastifyInstance) => ({
@@ -21,12 +21,16 @@ export const sessionRepository = ({ database: { query, firstRow } }: FastifyInst
       [userId, token],
     ).then(firstRow),
   findActiveForUser: (userId: User['id'], queryMethod = query) =>
-    queryMethod<CreatedSession>(
+    queryMethod<Session>(
       `
         SELECT
           id,
           user_id AS "userId",
-          token
+          token,
+          started_at AS "startedAt",
+          ended_at AS "endedAt",
+          updated_at AS "updatedAt",
+          created_at AS "createdAt"
         FROM
           session
         WHERE
@@ -35,5 +39,43 @@ export const sessionRepository = ({ database: { query, firstRow } }: FastifyInst
         LIMIT 1
         `,
       [userId],
+    ).then(firstRow),
+  findSessionByToken: (token: string, queryMethod = query) =>
+    queryMethod<Session>(
+      `
+      SELECT
+        id,
+        user_id AS "userId",
+        token,
+        started_at AS "startedAt",
+        ended_at AS "endedAt",
+        updated_at AS "updatedAt",
+        created_at AS "createdAt"
+      FROM
+        session
+      WHERE
+        token = $1
+      LIMIT 1
+  `,
+      [token],
+    ).then(firstRow),
+  update: (session: UpdateSession, queryMethod = query) =>
+    queryMethod<Session>(
+      `
+      UPDATE session
+      SET
+        ended_at = COALESCE($2, ended_at)
+      WHERE
+        id = $1
+      RETURNING
+        id,
+        user_id AS "userId",
+        token,
+        started_at AS "startedAt",
+        ended_at AS "endedAt",
+        updated_at AS "updatedAt",
+        created_at AS "createdAt"
+      `,
+      [session.id, session.endedAt],
     ).then(firstRow),
 });

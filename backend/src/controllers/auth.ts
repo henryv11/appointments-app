@@ -28,7 +28,12 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
           },
         },
       },
-      (req, res) => (res.status(201), app.services.auth.registerUser(req.body)),
+      async (req, res) => {
+        res.status(201);
+        const user = await app.services.auth.registerUser(req.body);
+        const token = await app.services.auth.getSessionToken({ tokenPayload: user });
+        return { user, token };
+      },
     )
     .post<{ Body: Parameters<typeof app.services.auth.loginUser>[0] }>(
       '/auth',
@@ -51,6 +56,7 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
       },
       req => app.services.auth.loginUser(req.body),
     );
+
   done();
 };
 

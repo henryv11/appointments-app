@@ -45,8 +45,8 @@ export default function LoginPage() {
             <RegistrationForm
               onSubmit={async data => {
                 try {
-                  const token = await registerUser(data);
-                  console.log(token);
+                  const payload = await registerUser(data);
+                  dispatch({ type: 'LOG_IN', payload });
                 } catch (error) {
                   setError(error.message);
                   setTimeout(() => setError(''));
@@ -57,8 +57,8 @@ export default function LoginPage() {
             <LoginForm
               onSubmit={async data => {
                 try {
-                  const token = await loginUser(data);
-                  console.log(token);
+                  const payload = await loginUser(data);
+                  dispatch({ type: 'LOG_IN', payload });
                 } catch (error) {
                   setError('login failed');
                   setTimeout(() => setError(''));

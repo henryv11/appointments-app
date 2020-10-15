@@ -14,7 +14,13 @@ const jwtAuthPlugin: FastifyPluginCallback<{
   algorithm: Algorithm;
 }> = function (app, { secret, algorithm }, done) {
   const signToken: AuthInstance['signToken'] = ({ id }) => sign({ id }, secret, { algorithm });
+  const decodeToken: AuthInstance['decodeToken'] = function (token: string) {
+    const decoded = verify(token, secret, { algorithms: [algorithm] });
+    if (!decoded || typeof decoded !== 'object') return;
+    return decoded as Exclude<AuthRequest['user'], null>;
+  };
   app.decorate('signToken', signToken);
+  app.decorate('decodeToken', decodeToken);
   app.decorateRequest('user', null);
   app.decorateRequest('tokenError', '');
   app.addHook('onRequest', (req, _, done) => {
@@ -22,8 +28,8 @@ const jwtAuthPlugin: FastifyPluginCallback<{
     if (!headerToken) return (req.tokenError = 'missing token'), done();
     const [, token] = headerToken.split(' ');
     try {
-      const decodedToken = verify(token, secret, { algorithms: [algorithm] });
-      if (typeof decodedToken === 'object') req.user = decodedToken as NonNullable<AuthRequest['user']>;
+      const decodedToken = decodeToken(token);
+      if (decodedToken) req.user = decodedToken;
       else req.tokenError = 'invalid token';
       done();
     } catch (error) {
@@ -82,4 +88,5 @@ interface AuthRouteOptions {
 
 interface AuthInstance {
   signToken: (payload: TokenPayload) => string;
+  decodeToken: (payload: string) => Exclude<AuthRequest['user'], null> | undefined;
 }

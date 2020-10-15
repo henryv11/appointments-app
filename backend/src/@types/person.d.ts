@@ -4,8 +4,8 @@ export interface Person {
   lastName: string;
   email: string;
   dateOfBirth: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export type UpdatePerson = Pick<Person, 'id'> & Partial<CreatePerson>;

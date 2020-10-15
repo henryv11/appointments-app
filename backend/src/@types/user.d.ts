@@ -5,8 +5,8 @@ export interface User {
   personId: Person['id'];
   username: string;
   password: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export type PublicUser = Pick<User, 'id' | 'username'>;
