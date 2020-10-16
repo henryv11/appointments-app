@@ -1,10 +1,21 @@
 import { join } from './path';
+import { stringify } from './query';
 
-type FetchOptions = Omit<RequestInit, 'body' | 'query' | 'headers'> & {
-  body?: any;
-  query?: Record<string, string | number | string[] | number[]>;
-  headers?: Record<string, string>;
-};
+export const makeFetch = (baseUrl: string) => <T>({ path, ...opts }: FetchOptions & { path?: string }) =>
+  _fetch<T>({ url: path ? join(baseUrl, path) : baseUrl, ...opts });
+
+export { _fetch as fetch };
+
+function _fetch<T>({ headers = {}, url, ...opts }: FetchOptions & { url: string }) {
+  if (opts.body !== undefined && typeof opts.body !== 'string') {
+    opts.body = JSON.stringify(opts.body);
+    headers['Content-Type'] = 'application/json';
+  }
+  return fetch(opts.query ? join(url, stringify(opts.query)) : url, opts).then(res => {
+    if (res.status >= 400) throw new FetchError(res);
+    return res as Omit<typeof res, 'json'> & { json: () => Promise<T> };
+  });
+}
 
 class FetchError extends Error {
   status: number;
@@ -12,31 +23,16 @@ class FetchError extends Error {
   url: string;
   constructor(res: Response) {
     super(`request to ${res.url} failed`);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this);
     this.status = res.status;
     this.statusText = res.statusText;
     this.url = res.url;
   }
 }
 
-function querystringify(object: Record<string, any>) {
-  return Object.entries(object).reduce((query, [key, value]) => {}, '');
-}
-
-function _fetch(url: string, opts: FetchOptions) {
-  if (opts.body !== undefined && typeof opts.body !== 'string') {
-    opts.body = JSON.stringify(opts.body);
-    opts.headers['Content-Type'] = 'application/json';
-  }
-  return fetch(join(...[url, opts.query && querystringify(opts.query)].filter(Boolean)), opts).then(res => {
-    if (res.status >= 400) throw new FetchError(res);
-    return res;
-  });
-}
-
-export function makeFetch(baseUrl: string) {
-  return function (path: string, opts: FetchOptions) {
-    return _fetch(join(baseUrl, path), opts);
-  };
-}
-
-export { _fetch as fetch };
+type FetchOptions = Omit<RequestInit, 'body' | 'query' | 'headers'> & {
+  body?: any;
+  query?: Record<string, string | number | string[] | number[]>;
+  headers?: Record<string, string>;
+};

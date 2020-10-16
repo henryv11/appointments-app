@@ -1,7 +1,7 @@
 import { User } from '../@types/user';
-import BuildContext from '../higher-order-components/BuildContext';
+import MakeContext from '../higher-order-components/MakeContext';
 
-const [AuthContextProvider, useAuthContext] = BuildContext(
+const [AuthContextProvider, useAuthContext] = MakeContext(
   { isAuthenticated: false },
   (state: AuthState, action: AuthAction) => {
     switch (action.type) {

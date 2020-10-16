@@ -1,15 +1,19 @@
 {
   "compilerOptions": {
-    "jsx": "react",
+    "outDir": "build",
     "module": "commonjs",
-    "noImplicitAny": true,
-    "outDir": "./build/",
-    "preserveConstEnums": true,
-    "removeComments": true,
+    "target": "es5",
+    "lib": ["es6", "dom"],
     "sourceMap": true,
-    "target": "es2017",
-    "lib": ["es2017"],
+    "allowJs": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
     "esModuleInterop": true
   },
-  "include": ["src/index.tsx"]
+  "exclude": ["node_modules", "build"],
+  "include": ["src"]
 }

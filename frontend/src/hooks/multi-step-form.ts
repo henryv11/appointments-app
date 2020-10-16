@@ -10,7 +10,7 @@ export function useMultiStepForm<T>({ steps }: { steps: number }) {
   useEffect(() => {
     const activeFields = Array.from(registeredFields.current[activeStep] || []) as (keyof T)[];
     const values = form.getValues(activeFields);
-    setCanContinue(!activeFields.some(field => !values[field] || form.errors[field]));
+    setCanContinue(activeFields.every(field => !!values[field] && !form.errors[field]));
   });
 
   const register: typeof form.register = function () {

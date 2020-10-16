@@ -1,6 +1,6 @@
-import BuildContext from '../higher-order-components/BuildContext';
+import MakeContext from '../higher-order-components/MakeContext';
 
-const [LayoutContextProvider, useLayoutContext] = BuildContext(
+const [LayoutContextProvider, useLayoutContext] = MakeContext(
   { isSidebarOpen: true },
   (state: LayoutState, action: LayoutAction) => {
     switch (action.type) {
