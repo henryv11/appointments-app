@@ -1,4 +1,4 @@
-import { CreateUser, PublicUser, UserAuth } from '@types';
+import { CreateUser, Person, PublicUser, User, UserAuth } from '@types';
 import { FastifyInstance } from 'fastify';
 
 export const userRepository = ({ database: { query, firstRow } }: FastifyInstance) => ({
@@ -36,7 +36,7 @@ export const userRepository = ({ database: { query, firstRow } }: FastifyInstanc
       `,
       [username],
     ).then(firstRow),
-  findByEmail: (email: string, queryMethod = query) =>
+  findByEmail: (email: Person['email'], queryMethod = query) =>
     queryMethod<UserAuth>(
       `
       WITH person_by_email AS (
@@ -54,4 +54,5 @@ export const userRepository = ({ database: { query, firstRow } }: FastifyInstanc
       `,
       [email],
     ).then(firstRow),
+  findById: (id: User['id'], queryMethod = query) => queryMethod<PublicUser>(``, [id]).then(firstRow),
 });

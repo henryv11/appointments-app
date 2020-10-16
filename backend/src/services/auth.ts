@@ -1,28 +1,27 @@
 import { CreatePerson, Person, User, UserAuth, UserLogin } from '@types';
 import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
+import { suid } from 'rand-token';
 
-export const authService = ({ errors, repositories, signToken, database, log, decodeToken }: FastifyInstance) => ({
-  async getSessionToken({ tokenPayload }: { tokenPayload: Parameters<FastifyInstance['signToken']>[0] }) {
-    const activeSession = await repositories.session.findActiveForUser(tokenPayload.id);
-    if (activeSession) return activeSession.token;
+export const authService = ({ errors, repositories, signToken, database, log }: FastifyInstance) => ({
+  async getSession({ tokenPayload }: { tokenPayload: Parameters<FastifyInstance['signToken']>[0] }) {
     const token = signToken(tokenPayload);
-    await repositories.session.create({ userId: tokenPayload.id, token });
-    return token;
+    const activeSession = await repositories.session.findActiveForUser(tokenPayload.id);
+    if (activeSession) return { session: activeSession, token };
+    const refreshToken = suid(16);
+    const session = await repositories.session.create({ userId: tokenPayload.id, token: refreshToken });
+    return { session, token };
   },
 
-  async refreshSessionToken(token: string) {
-    const decodedToken = decodeToken(token);
-    if (!decodedToken) throw errors.badRequest();
-    const session = await repositories.session.findSessionByToken(token);
+  async refreshSession(refreshToken: string) {
+    const session = await repositories.session.findSessionByToken(refreshToken);
     if (!session) throw errors.badRequest();
-    if (session.userId !== decodedToken.id) throw errors.badRequest();
-    if (session.endedAt) return signToken({ id: decodedToken.id });
-    if (new Date().getTime() - new Date(session.startedAt).getTime() > 1000 * 60 * 60 * 24 * 14) {
+    if (session.endedAt) return this.getSession({ tokenPayload: { id: session.userId } });
+    if (new Date().getTime() - new Date(session.startedAt).getTime() >= 8.64e7 * 14) {
       await repositories.session.update({ id: session.id, endedAt: new Date().getTime() });
-      return signToken({ id: decodedToken.id });
+      return this.getSession({ tokenPayload: { id: session.userId } });
     }
-    return session.token;
+    return { session, token: signToken({ id: session.userId }) };
   },
 
   async registerUser({
@@ -73,9 +72,6 @@ export const authService = ({ errors, repositories, signToken, database, log, de
     let user: UserAuth | undefined | '' = username && (await repositories.user.findByUsername(username));
     if (!user && email) user = await repositories.user.findByEmail(email);
     if (!user || !(await compare(password, user.password))) throw errors.badRequest();
-    return {
-      user: { id: user.id, username: user.username },
-      token: await this.getSessionToken({ tokenPayload: user }),
-    };
+    return { id: user.id, username: user.username };
   },
 });

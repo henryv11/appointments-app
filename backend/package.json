@@ -26,7 +26,8 @@
         "node-pg-migrate": "^5.8.0",
         "pg": "^8.3.3",
         "pino": "^6.6.1",
-        "pino-pretty": "^4.2.1"
+        "pino-pretty": "^4.2.1",
+        "rand-token": "^1.0.1"
     },
     "devDependencies": {
         "@types/bcrypt": "^3.0.0",
