@@ -4,10 +4,10 @@ export interface Session {
   id: number;
   userId: User['number'];
   token: string;
-  startedAt: number;
-  endedAt: number | null;
-  updatedAt: number;
-  createdAt: number;
+  startedAt: Date;
+  endedAt: Date | null;
+  updatedAt: Date;
+  createdAt: Date;
 }
 
 export type CreateSession = Pick<Session, 'userId' | 'token'>;

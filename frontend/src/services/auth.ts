@@ -15,10 +15,24 @@ export async function registerUser(body: UserRegistration) {
   return res.json();
 }
 
-export async function refreshToken(token: string) {
-  const res = await fetch<AuthResponseBody>({ query: { token } });
+export async function refreshSession(refreshToken: string) {
+  const res = await fetch<AuthResponseBody>({
+    path: ['session', refreshToken, 'refresh'],
+  });
   if (res.status !== 200) throw new Error('refreshing token failed');
   return res.json();
 }
 
-type AuthResponseBody = { token: string; user: Pick<User, 'username' | 'id'> };
+export async function logoutUser(jwt: string) {
+  const res = await fetch({
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${jwt}` },
+  });
+  if (res.status !== 200) throw new Error('logout failed');
+}
+
+interface AuthResponseBody {
+  token: string;
+  refreshToken: string;
+  user: Pick<User, 'username' | 'id'>;
+}

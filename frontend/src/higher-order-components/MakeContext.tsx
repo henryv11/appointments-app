@@ -7,7 +7,7 @@ export default function MakeContext<T, D>(
   const context = createContext([
     initialState,
     () => {
-      throw new Error('you need to provide for this context');
+      throw new Error('you need to provide for this context in order to dispatch');
     },
   ] as [T, Dispatch<D>]);
   return [

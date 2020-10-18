@@ -8,7 +8,7 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
     const token = signToken(tokenPayload);
     const activeSession = await repositories.session.findActiveForUser(tokenPayload.id);
     if (activeSession) return { session: activeSession, token };
-    const refreshToken = suid(16);
+    const refreshToken = suid(64);
     const session = await repositories.session.create({ userId: tokenPayload.id, token: refreshToken });
     return { session, token };
   },
@@ -16,24 +16,29 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
   async refreshSession(refreshToken: string) {
     const session = await repositories.session.findSessionByToken(refreshToken);
     if (!session) throw errors.badRequest();
+    // TODO: session validation
     if (session.endedAt) return this.getSession({ tokenPayload: { id: session.userId } });
     if (new Date().getTime() - new Date(session.startedAt).getTime() >= 8.64e7 * 14) {
-      await repositories.session.update({ id: session.id, endedAt: new Date().getTime() });
+      await repositories.session.update({ id: session.id, endedAt: new Date() });
       return this.getSession({ tokenPayload: { id: session.userId } });
     }
     return { session, token: signToken({ id: session.userId }) };
+  },
+
+  async logoutUser({ userId }: { userId: User['id'] }) {
+    await repositories.session.endAllBelongingToUser(userId);
   },
 
   async registerUser({
     username,
     password,
     hasAcceptedTermsAndConditions,
-    ...createPerson
+    ...personDetails
   }: UserLogin & CreatePerson & { hasAcceptedTermsAndConditions: boolean }) {
-    const [hashedPassword, transaction] = await Promise.all([hash(password, 10), database.transaction()]);
+    const [hashedPassword, transaction] = await Promise.all([hash(password, 50), database.transaction()]);
     try {
       await transaction.begin();
-      const { id: personId } = await repositories.person.create(createPerson, transaction.query);
+      const { id: personId } = await repositories.person.create(personDetails, transaction.query);
       const [user] = await Promise.all([
         repositories.user.create(
           {

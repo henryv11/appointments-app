@@ -1,16 +1,23 @@
 import MuiAppBar from '@material-ui/core/AppBar';
 import IconButton from '@material-ui/core/IconButton';
+import Menu from '@material-ui/core/Menu/Menu';
+import MenuItem from '@material-ui/core/MenuItem/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuIcon from '@material-ui/icons/Menu';
 import clsx from 'clsx';
-import React from 'react';
+import React, { useState } from 'react';
+import { useAuthContext } from '../contexts/Auth';
 import { useLayoutContext } from '../contexts/Layout';
+import { logoutUser } from '../services/auth';
 
 export default function AppBar() {
   const classes = useStyles();
-  const [{ isSidebarOpen }, dispatch] = useLayoutContext();
+  const [{ isSidebarOpen }, layoutDispatch] = useLayoutContext();
+  const [{ token }, authDispatch] = useAuthContext();
+  const [anchorElement, setAnchorElement] = useState<undefined | HTMLElement>(undefined);
 
   return (
     <MuiAppBar
@@ -23,7 +30,7 @@ export default function AppBar() {
         <IconButton
           color='inherit'
           aria-label='open drawer'
-          onClick={() => dispatch({ type: 'OPEN_SIDEBAR' })}
+          onClick={() => layoutDispatch({ type: 'OPEN_SIDEBAR' })}
           edge='start'
           className={clsx(classes.menuButton, {
             [classes.hide]: isSidebarOpen,
@@ -31,9 +38,39 @@ export default function AppBar() {
         >
           <MenuIcon />
         </IconButton>
+        <IconButton
+          edge='end'
+          aria-label='account of current user'
+          aria-labelledby='account-menu'
+          aria-haspopup='true'
+          onClick={event => setAnchorElement(event.currentTarget)}
+          color='inherit'
+        >
+          <AccountCircle />
+        </IconButton>
         <Typography variant='h6' noWrap>
-          Mini variant drawer
+          Iou
         </Typography>
+        <Menu
+          open={!!anchorElement}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          onClose={() => setAnchorElement(undefined)}
+          id='account-menu'
+          anchorEl={anchorElement}
+          keepMounted
+        >
+          <MenuItem>Profile</MenuItem>
+          <MenuItem>My Account</MenuItem>
+          <MenuItem
+            onClick={async () => {
+              await logoutUser(token!);
+              authDispatch({ type: 'LOG_OUT' });
+            }}
+          >
+            Log Out
+          </MenuItem>
+        </Menu>
       </Toolbar>
     </MuiAppBar>
   );

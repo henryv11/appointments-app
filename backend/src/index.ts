@@ -25,9 +25,7 @@ const app = Fastify({ logger: pino(get('logger')) })
 app.ready(err =>
   err
     ? handleExit(undefined, err, 1, app)
-    : app.listen(get('server.port'), get('server.host'), () => {
-        if (err) return handleExit(undefined, err, 1, app);
-        app.log.info(app.swagger({ yaml: true }));
-        app.log.info(app.printRoutes());
-      }),
+    : app.listen(get('server.port'), get('server.host'), err =>
+        err ? handleExit(undefined, err, 1, app) : app.log.info(app.printRoutes()),
+      ),
 );

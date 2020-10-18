@@ -19,7 +19,7 @@ import { loginUser, registerUser } from '../services/auth';
 export default function LoginPage() {
   const classes = useStyles();
   const [{ isAuthenticated }, dispatch] = useAuthContext();
-  const [isRegistration, setIsRegistration] = useState(true);
+  const [isRegistration, setIsRegistration] = useState(false);
   const [error, setError] = useState('');
   const { set: setTimeout } = useTimeout({ ms: 5000 });
 
@@ -60,6 +60,7 @@ export default function LoginPage() {
                   const payload = await loginUser(data);
                   dispatch({ type: 'LOG_IN', payload });
                 } catch (error) {
+                  console.log({ error });
                   setError('login failed');
                   setTimeout(() => setError(''));
                 }

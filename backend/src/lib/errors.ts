@@ -5,11 +5,15 @@ import fp from 'fastify-plugin';
 const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
   const routeMethods: Record<string, Set<HTTPMethods>> = {};
   app.decorate('errors', Boom);
-  app.addHook('onRoute', ({ path, method }) => {
-    if (routeMethods[path])
-      Array.isArray(method) ? method.forEach(routeMethods[path].add) : routeMethods[path].add(method);
-    else routeMethods[path] = new Set(Array.isArray(method) ? method : [method]);
-  });
+  app.addHook(
+    'onRoute',
+    ({ path, method }) => (
+      routeMethods[path]
+        ? ([] as HTTPMethods[]).concat(method).forEach(method => routeMethods[path].add(method))
+        : (routeMethods[path] = new Set(([] as HTTPMethods[]).concat(method))),
+      void 0
+    ),
+  );
   app.setNotFoundHandler((req, res) =>
     routeMethods[req.url] && !routeMethods[req.url].has(req.method as HTTPMethods)
       ? res.status(405).send('Method Not Allowed')

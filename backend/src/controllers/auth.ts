@@ -14,7 +14,15 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
         body: {
           type: 'object',
           description: "User's registration details",
-          required: ['username', 'password', 'firstName', 'lastName', 'dateOfBirth', 'email'],
+          required: [
+            'username',
+            'password',
+            'firstName',
+            'lastName',
+            'dateOfBirth',
+            'email',
+            'hasAcceptedTermsAndConditions',
+          ],
           properties: {
             username: { type: 'string' },
             password: { type: 'string' },
@@ -61,26 +69,36 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     },
   );
 
-  app.get<{ Querystring: { token: string } }>(
+  app.delete(
     '/auth',
+    { authorize: true, schema: { description: 'Logout user', summary: 'Logout', tags } },
+    async req => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      await app.services.auth.logoutUser({ userId: req.user!.id });
+      return '';
+    },
+  );
+
+  app.get<{ Params: { sessionToken: string } }>(
+    '/auth/session/:sessionToken/refresh',
     {
       schema: {
         description: 'Refresh session token',
         summary: '',
         tags,
-        querystring: {
+        params: {
           type: 'object',
           description: "User's current session's refresh token",
-          required: ['token'],
+          required: ['sessionToken'],
           properties: {
-            token: { type: 'string' },
+            sessionToken: { type: 'string' },
           },
         },
       },
     },
     async req => {
-      const { session, token } = await app.services.auth.refreshSession(req.query.token);
-      const user = app.repositories.user.findById(session.userId);
+      const { session, token } = await app.services.auth.refreshSession(req.params.sessionToken);
+      const user = await app.repositories.user.findById(session.userId);
       return { user, token, refreshToken: session.token };
     },
   );

@@ -6,11 +6,12 @@ const [AuthContextProvider, useAuthContext] = MakeContext(
   (state: AuthState, action: AuthAction) => {
     switch (action.type) {
       case 'LOG_IN':
-        localStorage.setItem('token', action.payload.token);
-        return { ...state, isAuthenticated: true, ...action.payload };
+        const { refreshToken, ...rest } = action.payload;
+        localStorage.setItem('refreshToken', refreshToken);
+        return { ...state, isAuthenticated: true, ...rest };
 
       case 'LOG_OUT':
-        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         return { ...state, isAuthenticated: false, token: undefined, user: undefined };
     }
   },
@@ -18,6 +19,8 @@ const [AuthContextProvider, useAuthContext] = MakeContext(
 
 type AuthState = { isAuthenticated: boolean; token?: string; user?: Pick<User, 'id' | 'username'> };
 
-type AuthAction = { type: 'LOG_IN'; payload: Required<Pick<AuthState, 'token' | 'user'>> } | { type: 'LOG_OUT' };
+type AuthAction =
+  | { type: 'LOG_IN'; payload: Required<Pick<AuthState, 'token' | 'user'>> & { refreshToken: string } }
+  | { type: 'LOG_OUT' };
 
 export { AuthContextProvider, useAuthContext };

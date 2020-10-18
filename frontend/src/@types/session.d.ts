@@ -2,7 +2,7 @@ import { User } from './user';
 
 export interface Session {
   id: number;
-  userId: User['number'];
+  userId: User['id'];
   token: string;
   startedAt: string;
   endedAt: string | null;
