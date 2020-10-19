@@ -1,7 +1,14 @@
 import { join } from './path';
 
-export const makeFetch = (baseUrl: string) => <T>({ path, ...opts }: FetchOptions & { path?: string | string[] }) =>
-  _fetch<T>({ url: path ? join(baseUrl, ...([] as string[]).concat(path)) : baseUrl, ...opts });
+export const makeFetch = (baseUrl: string) => <T>({
+  path,
+  token,
+  headers = {},
+  ...opts
+}: FetchOptions & { path?: string | string[]; token?: string }) => (
+  token && (headers['Authorization'] = `Bearer ${token}`),
+  _fetch<T>({ url: path ? join(baseUrl, ...([] as string[]).concat(path)) : baseUrl, ...opts })
+);
 
 export { _fetch as fetch };
 
@@ -12,10 +19,7 @@ async function _fetch<T>({
   query,
   ...opts
 }: FetchOptions & { url: string }): Promise<FetchResponse<T>> {
-  if (body !== undefined && typeof body !== 'string') {
-    body = JSON.stringify(body);
-    headers['Content-Type'] = 'application/json';
-  }
+  if (body && typeof body !== 'string') (body = JSON.stringify(body)), (headers['Content-Type'] = 'application/json');
   const res = await fetch(query ? url + '?' + new URLSearchParams(query as never).toString() : url, {
     ...opts,
     body,

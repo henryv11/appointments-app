@@ -12,7 +12,7 @@ import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import clsx from 'clsx';
-import React, { Fragment } from 'react';
+import React from 'react';
 import { UseFormMethods } from 'react-hook-form';
 import { UserRegistration } from '../../@types/user';
 import { useMultiStepForm } from '../../hooks/multi-step-form';
@@ -96,7 +96,7 @@ function RegistrationFormPartOne({
   classes: ReturnType<typeof useStyles>;
 }) {
   return (
-    <Fragment>
+    <>
       <Box display='flex' p={0} m={0}>
         <TextField
           name='firstName'
@@ -139,7 +139,7 @@ function RegistrationFormPartOne({
           shrink: true,
         }}
       />
-    </Fragment>
+    </>
   );
 }
 
@@ -151,7 +151,7 @@ function RegistrationFormPartTwo({
   classes: ReturnType<typeof useStyles>;
 }) {
   return (
-    <Fragment>
+    <>
       <TextField
         name='username'
         label='Username'
@@ -187,7 +187,7 @@ function RegistrationFormPartTwo({
           },
         })}
       ></TextField>
-    </Fragment>
+    </>
   );
 }
 
@@ -199,7 +199,7 @@ function RegistrationFormPartThree({
   classes: ReturnType<typeof useStyles>;
 }) {
   return (
-    <Fragment>
+    <>
       <TextField
         name='email'
         label='Email'
@@ -230,7 +230,7 @@ function RegistrationFormPartThree({
       {!!errors.hasAcceptedTermsAndConditions && (
         <FormHelperText>{errors.hasAcceptedTermsAndConditions?.message}</FormHelperText>
       )}
-    </Fragment>
+    </>
   );
 }
 

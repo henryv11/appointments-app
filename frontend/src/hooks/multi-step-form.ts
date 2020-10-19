@@ -3,7 +3,7 @@ import { FieldName, useForm } from 'react-hook-form';
 
 export function useMultiStepForm<T>({ steps }: { steps: number }) {
   const form = useForm<T>({ shouldUnregister: false, mode: 'onChange' });
-  const [activeStep, setActivePart] = useState(0);
+  const [activeStep, setActiveStep] = useState(0);
   const [canContinue, setCanContinue] = useState(false);
   const registeredFields = useRef<Set<FieldName<T>>[]>([]);
 
@@ -33,13 +33,10 @@ export function useMultiStepForm<T>({ steps }: { steps: number }) {
     isPreviousButtonVisible: activeStep > 0,
     isNextButtonVisible: activeStep < steps - 1,
     isSubmitButtonVisible: activeStep === steps - 1,
-    nextStep() {
+    nextStep: () =>
       form
         .trigger(Array.from(registeredFields.current[activeStep] || []))
-        .then(isValid => isValid && setActivePart(activeStep + 1));
-    },
-    previousStep() {
-      setActivePart(activeStep - 1);
-    },
+        .then(isValid => (isValid ? setActiveStep(activeStep + 1) : void 0)),
+    previousStep: () => setActiveStep(activeStep - 1),
   };
 }

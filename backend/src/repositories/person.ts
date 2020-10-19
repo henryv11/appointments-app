@@ -23,7 +23,7 @@ RETURNING
   last_name as "lastName",
   email as "email",
   date_of_birth as "dateOfBirth"
- `,
+`,
       [firstName, lastName, email, dateOfBirth],
     ).then(firstRow),
   update: ({ id, firstName, lastName, email, dateOfBirth }: UpdatePerson, queryMethod = query) =>

@@ -17,7 +17,11 @@ const [AuthContextProvider, useAuthContext] = MakeContext(
   },
 );
 
-type AuthState = { isAuthenticated: boolean; token?: string; user?: Pick<User, 'id' | 'username'> };
+interface AuthState {
+  isAuthenticated: boolean;
+  token?: string;
+  user?: Pick<User, 'id' | 'username'>;
+}
 
 type AuthAction =
   | { type: 'LOG_IN'; payload: Required<Pick<AuthState, 'token' | 'user'>> & { refreshToken: string } }

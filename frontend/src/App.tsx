@@ -11,7 +11,7 @@ import { mainTheme } from './themes/main';
 
 export default function App() {
   return (
-    <React.Fragment>
+    <>
       <CssBaseline />
       <ThemeProvider theme={mainTheme}>
         <AuthContextProvider>
@@ -32,6 +32,6 @@ export default function App() {
           </LayoutContextProvider>
         </AuthContextProvider>
       </ThemeProvider>
-    </React.Fragment>
+    </>
   );
 }

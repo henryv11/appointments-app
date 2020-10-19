@@ -8,7 +8,7 @@ export function useTimeout({ callback, ms }: { callback?: () => void; ms: number
       timeoutRef.current = undefined;
     }
   }
-  useEffect(() => clear);
+  useEffect(clear);
   return {
     clear,
     set(callback: () => void, timeMs = ms) {

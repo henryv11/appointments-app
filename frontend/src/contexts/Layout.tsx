@@ -13,7 +13,9 @@ const [LayoutContextProvider, useLayoutContext] = MakeContext(
   },
 );
 
-type LayoutState = { isSidebarOpen: boolean };
+interface LayoutState {
+  isSidebarOpen: boolean;
+}
 
 type LayoutAction = { type: 'OPEN_SIDEBAR' | 'CLOSE_SIDEBAR' };
 

@@ -23,10 +23,10 @@ export async function refreshSession(refreshToken: string) {
   return res.json();
 }
 
-export async function logoutUser(jwt: string) {
+export async function logoutUser(token: string) {
   const res = await fetch({
     method: 'DELETE',
-    headers: { authorization: `Bearer ${jwt}` },
+    token,
   });
   if (res.status !== 200) throw new Error('logout failed');
 }
