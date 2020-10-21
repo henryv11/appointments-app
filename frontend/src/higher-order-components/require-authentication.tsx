@@ -1,8 +1,6 @@
-import Backdrop from '@material-ui/core/Backdrop/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress/CircularProgress';
 import React, { PropsWithChildren, ReactElement, useEffect, useState } from 'react';
 import { Redirect } from 'react-router-dom';
-import { useAuthContext } from '../contexts/Auth';
+import { useAuthContext } from '../contexts/auth';
 import { refreshSession } from '../services/auth';
 
 export default function RequireAuthentication({ children }: PropsWithChildren<unknown>) {
@@ -23,12 +21,7 @@ export default function RequireAuthentication({ children }: PropsWithChildren<un
     }
   }
   useEffect(() => void checkAuthentication());
-  if (isLoading)
-    return (
-      <Backdrop open={true} transitionDuration={25}>
-        <CircularProgress color='inherit' />
-      </Backdrop>
-    );
+  if (isLoading) return <div>Loading...</div>;
   if (!isAuthenticated) return <Redirect to='/login' />;
   return children as ReactElement;
 }

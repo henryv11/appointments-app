@@ -1,6 +1,7 @@
 import React from 'react';
-import RequireAuthentication from '../higher-order-components/RequireAuthentication';
-import MainLayout from '../layouts/Main';
+import RequireAuthentication from '../../higher-order-components/require-authentication';
+import MainLayout from '../../layouts/main';
+import './index.css';
 
 export default function HomePage() {
   return (

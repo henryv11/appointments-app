@@ -29,7 +29,16 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: 'css-loader',
+        use: [
+          MiniCssExtractPlugin.loader,
+          { loader: 'css-modules-typescript-loader' },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+            },
+          },
+        ],
       },
     ],
   },
@@ -37,8 +46,6 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'src', 'index.html'),
     }),
-    new MiniCssExtractPlugin({
-      filename: './src/yourfile.css',
-    }),
+    new MiniCssExtractPlugin(),
   ],
 };

@@ -1,4 +1,4 @@
-import MakeContext from '../higher-order-components/MakeContext';
+import MakeContext from '../higher-order-components/make-context';
 
 const [LayoutContextProvider, useLayoutContext] = MakeContext(
   { isSidebarOpen: true },
