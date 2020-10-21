@@ -1,7 +1,5 @@
 import { Person } from './person';
 
-export type AgreementType = 'TERMS_AND_CONDITIONS';
-
 export interface PersonAgreement {
   agreementType: AgreementType;
   personId: Person['id'];
@@ -13,3 +11,5 @@ export interface PersonAgreement {
 export type CreatePersonAgreement = Pick<PersonAgreement, 'agreementType' | 'personId' | 'hasAccepted'>;
 
 export type CreatedPersonAgreement = CreatePersonAgreement;
+
+export type AgreementType = 'TERMS_AND_CONDITIONS';

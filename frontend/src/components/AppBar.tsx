@@ -17,7 +17,7 @@ export default function AppBar() {
   const classes = useStyles();
   const [{ isSidebarOpen }, layoutDispatch] = useLayoutContext();
   const [{ token }, authDispatch] = useAuthContext();
-  const [anchorElement, setAnchorElement] = useState<undefined | HTMLElement>(undefined);
+  const [accountMenuAnchorEl, setAccountMenuAnchorEl] = useState<undefined | HTMLElement>(undefined);
 
   return (
     <MuiAppBar
@@ -43,7 +43,7 @@ export default function AppBar() {
           aria-label='account of current user'
           aria-labelledby='account-menu'
           aria-haspopup='true'
-          onClick={event => setAnchorElement(event.currentTarget)}
+          onClick={event => setAccountMenuAnchorEl(event.currentTarget)}
           color='inherit'
         >
           <AccountCircle />
@@ -52,12 +52,12 @@ export default function AppBar() {
           Iou
         </Typography>
         <Menu
-          open={!!anchorElement}
+          open={!!accountMenuAnchorEl}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          onClose={() => setAnchorElement(undefined)}
+          onClose={() => setAccountMenuAnchorEl(undefined)}
           id='account-menu'
-          anchorEl={anchorElement}
+          anchorEl={accountMenuAnchorEl}
           keepMounted
         >
           <MenuItem>Profile</MenuItem>

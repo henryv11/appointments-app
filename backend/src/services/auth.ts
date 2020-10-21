@@ -1,4 +1,4 @@
-import { CreatePerson, Person, User, UserAuth, UserLogin } from '@types';
+import { User, UserAuth, UserLogin, UserRegistration } from '@types';
 import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
 import { suid } from 'rand-token';
@@ -29,13 +29,8 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
     await repositories.session.endAllBelongingToUser(userId);
   },
 
-  async registerUser({
-    username,
-    password,
-    hasAcceptedTermsAndConditions,
-    ...personDetails
-  }: UserLogin & CreatePerson & { hasAcceptedTermsAndConditions: boolean }) {
-    const [hashedPassword, transaction] = await Promise.all([hash(password, 50), database.transaction()]);
+  async registerUser({ username, password, hasAcceptedTermsAndConditions, ...personDetails }: UserRegistration) {
+    const [hashedPassword, transaction] = await Promise.all([hash(password, 10), database.transaction()]);
     try {
       await transaction.begin();
       const { id: personId } = await repositories.person.create(personDetails, transaction.query);
@@ -65,15 +60,8 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
       throw errors.badRequest();
     }
   },
-  async loginUser({
-    email,
-    password,
-    username,
-  }: {
-    email?: User['username'];
-    password: User['password'];
-    username?: Person['email'];
-  }) {
+
+  async loginUser({ email, password, username }: UserLogin) {
     let user: UserAuth | undefined | '' = username && (await repositories.user.findByUsername(username));
     if (!user && email) user = await repositories.user.findByEmail(email);
     if (!user || !(await compare(password, user.password))) throw errors.badRequest();

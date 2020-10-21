@@ -1,4 +1,4 @@
-import { Person } from './person';
+import { CreatePerson, Person } from './person';
 
 export interface User {
   id: number;
@@ -11,8 +11,11 @@ export interface User {
 
 export type PublicUser = Pick<User, 'id' | 'username'>;
 
-export type UserLogin = Pick<User, 'username' | 'password'>;
+export type UserRegistration = Pick<User, 'username' | 'password'> &
+  CreatePerson & { hasAcceptedTermsAndConditions: boolean };
 
-export type UserAuth = PublicUser & UserLogin;
+export type UserAuth = Pick<User, 'username' | 'password' | 'id'>;
 
-export type CreateUser = Pick<User, 'personId'> & UserLogin;
+export type CreateUser = Pick<User, 'personId' | 'username' | 'password'>;
+
+export type UserLogin = Pick<User, 'username' | 'password'> & Pick<Person, 'email'>;

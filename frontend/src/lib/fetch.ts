@@ -1,15 +1,3 @@
-import { join } from './path';
-
-export const makeFetch = (baseUrl: string) => <T>({
-  path,
-  token,
-  headers = {},
-  ...opts
-}: FetchOptions & { path?: string | string[]; token?: string }) => (
-  token && (headers['Authorization'] = `Bearer ${token}`),
-  _fetch<T>({ url: path ? join(baseUrl, ...([] as string[]).concat(path)) : baseUrl, ...opts })
-);
-
 export { _fetch as fetch };
 
 async function _fetch<T>({
@@ -46,7 +34,7 @@ interface FetchResponse<T> extends Omit<Response, 'json'> {
   json: () => Promise<T>;
 }
 
-interface FetchOptions extends Omit<RequestInit, 'body' | 'query' | 'headers'> {
+export interface FetchOptions extends Omit<RequestInit, 'body' | 'query' | 'headers'> {
   body?: any;
   query?: Record<string, string | number | string[] | number[] | boolean | boolean[]>;
   headers?: Record<string, string>;

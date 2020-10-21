@@ -9,7 +9,7 @@ const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
     'onRoute',
     ({ path, method }) => (
       routeMethods[path]
-        ? ([] as HTTPMethods[]).concat(method).forEach(method => routeMethods[path].add(method))
+        ? new Array<HTTPMethods>().concat(method).forEach(method => routeMethods[path].add(method))
         : (routeMethods[path] = new Set(([] as HTTPMethods[]).concat(method))),
       void 0
     ),

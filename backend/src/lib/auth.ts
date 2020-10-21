@@ -1,4 +1,4 @@
-import { FastifyPluginCallback } from 'fastify';
+import { FastifyPluginCallback, preValidationHookHandler } from 'fastify';
 import fp from 'fastify-plugin';
 import { Algorithm, sign, verify } from 'jsonwebtoken';
 
@@ -51,14 +51,10 @@ const jwtAuthPlugin: FastifyPluginCallback<{
           },
         },
       };
-      routeOptions.preValidation = [
-        (req, _, done) => (req.user ? done() : done(app.errors.unauthorized(req.tokenError))),
-        ...(routeOptions.preValidation
-          ? Array.isArray(routeOptions.preValidation)
-            ? routeOptions.preValidation
-            : [routeOptions.preValidation]
-          : []),
-      ];
+      routeOptions.preValidation = new Array<preValidationHookHandler>().concat(
+        (req, _, done) => done(req.user ? undefined : app.errors.unauthorized(req.tokenError)),
+        routeOptions.preValidation || [],
+      );
     }
   });
   done();

@@ -127,11 +127,11 @@ function RegistrationFormPartOne({
         inputRef={register({
           required: 'Please enter your date of birth',
           validate(value) {
-            const age = new Date().getFullYear() - new Date(value).getFullYear();
+            const age = Math.floor((new Date().getTime() - new Date(value).getTime()) / 3.154e10);
             if (isNaN(age) || age <= 0) return 'Please enter correct date';
             if (age <= 12) return 'You must be at least 12 years old to register';
             if (age >= 120) return "You can't possibly be older than 120";
-            return '';
+            return;
           },
         })}
         className={classes.input}

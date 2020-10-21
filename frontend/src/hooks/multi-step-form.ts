@@ -36,7 +36,7 @@ export function useMultiStepForm<T>({ steps }: { steps: number }) {
     nextStep: () =>
       form
         .trigger(Array.from(registeredFields.current[activeStep] || []))
-        .then(isValid => (isValid ? setActiveStep(activeStep + 1) : void 0)),
+        .then(isValid => setActiveStep(isValid ? activeStep + 1 : activeStep)),
     previousStep: () => setActiveStep(activeStep - 1),
   };
 }

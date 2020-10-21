@@ -37,8 +37,11 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     },
     async (req, res) => {
       res.status(201);
+      console.log('incoming user registration request');
       const user = await app.services.auth.registerUser(req.body);
+      console.log({ user });
       const { session, token } = await app.services.auth.getSession({ tokenPayload: user });
+      console.log({ session, token });
       return { user, token, refreshToken: session.token };
     },
   );

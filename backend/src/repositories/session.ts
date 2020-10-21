@@ -36,6 +36,7 @@ FROM
 WHERE
   user_id = $1 AND
   ended_at IS NULL
+ORDER BY started_at DESC
 LIMIT 1
 `,
       [userId],
