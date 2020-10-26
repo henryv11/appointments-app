@@ -1,22 +1,38 @@
 import React from 'react';
+import accountCircle from './account-circle';
+import block from './block';
+import checkBox from './check-box';
+import checkBoxBlank from './check-box-blank';
 import chevronLeft from './chevron-left';
 import chevronRight from './chevron-right';
 import code from './code';
 import expandLess from './expand-less';
 import expandMore from './expand-more';
+import menu from './menu';
 
-const icons = asIconDescriptors({
+const icons = asIconMap({
+  accountCircle,
+  block,
+  checkBox,
+  checkBoxBlank,
   chevronLeft,
   chevronRight,
   code,
-  expandMore,
   expandLess,
+  expandMore,
+  menu,
 });
 
-export default function SvgIcon<T extends IconName>({ icon, width, height, size, ...iconProps }: SvgIconProps<T>) {
+export default function SvgIcon<Name extends IconName>({
+  icon,
+  width,
+  height,
+  size = 32,
+  ...iconProps
+}: SvgIconProps<Name>) {
   const { svgProps, Icon } = icons[icon];
-  width = width ?? size ?? 32;
-  height = height ?? size ?? 32;
+  width = width ?? size;
+  height = height ?? size;
   return (
     <svg
       aria-labelledby='icon-title'
@@ -31,25 +47,25 @@ export default function SvgIcon<T extends IconName>({ icon, width, height, size,
   );
 }
 
-function asIconDescriptors<T extends Record<string, IconDescriptor<Props>>, Props extends Record<string, unknown>>(
-  map: { [K in keyof T]: T[K] },
+function asIconMap<IconsObject extends Record<string, IconDescriptor<Props>>, Props extends Record<string, unknown>>(
+  map: { [Key in keyof IconsObject]: IconsObject[Key] },
 ) {
   return map;
 }
-interface IconDescriptor<T extends Record<string, unknown>> {
+interface IconDescriptor<IconProps extends Record<string, unknown>> {
   svgProps: React.SVGProps<SVGSVGElement>;
-  Icon: (props?: T) => JSX.Element;
+  Icon: (props?: IconProps) => JSX.Element;
 }
 
 type IconName = keyof typeof icons;
 
-type InferIconProps<T extends IconName> = Parameters<typeof icons[T]['Icon']>[0] extends undefined
+type InferIconProps<Name extends IconName> = Parameters<typeof icons[Name]['Icon']>[0] extends undefined
   ? {}
-  : Parameters<typeof icons[T]['Icon']>[0];
+  : Parameters<typeof icons[Name]['Icon']>[0];
 
-type SvgIconProps<T extends IconName> = {
-  icon: T;
+type SvgIconProps<Name extends IconName> = {
+  icon: Name;
   width?: number;
   height?: number;
   size?: number;
-} & InferIconProps<T>;
+} & InferIconProps<Name>;
