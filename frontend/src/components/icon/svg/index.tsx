@@ -6,6 +6,7 @@ import checkBoxBlank from './check-box-blank';
 import chevronLeft from './chevron-left';
 import chevronRight from './chevron-right';
 import code from './code';
+import coolCar from './cool-car';
 import expandLess from './expand-less';
 import expandMore from './expand-more';
 import menu from './menu';
@@ -18,6 +19,7 @@ const icons = asIconMap({
   chevronLeft,
   chevronRight,
   code,
+  coolCar,
   expandLess,
   expandMore,
   menu,
