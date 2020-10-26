@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { SVGProps } from 'react';
 
-const svgProps: React.SVGProps<SVGSVGElement> = {
+const svgProps: SVGProps<SVGSVGElement> = {
   viewBox: '0 0 1.7067 1.7067',
   shapeRendering: 'geometric-precision',
   textRendering: 'geometric-precision',

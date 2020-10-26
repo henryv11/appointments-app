@@ -2,6 +2,11 @@ import React from 'react';
 import test from './test';
 import test2 from './test2';
 
+const icons = asIconDescriptors({
+  test,
+  test2,
+});
+
 export default function SvgIcon<T extends IconName>({ name, width, height, size, ...iconProps }: SvgIconProps<T>) {
   const { svgProps, Icon } = icons[name];
   width = width ?? size ?? 64;
@@ -14,20 +19,16 @@ export default function SvgIcon<T extends IconName>({ name, width, height, size,
   );
 }
 
-const asIconDescriptors = <T extends Record<string, IconDescriptor<Props>>, Props>(map: { [K in keyof T]: T[K] }) =>
-  map;
+function asIconDescriptors<T extends Record<string, IconDescriptor<Props>>, Props>(map: { [K in keyof T]: T[K] }) {
+  return map;
+}
 
-const icons = asIconDescriptors({
-  test,
-  test2,
-});
+type IconName = keyof typeof icons;
 
 interface IconDescriptor<T> {
   svgProps: React.SVGProps<SVGSVGElement>;
   Icon: (props: T) => JSX.Element;
 }
-
-type IconName = keyof typeof icons;
 
 type SvgIconProps<T extends IconName> = {
   name: T;
