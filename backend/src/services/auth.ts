@@ -1,7 +1,7 @@
 import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
 import { suid } from 'rand-token';
-import { User, UserAuth, UserLogin, UserRegistration } from 'types';
+import { User, UserAuth, UserLogin, UserRegistration } from '../types';
 
 export const authService = ({ errors, repositories, signToken, database, log }: FastifyInstance) => ({
   async getSession({ tokenPayload }: { tokenPayload: Parameters<FastifyInstance['signToken']>[0] }) {
@@ -33,25 +33,25 @@ export const authService = ({ errors, repositories, signToken, database, log }: 
     const [hashedPassword, transaction] = await Promise.all([hash(password, 10), database.transaction()]);
     try {
       await transaction.begin();
-      const { id: personId } = await repositories.person.create(personDetails, transaction.query);
-      const [user] = await Promise.all([
-        repositories.user.create(
-          {
-            password: hashedPassword,
-            personId,
-            username,
-          },
-          transaction.query,
-        ),
-        repositories.personAgreements.create(
-          {
-            agreementType: 'TERMS_AND_CONDITIONS',
-            hasAccepted: hasAcceptedTermsAndConditions,
-            personId,
-          },
-          transaction.query,
-        ),
-      ]);
+      const user = await repositories.user.create(
+        {
+          password: hashedPassword,
+          username,
+        },
+        transaction.query,
+      );
+      const { id: personId } = await repositories.person.create(
+        { ...personDetails, userId: user.id },
+        transaction.query,
+      );
+      repositories.personAgreements.create(
+        {
+          agreementType: 'TERMS_AND_CONDITIONS',
+          hasAccepted: hasAcceptedTermsAndConditions,
+          personId,
+        },
+        transaction.query,
+      );
       await transaction.commit();
       return user;
     } catch (error) {

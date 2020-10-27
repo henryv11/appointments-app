@@ -25,14 +25,14 @@ const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function 
       })
     : uws.App();
   socketServer.any('/*', res => res.writeStatus('404 Not Found').end());
-  app.decorate('ws', socketServer.ws);
+  app.decorate('ws', socketServer.ws.bind(socketServer));
   app.decorate('wsCompression', compressionOptions);
   app.addHook('onReady', done => {
     socketServer.listen(port, token => {
-      if (token) (listenSocket = token), app.log.info(`web socket listening to port ${port}`);
+      if (token) (listenSocket = token), app.log.info(`web socket listening at port "${port}"`);
       else app.log.error(`web socket failed to listen ${port}`);
-      done();
     });
+    done();
   });
   app.addHook('onClose', (app, done) => {
     if (listenSocket)

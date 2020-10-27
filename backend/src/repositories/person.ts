@@ -1,30 +1,33 @@
 import { FastifyInstance } from 'fastify';
-import { CreatedPerson, CreatePerson, UpdatePerson } from 'types';
+import { CreatedPerson, CreatePerson, UpdatePerson } from '../types';
 
 export const personRepository = ({ database: { query, firstRow } }: FastifyInstance) => ({
-  create: ({ firstName, lastName, email, dateOfBirth }: CreatePerson, queryMethod = query) =>
+  create: ({ firstName, lastName, email, dateOfBirth, userId }: CreatePerson, queryMethod = query) =>
     queryMethod<CreatedPerson>(
       `
 INSERT INTO person (
   first_name,
   last_name,
   email,
-  date_of_birth
+  date_of_birth,
+  user_id
 ) 
 VALUES (
   $1,
   $2,
   $3, 
-  $4
+  $4,
+  $5
 )
 RETURNING
   id,
   first_name as "firstName",
   last_name as "lastName",
   email as "email",
-  date_of_birth as "dateOfBirth"
+  date_of_birth as "dateOfBirth",
+  user_id as "userId"
 `,
-      [firstName, lastName, email, dateOfBirth],
+      [firstName, lastName, email, dateOfBirth, userId],
     ).then(firstRow),
   update: ({ id, firstName, lastName, email, dateOfBirth }: UpdatePerson, queryMethod = query) =>
     queryMethod<CreatedPerson>(
@@ -43,6 +46,7 @@ RETURNING
   last_name as "lastName",
   email as "email",
   date_of_birth as "dateOfBirth",
+  user_id as "userId"
 `,
       [id, firstName, lastName, email, dateOfBirth],
     ).then(firstRow),

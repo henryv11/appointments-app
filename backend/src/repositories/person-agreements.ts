@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { CreatedPersonAgreement, CreatePersonAgreement } from 'types';
+import { CreatedPersonAgreement, CreatePersonAgreement } from '../types';
 
 export const personAgreementsRepository = ({ database: { query, firstRow } }: FastifyInstance) => ({
   create: ({ personId, agreementType, hasAccepted }: CreatePersonAgreement, queryMethod = query) =>

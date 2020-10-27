@@ -24,16 +24,16 @@ const jwtAuthPlugin: FastifyPluginCallback<{
   app.decorateRequest('user', null);
   app.decorateRequest('tokenError', '');
   app.addHook('onRequest', (req, _, done) => {
-    const headerToken = req.headers['authorization'];
-    if (!headerToken) return (req.tokenError = 'missing token'), done();
-    const [, token] = headerToken.split(' ');
+    const [, token] = req.headers['authorization']?.split(' ') || [];
+    if (!token) return (req.tokenError = 'missing token'), done();
     try {
       const decodedToken = decodeToken(token);
       if (decodedToken) req.user = decodedToken;
       else req.tokenError = 'invalid token';
       done();
     } catch (error) {
-      (req.tokenError = error.message), done();
+      req.tokenError = error.message;
+      done();
     }
   });
   app.addHook('onRoute', routeOptions => {

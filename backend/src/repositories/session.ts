@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { CreatedSession, CreateSession, Session, UpdateSession, User } from 'types';
+import { CreatedSession, CreateSession, Session, UpdateSession, User } from '../types';
 
 export const sessionRepository = ({ database: { query, firstRow, allRows } }: FastifyInstance) => ({
   create: ({ userId, token }: CreateSession, queryMethod = query) =>

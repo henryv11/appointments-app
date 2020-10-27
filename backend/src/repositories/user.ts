@@ -1,25 +1,23 @@
 import { FastifyInstance } from 'fastify';
-import { CreateUser, Person, PublicUser, User, UserAuth } from 'types';
+import { CreateUser, Person, PublicUser, User, UserAuth } from '../types';
 
 export const userRepository = ({ database: { query, firstRow } }: FastifyInstance) => ({
-  create: ({ username, password, personId }: CreateUser, queryMethod = query) =>
+  create: ({ username, password }: CreateUser, queryMethod = query) =>
     queryMethod<PublicUser>(
       `
 INSERT INTO app_user (
   username,
   password,
-  person_id
 )
 VALUES (
   $1,
   $2,
-  $3
 )
 RETURNING
   id,
   username
 `,
-      [username, password, personId],
+      [username, password],
     ).then(firstRow),
   findByUsername: (username: string, queryMethod = query) =>
     queryMethod<UserAuth>(
@@ -39,9 +37,6 @@ LIMIT 1
   findByEmail: (email: Person['email'], queryMethod = query) =>
     queryMethod<UserAuth>(
       `
-WITH person_by_email AS (
-  SELECT id FROM person WHERE email = $1
-)
 SELECT
   id,
   username,
@@ -49,7 +44,7 @@ SELECT
 FROM
   app_user
 WHERE
-  person_id IN (SELECT id FROM person_by_email)
+  id = (SELECT user_id FROM person WHERE email = $1)
 LIMIT 1
 `,
       [email],

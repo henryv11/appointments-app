@@ -8,7 +8,6 @@ import { controllers } from './controllers';
 import { database, errors, exitHandler, handleExit, healthCheck, jwtAuth, webSocketServer } from './lib';
 import { repositories } from './repositories';
 import { services } from './services';
-import { webSocketHandlers } from './web-sockets';
 
 const app = Fastify({ logger: pino(get('logger')) })
   .register(exitHandler)
@@ -22,8 +21,7 @@ const app = Fastify({ logger: pino(get('logger')) })
   .register(swagger, { ...get('docs') })
   .register(repositories)
   .register(services)
-  .register(controllers)
-  .register(webSocketHandlers);
+  .register(controllers);
 
 app.ready(err =>
   err

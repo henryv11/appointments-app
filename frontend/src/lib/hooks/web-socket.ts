@@ -1,61 +1,52 @@
 import { useEffect, useRef } from 'react';
-import { useInterval } from './interval';
 
 export function useWebSocket({
   url,
-  onmessage,
-  pingInterval,
+  onmessage = null,
   onclose = null,
   onerror = null,
   onopen = null,
 }: UseWebSocketOptions) {
   const wsRef = useRef<WebSocket>();
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const onmessageRef = useRef(onmessage);
+  const oncloseRef = useRef(onclose);
+  const onerrorRef = useRef(onerror);
+  const onopenRef = useRef(onopen);
 
   function close() {
     wsRef.current?.close();
     wsRef.current = undefined;
-    if (intervalRef.current) clearInterval(intervalRef.current);
   }
 
-  function send(data: Parameters<WebSocket['send']>[0]) {
-    wsRef.current?.send(data);
+  function send(...data: Parameters<WebSocket['send']>) {
+    wsRef.current?.send(...data);
   }
 
   useEffect(() => {
+    if (!url) return;
     const ws = new WebSocket(url);
-
-    if (wsRef.current) {
-      ws.onmessage = wsRef.current.onmessage;
-      ws.onerror = wsRef.current.onerror;
-      ws.onclose = wsRef.current.onclose;
-      ws.onopen = wsRef.current.onopen;
-      close();
-    }
-
+    ws.onopen = ev => onopenRef.current?.call(ws, ev);
+    ws.onmessage = ev => onmessageRef.current?.call(ws, ev);
+    ws.onclose = ev => oncloseRef.current?.call(ws, ev);
+    ws.onerror = ev => onerrorRef.current?.call(ws, ev);
     wsRef.current = ws;
     return close;
   }, [url]);
 
   useEffect(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (pingInterval) intervalRef.current = useInterval(() => send('ping'), pingInterval);
-  }, [pingInterval]);
-
-  useEffect(() => {
-    if (wsRef.current) wsRef.current.onmessage = onmessage;
+    onmessageRef.current = onmessage;
   }, [onmessage]);
 
   useEffect(() => {
-    if (wsRef.current) wsRef.current.onerror = onerror;
+    onerrorRef.current = onerror;
   }, [onerror]);
 
   useEffect(() => {
-    if (wsRef.current) wsRef.current.onclose = onclose;
+    oncloseRef.current = onclose;
   }, [onclose]);
 
   useEffect(() => {
-    if (wsRef.current) wsRef.current.onopen = onopen;
+    onopenRef.current = onopen;
   }, [onopen]);
 
   return {
@@ -64,8 +55,7 @@ export function useWebSocket({
   };
 }
 
-interface UseWebSocketOptions extends Partial<Required<Pick<WebSocket, 'onerror' | 'onclose' | 'onopen'>>> {
-  url: string;
-  pingInterval?: number;
-  onmessage: NonNullable<WebSocket['onmessage']>;
+interface UseWebSocketOptions
+  extends Partial<Required<Pick<WebSocket, 'onmessage' | 'onerror' | 'onclose' | 'onopen'>>> {
+  url?: string;
 }

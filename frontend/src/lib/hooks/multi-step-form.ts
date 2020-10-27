@@ -14,14 +14,14 @@ export function useMultiStepForm<T>({ steps }: { steps: number }) {
   });
 
   const register: typeof form.register = function () {
-    const fn = form.register.apply(null, arguments);
+    const fn = form.register.apply(form, arguments);
     return function () {
       const name = arguments[0]?.name;
       if (name)
         registeredFields.current[activeStep]
           ? registeredFields.current[activeStep].add(name)
           : (registeredFields.current[activeStep] = new Set([name]));
-      return fn.apply(null, arguments);
+      return fn.apply(form, arguments);
     };
   };
 
