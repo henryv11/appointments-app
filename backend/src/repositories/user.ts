@@ -1,5 +1,5 @@
-import { CreateUser, Person, PublicUser, User, UserAuth } from '@types';
 import { FastifyInstance } from 'fastify';
+import { CreateUser, Person, PublicUser, User, UserAuth } from 'types';
 
 export const userRepository = ({ database: { query, firstRow } }: FastifyInstance) => ({
   create: ({ username, password, personId }: CreateUser, queryMethod = query) =>

@@ -4,8 +4,9 @@ import cors from 'fastify-cors';
 import helmet from 'fastify-helmet';
 import swagger from 'fastify-swagger';
 import pino from 'pino';
+import { webSocketHandlers } from 'web-sockets';
 import { controllers } from './controllers';
-import { database, errors, exitHandler, handleExit, healthCheck, jwtAuth } from './lib';
+import { database, errors, exitHandler, handleExit, healthCheck, jwtAuth, webSocketServer } from './lib';
 import { repositories } from './repositories';
 import { services } from './services';
 
@@ -17,10 +18,14 @@ const app = Fastify({ logger: pino(get('logger')) })
   .register(cors)
   .register(jwtAuth, get('jwt'))
   .register(healthCheck)
+  .register(webSocketServer, { port: 9000 })
   .register(swagger, { ...get('docs') })
   .register(repositories)
   .register(services)
-  .register(controllers);
+  .register(controllers)
+  .register(webSocketHandlers);
+
+app.ws('/*', {});
 
 app.ready(err =>
   err

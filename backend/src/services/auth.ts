@@ -1,7 +1,7 @@
-import { User, UserAuth, UserLogin, UserRegistration } from '@types';
 import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
 import { suid } from 'rand-token';
+import { User, UserAuth, UserLogin, UserRegistration } from 'types';
 
 export const authService = ({ errors, repositories, signToken, database, log }: FastifyInstance) => ({
   async getSession({ tokenPayload }: { tokenPayload: Parameters<FastifyInstance['signToken']>[0] }) {
