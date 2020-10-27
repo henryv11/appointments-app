@@ -4,11 +4,11 @@ import cors from 'fastify-cors';
 import helmet from 'fastify-helmet';
 import swagger from 'fastify-swagger';
 import pino from 'pino';
-import { webSocketHandlers } from 'web-sockets';
 import { controllers } from './controllers';
 import { database, errors, exitHandler, handleExit, healthCheck, jwtAuth, webSocketServer } from './lib';
 import { repositories } from './repositories';
 import { services } from './services';
+import { webSocketHandlers } from './web-sockets';
 
 const app = Fastify({ logger: pino(get('logger')) })
   .register(exitHandler)
@@ -24,8 +24,6 @@ const app = Fastify({ logger: pino(get('logger')) })
   .register(services)
   .register(controllers)
   .register(webSocketHandlers);
-
-app.ws('/*', {});
 
 app.ready(err =>
   err

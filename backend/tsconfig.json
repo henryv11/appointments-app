@@ -1,17 +1,13 @@
 {
-    "include": ["src/**/*.ts"],
-    "exclude": ["dist", "node_modules", "migrations", "config"],
-    "compilerOptions": {
-        "baseUrl": "./src",
-        "paths": {
-            "@types/*": ["@types/*"]
-        },
-        "target": "es5",
-        "module": "commonjs",
-        "outDir": "./dist",
-        "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
-    }
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "node_modules", "migrations", "config"],
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
 }

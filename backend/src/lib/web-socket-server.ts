@@ -61,3 +61,5 @@ interface WebSocketOptions {
   port: number;
   sslOptions?: SSLOptions;
 }
+
+export interface WebSocket extends uws.WebSocket {}
