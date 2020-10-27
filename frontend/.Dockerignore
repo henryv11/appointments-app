@@ -1,8 +1,8 @@
-Dockerfile
+docker
 dist
+node_modules
 .git
 .gitignore
 .eslintrc.js
 .prettierrc.json
-node_modules
 README.md
