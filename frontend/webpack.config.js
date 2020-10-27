@@ -15,6 +15,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
   },
   module: {
     rules: [
@@ -31,7 +34,7 @@ module.exports = {
         test: /\.css$/,
         use: [
           MiniCssExtractPlugin.loader,
-          { loader: 'css-modules-typescript-loader' },
+          'css-modules-typescript-loader',
           {
             loader: 'css-loader',
             options: {

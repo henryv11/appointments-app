@@ -25,16 +25,22 @@ figure,
 figcaption,
 blockquote,
 dl,
+html,
 dd {
   margin: 0;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 /* Set core body defaults */
 body {
-  min-height: 100vh;
   scroll-behavior: smooth;
   text-rendering: optimizeSpeed;
   line-height: 1.5;
+  font-family: Roboto;
 }
 
 /* Remove list styles on ul, ol elements with a class attribute */

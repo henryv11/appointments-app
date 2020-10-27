@@ -1,5 +1,5 @@
-import { User, UserLogin, UserRegistration } from '../@types/user';
-import { makeServiceFetch } from '../lib/services';
+import { makeServiceFetch } from '@/lib/services';
+import { User, UserLogin, UserRegistration } from '@/types/user';
 
 const fetch = makeServiceFetch('http://localhost/backend/auth');
 
