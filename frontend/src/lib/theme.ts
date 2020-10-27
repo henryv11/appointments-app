@@ -25,11 +25,10 @@ const themes = {
   }),
 };
 
-export function setTheme(theme: Theme = 'dark') {
+export const setTheme = (theme: Theme = 'dark') =>
   Object.entries(themes[theme]).forEach(([key, value]) => {
     document.body.style.setProperty(key, value);
   });
-}
 
 export type Theme = keyof typeof themes;
 

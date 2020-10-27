@@ -4,7 +4,7 @@ import LoginForm from '@/components/ui/forms/login';
 import RegistrationForm from '@/components/ui/forms/registration';
 import { useTimeout } from '@/lib/hooks/timeout';
 import { loginUser, registerUser } from '@/services/auth';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import styles from './styles.css';
 
@@ -12,10 +12,16 @@ export default function LoginPage() {
   const [{ isAuthenticated }, dispatch] = useAuthContext();
   const [isRegistration, setIsRegistration] = useState(false);
   const [error, setError] = useState('');
-  const { set: setTimeout } = useTimeout({ ms: 5000 });
+  const currentTimeoutRef = useRef<NodeJS.Timeout>();
 
   if (isAuthenticated) {
     return <Redirect to='/' />;
+  }
+
+  function onError(message: string) {
+    setError(message);
+    if (currentTimeoutRef.current) clearTimeout(currentTimeoutRef.current);
+    currentTimeoutRef.current = useTimeout(() => setError(''), 5000);
   }
 
   return (
@@ -33,8 +39,7 @@ export default function LoginPage() {
                   const payload = await registerUser(data);
                   dispatch({ type: 'LOG_IN', payload });
                 } catch (error) {
-                  setError(error.message);
-                  setTimeout(() => setError(''));
+                  onError(error.message);
                 }
               }}
             ></RegistrationForm>
@@ -45,8 +50,7 @@ export default function LoginPage() {
                   const payload = await loginUser(data);
                   dispatch({ type: 'LOG_IN', payload });
                 } catch (error) {
-                  setError('login failed');
-                  setTimeout(() => setError(''));
+                  onError(error.message);
                 }
               }}
             ></LoginForm>
