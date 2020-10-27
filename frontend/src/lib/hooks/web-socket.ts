@@ -23,15 +23,22 @@ export function useWebSocket({
   }
 
   useEffect(() => {
-    wsRef.current = new WebSocket(url);
-    wsRef.current.onmessage = onmessage;
-    wsRef.current.onclose = onclose;
-    wsRef.current.onerror = onerror;
-    wsRef.current.onopen = onopen;
+    const ws = new WebSocket(url);
+
+    if (wsRef.current) {
+      ws.onmessage = wsRef.current.onmessage;
+      ws.onerror = wsRef.current.onerror;
+      ws.onclose = wsRef.current.onclose;
+      ws.onopen = wsRef.current.onopen;
+      close();
+    }
+
+    wsRef.current = ws;
     return close;
   }, [url]);
 
   useEffect(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
     if (pingInterval) intervalRef.current = useInterval(() => send('ping'), pingInterval);
   }, [pingInterval]);
 
