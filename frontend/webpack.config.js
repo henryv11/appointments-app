@@ -31,7 +31,7 @@ module.exports = {
         loader: 'source-map-loader',
       },
       {
-        test: /\.css$/,
+        test: /\.s[ac]ss$/i,
         use: [
           MiniCssExtractPlugin.loader,
           'css-modules-typescript-loader',
@@ -41,6 +41,7 @@ module.exports = {
               modules: true,
             },
           },
+          'sass-loader',
         ],
       },
     ],

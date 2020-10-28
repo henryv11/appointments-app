@@ -5,30 +5,30 @@ import RegistrationForm from '@/components/ui/forms/registration';
 import { useTimeout } from '@/lib/hooks/timeout';
 import { loginUser, registerUser } from '@/services/auth';
 import React, { useRef, useState } from 'react';
-import { Redirect } from 'react-router-dom';
-import styles from './styles.css';
+import styles from './styles.scss';
 
 export default function LoginPage() {
   const [{ isAuthenticated }, dispatch] = useAuthContext();
   const [isRegistration, setIsRegistration] = useState(false);
   const [error, setError] = useState('');
-  const currentTimeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<number>();
 
-  if (isAuthenticated) {
-    return <Redirect to='/' />;
-  }
+  useTimeout(() => setError(''), timeoutRef.current);
+
+  // if (isAuthenticated) {
+  //   return <Redirect to='/' />;
+  // }
 
   function onError(message: string) {
     setError(message);
-    if (currentTimeoutRef.current) clearTimeout(currentTimeoutRef.current);
-    currentTimeoutRef.current = useTimeout(() => setError(''), 5000);
+    timeoutRef.current = 5000;
   }
 
   return (
     <SimpleLayout>
       <div className={styles.root}>
         <div>
-          <h4>{isRegistration ? 'Registration' : 'Login'}</h4>
+          <h2>{isRegistration ? 'Registration' : 'Login'}</h2>
         </div>
         <hr />
         <div>

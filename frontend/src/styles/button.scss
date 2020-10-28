@@ -1,0 +1,66 @@
+@mixin themed-button($theme) {
+  background-color: rgba(var(--color-#{$theme}-rgb), 0.5);
+  border: 1px solid rgba(var(--color-#{$theme}-rgb), 0.8);
+  box-shadow: 1px 1px 0px 0px rgba(var(--color-#{$theme}-rgb), 1);
+  color: var(--color-#{$theme}-contrast-hex);
+
+  &.outline,
+  &.link {
+    color: rgba(var(--color-#{$theme}-rgb), 0.8);
+  }
+}
+
+@mixin themed-buttons {
+  $themes: primary, secondary, tertiary, success, warning, danger, dark, medium, light;
+  @each $theme in $themes {
+    &.#{$theme} {
+      @include themed-button($theme);
+    }
+  }
+}
+
+.button {
+  display: inline-flex;
+  border-radius: 5px;
+  outline: 0;
+  border: 0;
+  padding: 0 10px;
+  text-transform: uppercase;
+  font-weight: bold;
+  align-items: center;
+
+  @include themed-buttons();
+
+  &:hover {
+    cursor: pointer;
+    filter: brightness(110%);
+  }
+
+  svg {
+    height: 1.6em;
+    width: 1.6em;
+  }
+
+  &.small {
+    font-size: small;
+    height: 2em;
+  }
+
+  &.link:hover {
+    text-decoration: underline;
+  }
+
+  &.outline,
+  &.link {
+    background-color: transparent;
+  }
+
+  &.link {
+    border: 0;
+    box-shadow: none;
+  }
+
+  &.outline {
+    border-width: 2px;
+  }
+}

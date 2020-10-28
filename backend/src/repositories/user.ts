@@ -7,11 +7,11 @@ export const userRepository = ({ database: { query, firstRow } }: FastifyInstanc
       `
 INSERT INTO app_user (
   username,
-  password,
+  password
 )
 VALUES (
   $1,
-  $2,
+  $2
 )
 RETURNING
   id,

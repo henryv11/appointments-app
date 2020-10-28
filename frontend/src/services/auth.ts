@@ -1,7 +1,7 @@
 import { makeServiceFetch } from '@/lib/services';
 import { User, UserLogin, UserRegistration } from '@/types/user';
 
-const fetch = makeServiceFetch('http://localhost/backend/auth');
+const fetch = makeServiceFetch('backend', 'auth');
 
 export async function loginUser(body: UserLogin) {
   const res = await fetch<AuthResponseBody>({ method: 'POST', body });
