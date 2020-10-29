@@ -9,7 +9,7 @@ import styles from './styles.scss';
 
 export default function LoginPage() {
   const [{ isAuthenticated }, dispatch] = useAuthContext();
-  const [isRegistration, setIsRegistration] = useState(false);
+  const [isRegistration, setIsRegistration] = useState(true);
   const [error, setError] = useState('');
   const timeoutRef = useRef<number>();
 

@@ -1,7 +1,7 @@
 {
   "db": {
     "host": "postgres_container",
-    "port": 5431,
+    "port": 5432,
     "user": "postgres",
     "password": "postgres",
     "database": "backend"

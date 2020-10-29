@@ -1,5 +1,5 @@
 
-FROM node:12-alpine
+FROM node:15-alpine
 
 WORKDIR /usr/src/app
 

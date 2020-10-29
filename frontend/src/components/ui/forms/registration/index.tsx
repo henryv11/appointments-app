@@ -1,5 +1,8 @@
 import { useMultiStepForm } from '@/lib/hooks/multi-step-form';
+import buttonStyles from '@/styles/button.scss';
+import inputStyles from '@/styles/input.scss';
 import { UserRegistration } from '@/types/user';
+import clsx from 'clsx';
 import React from 'react';
 import { UseFormMethods } from 'react-hook-form';
 
@@ -34,14 +37,27 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
       {activeStep === 1 && <RegistrationFormPartTwo form={form} />}
       {activeStep === 2 && <RegistrationFormPartThree form={form} />}
       <div>
-        {isPreviousButtonVisible && <button onClick={previousStep}>Previous</button>}
+        {isPreviousButtonVisible && (
+          <button onClick={previousStep} className={clsx(buttonStyles.button, buttonStyles.primary)}>
+            Previous
+          </button>
+        )}
         {isNextButtonVisible && (
-          <button disabled={isNextButtonDisabled} onClick={nextStep}>
+          <button
+            disabled={isNextButtonDisabled}
+            onClick={nextStep}
+            className={clsx(buttonStyles.button, buttonStyles.primary)}
+          >
             Next
           </button>
         )}
         {isSubmitButtonVisible && (
-          <button disabled={isNextButtonDisabled} color='primary' type='submit'>
+          <button
+            disabled={isNextButtonDisabled}
+            color='primary'
+            type='submit'
+            className={clsx(buttonStyles.button, buttonStyles.primary)}
+          >
             Sign Up
           </button>
         )}
@@ -54,10 +70,29 @@ function RegistrationFormPartOne({ form: { register, errors } }: { form: UseForm
   return (
     <>
       <div>
-        <input id='firstName' name='firstName' required ref={register({ required: 'Please enter your first name' })} />
-        <input name='lastName' required ref={register({ required: 'Please enter your last name' })} />
+        <input
+          className={inputStyles.input}
+          id='first-name'
+          name='firstName'
+          required
+          ref={register({ required: 'Please enter your first name' })}
+        />
+        <label htmlFor='first-name'>First name</label>
+        {errors.firstName && <span>{errors.firstName.message}</span>}
+        <input
+          className={inputStyles.input}
+          id='last-name'
+          name='lastName'
+          required
+          ref={register({ required: 'Please enter your last name' })}
+        />
+        <label htmlFor='last-name'>Last name</label>
+        {errors.lastName && <span>{errors.lastName.message}</span>}
       </div>
+
       <input
+        className={inputStyles.input}
+        id='date-of-birth'
         name='dateOfBirth'
         required
         type='date'
@@ -65,13 +100,15 @@ function RegistrationFormPartOne({ form: { register, errors } }: { form: UseForm
           required: 'Please enter your date of birth',
           validate(value) {
             const age = Math.floor((new Date().getTime() - new Date(value).getTime()) / 3.154e10);
-            if (isNaN(age) || age <= 0) return 'Please enter correct date';
+            if (isNaN(age) || age <= 0) return 'Please enter a correct date';
             if (age <= 12) return 'You must be at least 12 years old to register';
             if (age >= 120) return "You can't possibly be older than 120";
             return;
           },
         })}
       />
+      <label htmlFor='date-of-birth'>Date of birth</label>
+      {errors.dateOfBirth && <span>{errors.dateOfBirth.message}</span>}
     </>
   );
 }
@@ -80,7 +117,9 @@ function RegistrationFormPartTwo({ form: { errors, register } }: { form: UseForm
   return (
     <>
       <input
+        id='username'
         name='username'
+        className={inputStyles.input}
         required
         ref={register({
           required: 'Please enter your username',
@@ -90,8 +129,13 @@ function RegistrationFormPartTwo({ form: { errors, register } }: { form: UseForm
           },
         })}
       />
+      <label htmlFor='username'>Username</label>
+      {errors.username && <span>{errors.username.message}</span>}
       <input
+        id='password'
         name='password'
+        type='password'
+        className={inputStyles.input}
         required
         ref={register({
           required: 'Please enter your password',
@@ -105,6 +149,8 @@ function RegistrationFormPartTwo({ form: { errors, register } }: { form: UseForm
           },
         })}
       />
+      <label htmlFor='password'>Password</label>
+      {errors.password && <span>{errors.password.message}</span>}
     </>
   );
 }

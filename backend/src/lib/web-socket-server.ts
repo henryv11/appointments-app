@@ -29,8 +29,8 @@ const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function 
   app.decorate('wsCompression', compressionOptions);
   app.addHook('onReady', done => {
     socketServer.listen(port, token => {
-      if (token) (listenSocket = token), app.log.info(`web socket listening at port "${port}"`);
-      else app.log.error(`web socket failed to listen ${port}`);
+      if (token) (listenSocket = token), app.log.info(`web socket server listening at port "${port}"`);
+      else app.log.error(`web socket server failed to listen ${port}`);
     });
     done();
   });

@@ -1,1 +1,1 @@
-export const SERVER_BASE_URL = 'http://localhost:443';
+export const SERVER_BASE_URL = 'http://localhost';

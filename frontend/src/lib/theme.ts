@@ -2,16 +2,25 @@ import Color from 'color';
 
 const contrast = (color: Color, ratio = 0.8) => (color.isDark() ? color.lighten(ratio) : color.darken(ratio));
 
-const generateCssThemeVariables = (theme: Record<ColorKey, Color>) =>
-  Object.entries(theme).reduce((acc, [key, color]) => {
+const generateCssThemeVariables = (theme: Record<string, Color>) =>
+  Object.entries(theme).reduce<Record<string, string>>((acc, [key, color]) => {
     acc[`--color-${key}-hex`] = color.hex();
     acc[`--color-${key}-rgb`] = color.rgb().array().join(', ');
     acc[`--color-${key}-contrast-hex`] = contrast(color).hex();
     acc[`--color-${key}-hsl`] = color.hsl().string();
     return acc;
-  }, {} as Record<string, string>);
+  }, {});
 
-const themes = {
+function generateCssBreakpointVariables(breakPoints: Record<string, number>) {
+  const orderedBreakpoints = Object.entries(breakPoints).sort(([, v1], [, v2]) => v1 - v2);
+  return orderedBreakpoints.reduce<Record<string, string>>((acc, [key, value], i) => {
+    acc[`--breakpoint-${key}-min`] = `${value}px`;
+    acc[`--breakpoint-${key}-max`] = `${orderedBreakpoints[i + 1]?.[1] || value + 1000}px`;
+    return acc;
+  }, {});
+}
+
+const themeColors = {
   dark: generateCssThemeVariables({
     primary: Color([56, 128, 255]),
     secondary: Color([61, 194, 255]),
@@ -25,11 +34,15 @@ const themes = {
   }),
 };
 
+const breakpoints = generateCssBreakpointVariables({
+  desktop: 1024,
+  tablet: 768,
+  phone: 420,
+});
+
 export const setTheme = (theme: Theme = 'dark') =>
-  Object.entries(themes[theme]).forEach(([key, value]) => {
+  Object.entries({ ...themeColors[theme], ...breakpoints }).forEach(([key, value]) => {
     document.body.style.setProperty(key, value);
   });
 
-export type Theme = keyof typeof themes;
-
-type ColorKey = 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'danger' | 'dark' | 'medium' | 'light';
+export type Theme = keyof typeof themeColors;
