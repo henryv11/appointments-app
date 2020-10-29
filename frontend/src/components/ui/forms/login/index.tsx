@@ -4,13 +4,13 @@ import { User } from '@/types/user';
 import clsx from 'clsx';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-// import styles from './styles.scss';
+import styles from './styles.scss';
 
 export default function LoginForm({ onSubmit = () => void 0 }: LoginFormProps) {
   const { register, handleSubmit, errors } = useForm<LoginForm>();
 
   return (
-    <form noValidate autoComplete='off' onSubmit={handleSubmit(data => onSubmit(data))}>
+    <form className={styles.root} noValidate autoComplete='off' onSubmit={handleSubmit(data => onSubmit(data))}>
       <input
         className={inputStyles.input}
         id='username'

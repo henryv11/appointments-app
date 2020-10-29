@@ -7,7 +7,7 @@ async function _fetch<T>({
   query,
   ...opts
 }: FetchOptions & { url: string }): Promise<FetchResponse<T>> {
-  if (body && typeof body !== 'string') (body = JSON.stringify(body)), (headers['Content-Type'] = 'application/json');
+  if (body && typeof body === 'object') (body = JSON.stringify(body)), (headers['Content-Type'] = 'application/json');
   const res = await fetch(query ? url + '?' + new URLSearchParams(query as never).toString() : url, {
     ...opts,
     body,

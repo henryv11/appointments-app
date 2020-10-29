@@ -4,4 +4,15 @@
   margin-left: auto;
   margin-right: auto;
   padding: 10px 20px;
+  border-radius: 5px;
+  background-color: rgba(var(--color-light-rgb), 0.4);
+  box-shadow: 1px 1px 1px 1px rgba(var(--color-dark-rgb), 0.4);
+
+  a {
+    display: block;
+    margin-top: 15px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--color-dark-hex);
+  }
 }

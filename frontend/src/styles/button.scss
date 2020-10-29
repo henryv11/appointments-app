@@ -8,6 +8,12 @@
   &.link {
     color: rgba(var(--color-#{$theme}-rgb), 0.8);
   }
+
+  &:disabled {
+    background-color: rgba(var(--color-#{$theme}-rgb), 0.2);
+    border: 1px solid rgba(var(--color-#{$theme}-rgb), 0.4);
+    box-shadow: 1px 1px 0px 0px rgba(var(--color-#{$theme}-rgb), 0.6);
+  }
 }
 
 @mixin themed-buttons {
@@ -31,9 +37,13 @@
 
   @include themed-buttons();
 
-  &:hover {
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
     cursor: pointer;
-    filter: brightness(110%);
+    filter: brightness(1.1);
   }
 
   svg {

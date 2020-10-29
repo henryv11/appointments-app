@@ -1,12 +1,12 @@
 import Color from 'color';
 
-const contrast = (color: Color, ratio = 0.8) => (color.isDark() ? color.lighten(ratio) : color.darken(ratio));
+const getColorContrast = (color: Color, ratio = 0.8) => (color.isDark() ? color.lighten(ratio) : color.darken(ratio));
 
 const generateCssThemeVariables = (theme: Record<string, Color>) =>
   Object.entries(theme).reduce<Record<string, string>>((acc, [key, color]) => {
     acc[`--color-${key}-hex`] = color.hex();
     acc[`--color-${key}-rgb`] = color.rgb().array().join(', ');
-    acc[`--color-${key}-contrast-hex`] = contrast(color).hex();
+    acc[`--color-${key}-contrast-hex`] = getColorContrast(color).hex();
     acc[`--color-${key}-hsl`] = color.hsl().string();
     return acc;
   }, {});

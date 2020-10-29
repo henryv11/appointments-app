@@ -5,6 +5,7 @@ import { UserRegistration } from '@/types/user';
 import clsx from 'clsx';
 import React from 'react';
 import { UseFormMethods } from 'react-hook-form';
+import styles from './styles.scss';
 
 export default function RegistrationForm({ onSubmit = () => void 0 }: RegistrationFormProps) {
   const {
@@ -19,7 +20,7 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
   } = useMultiStepForm<RegistrationForm>({ steps: 3 });
 
   return (
-    <form noValidate autoComplete='off' onSubmit={form.handleSubmit(data => onSubmit(data))}>
+    <form className={styles.root} noValidate autoComplete='off' onSubmit={form.handleSubmit(data => onSubmit(data))}>
       <div>
         <h4>{['Personal information', 'Account information', 'Almost there...'][activeStep]}</h4>
         <hr />
@@ -162,20 +163,26 @@ function RegistrationFormPartThree({ form: { errors, register } }: { form: UseFo
         id='email'
         name='email'
         type='email'
+        className={inputStyles.input}
         required
         ref={register({
           required: 'Please enter your email',
         })}
       />
-
+      <label htmlFor='email'>Email</label>
+      {errors.email && <span>{errors.email.message}</span>}
       <input
         id='has-accepted-terms-and-conditions'
         name='hasAcceptedTermsAndConditions'
+        className={inputStyles.input}
         type='checkbox'
+        required
         ref={register({
           required: 'You need to accept terms and conditions mate',
         })}
       />
+      <label htmlFor='has-accepted-terms-and-conditions'>Accept terms and conditions</label>
+      {errors.hasAcceptedTermsAndConditions && <span>{errors.hasAcceptedTermsAndConditions.message}</span>}
     </>
   );
 }

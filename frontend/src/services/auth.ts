@@ -9,6 +9,14 @@ export async function loginUser(body: UserLogin) {
   return res.json();
 }
 
+export async function logoutUser(token: string) {
+  const res = await fetch({
+    method: 'DELETE',
+    token,
+  });
+  if (res.status !== 200) throw new Error('logout failed');
+}
+
 export async function registerUser(body: UserRegistration) {
   const res = await fetch<AuthResponseBody>({ method: 'PUT', body });
   if (res.status !== 201) throw new Error('registration failed');
@@ -21,14 +29,6 @@ export async function refreshSession(refreshToken: string) {
   });
   if (res.status !== 200) throw new Error('refreshing token failed');
   return res.json();
-}
-
-export async function logoutUser(token: string) {
-  const res = await fetch({
-    method: 'DELETE',
-    token,
-  });
-  if (res.status !== 200) throw new Error('logout failed');
 }
 
 interface AuthResponseBody {

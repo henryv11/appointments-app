@@ -1,0 +1,12 @@
+.root {
+  div:last-of-type {
+    display: flex;
+    align-items: center;
+
+    button {
+      width: 100%;
+      display: block;
+      margin: 0 2px;
+    }
+  }
+}

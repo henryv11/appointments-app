@@ -58,7 +58,6 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
 
     drain(ws) {
       app.log.info(`backpressure drain on websocket "${ws.id}" bufferedAmount: "${ws.getBufferedAmount()}"`);
-      // handle backpressure or sth
     },
 
     ping(ws) {

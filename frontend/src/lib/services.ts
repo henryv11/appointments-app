@@ -8,12 +8,7 @@ export const getServiceWebSocketUrl = (...path: string[]) => getServiceUrl(...pa
 
 export function makeServiceFetch(...basePath: string[]) {
   const baseUrl = getServiceUrl(...basePath);
-  return function <T>({
-    path,
-    token,
-    headers = {},
-    ...opts
-  }: FetchOptions & { path?: string | string[]; token?: string }) {
+  return <T>({ path, token, headers = {}, ...opts }: FetchOptions & { path?: string | string[]; token?: string }) => {
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return fetch<T>({ url: path ? join(baseUrl, ...new Array<string>().concat(path)) : baseUrl, headers, ...opts });
   };
