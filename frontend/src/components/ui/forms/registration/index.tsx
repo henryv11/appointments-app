@@ -1,73 +1,67 @@
-import { useMultiStepForm } from '@/lib/hooks/multi-step-form';
+import { createReducerContext } from '@/lib/create-reducer-context';
 import buttonStyles from '@/styles/button.scss';
 import inputStyles from '@/styles/input.scss';
 import { UserRegistration } from '@/types/user';
 import clsx from 'clsx';
 import React from 'react';
-import { UseFormMethods } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import styles from './styles.scss';
 
-export default function RegistrationForm({ onSubmit = () => void 0 }: RegistrationFormProps) {
-  const {
-    activeStep,
-    previousStep,
-    nextStep,
-    isPreviousButtonVisible,
-    isNextButtonDisabled,
-    isNextButtonVisible,
-    isSubmitButtonVisible,
-    ...form
-  } = useMultiStepForm<RegistrationForm>({ steps: 3 });
+const [RegistrationFormProvider, RegistrationFormConsumer, useRegistrationFormContext] = createReducerContext<
+  RegistrationFormContext,
+  RegistrationFormAction
+>(
+  { currentStep: 0, onSubmit: () => void 0, formState: {} },
+  (state, action) => {
+    switch (action.type) {
+      case 'SUBMIT_PART_ONE':
+      case 'SUBMIT_PART_TWO':
+        return { ...state, currentStep: state.currentStep + 1, formState: { ...state.formState, ...action.payload } };
+      case 'SUBMIT_PART_THREE':
+        const { passwordConfirm, ...formState } = { ...state.formState, ...action.payload };
+        state.onSubmit(formState as Omit<RegistrationFormState, 'passwordConfirm'>);
+        return { ...state, formState: { passwordConfirm, ...formState } };
+      case 'PREVIOUS_STEP':
+        return { ...state, currentStep: state.currentStep - 1, formState: { ...state.formState, ...action.payload } };
+    }
+  },
+  'registration form',
+);
 
+export default function RegistrationForm({ onSubmit = () => void 0 }: RegistrationFormProps) {
   return (
-    <form className={styles.root} noValidate autoComplete='off' onSubmit={form.handleSubmit(data => onSubmit(data))}>
-      <div>
-        <h4>{['Personal information', 'Account information', 'Almost there...'][activeStep]}</h4>
-        <hr />
-        <h6>
-          {
-            [
-              'Please tell us about yourself',
-              'Please choose your username and password',
-              'We need to know this shit man',
-            ][activeStep]
-          }
-        </h6>
-      </div>
-      {activeStep === 0 && <RegistrationFormPartOne form={form} />}
-      {activeStep === 1 && <RegistrationFormPartTwo form={form} />}
-      {activeStep === 2 && <RegistrationFormPartThree form={form} />}
-      <div>
-        {isPreviousButtonVisible && (
-          <button onClick={previousStep} className={clsx(buttonStyles.button, buttonStyles.primary)}>
-            Previous
-          </button>
-        )}
-        {isNextButtonVisible && (
-          <button
-            disabled={isNextButtonDisabled}
-            onClick={nextStep}
-            className={clsx(buttonStyles.button, buttonStyles.primary)}
-          >
-            Next
-          </button>
-        )}
-        {isSubmitButtonVisible && (
-          <button
-            disabled={isNextButtonDisabled}
-            color='primary'
-            type='submit'
-            className={clsx(buttonStyles.button, buttonStyles.primary)}
-          >
-            Sign Up
-          </button>
-        )}
-      </div>
-    </form>
+    <RegistrationFormProvider onSubmit={onSubmit}>
+      <form className={styles.root} noValidate autoComplete='off'>
+        <RegistrationFormConsumer>
+          {([{ currentStep }]) => (
+            <>
+              <div>
+                <h4>{['Personal information', 'Account information', 'Almost there...'][currentStep]}</h4>
+                <hr />
+                <h6>
+                  {
+                    [
+                      'Please tell us about yourself',
+                      'Please choose your username and password',
+                      'We need to know this shit man',
+                    ][currentStep]
+                  }
+                </h6>
+              </div>
+              {currentStep === 0 && <RegistrationFormPartOne />}
+              {currentStep === 1 && <RegistrationFormPartTwo />}
+              {currentStep === 2 && <RegistrationFormPartThree />}
+            </>
+          )}
+        </RegistrationFormConsumer>
+      </form>
+    </RegistrationFormProvider>
   );
 }
 
-function RegistrationFormPartOne({ form: { register, errors } }: { form: UseFormMethods<RegistrationForm> }) {
+function RegistrationFormPartOne() {
+  const [{ formState }, dispatch] = useRegistrationFormContext();
+  const { register, errors, handleSubmit } = useForm<RegistrationFormPartOneState>({ defaultValues: formState });
   return (
     <>
       <div>
@@ -75,26 +69,28 @@ function RegistrationFormPartOne({ form: { register, errors } }: { form: UseForm
           className={inputStyles.input}
           id='first-name'
           name='firstName'
+          placeholder=''
           required
           ref={register({ required: 'Please enter your first name' })}
         />
         <label htmlFor='first-name'>First name</label>
-        {errors.firstName && <span>{errors.firstName.message}</span>}
+        {errors.firstName && <span role='alert'>{errors.firstName.message}</span>}
         <input
           className={inputStyles.input}
           id='last-name'
           name='lastName'
+          placeholder=''
           required
           ref={register({ required: 'Please enter your last name' })}
         />
         <label htmlFor='last-name'>Last name</label>
-        {errors.lastName && <span>{errors.lastName.message}</span>}
+        {errors.lastName && <span role='alert'>{errors.lastName.message}</span>}
       </div>
-
       <input
         className={inputStyles.input}
         id='date-of-birth'
         name='dateOfBirth'
+        placeholder=''
         required
         type='date'
         ref={register({
@@ -109,17 +105,30 @@ function RegistrationFormPartOne({ form: { register, errors } }: { form: UseForm
         })}
       />
       <label htmlFor='date-of-birth'>Date of birth</label>
-      {errors.dateOfBirth && <span>{errors.dateOfBirth.message}</span>}
+      {errors.dateOfBirth && <span role='alert'>{errors.dateOfBirth.message}</span>}
+      <div className={styles.buttonContainer}>
+        <button
+          className={clsx(buttonStyles.button, buttonStyles.primary)}
+          onClick={handleSubmit(payload => dispatch({ type: 'SUBMIT_PART_ONE', payload }))}
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 }
 
-function RegistrationFormPartTwo({ form: { errors, register } }: { form: UseFormMethods<RegistrationForm> }) {
+function RegistrationFormPartTwo() {
+  const [{ formState }, dispatch] = useRegistrationFormContext();
+  const { register, errors, handleSubmit, getValues } = useForm<RegistrationFormPartTwoState>({
+    defaultValues: formState,
+  });
   return (
     <>
       <input
         id='username'
         name='username'
+        placeholder=''
         className={inputStyles.input}
         required
         ref={register({
@@ -131,11 +140,12 @@ function RegistrationFormPartTwo({ form: { errors, register } }: { form: UseForm
         })}
       />
       <label htmlFor='username'>Username</label>
-      {errors.username && <span>{errors.username.message}</span>}
+      {errors.username && <span role='alert'>{errors.username.message}</span>}
       <input
         id='password'
         name='password'
         type='password'
+        placeholder=''
         className={inputStyles.input}
         required
         ref={register({
@@ -151,12 +161,47 @@ function RegistrationFormPartTwo({ form: { errors, register } }: { form: UseForm
         })}
       />
       <label htmlFor='password'>Password</label>
-      {errors.password && <span>{errors.password.message}</span>}
+      {errors.password && <span role='alert'>{errors.password.message}</span>}
+      <input
+        id='password-confirm'
+        name='passwordConfirm'
+        type='password'
+        placeholder=''
+        className={inputStyles.input}
+        required
+        ref={register({
+          required: 'Please confirm your password',
+          validate(value) {
+            if (value !== getValues('password')) return 'Password is not matching';
+            return;
+          },
+        })}
+      />
+      <label htmlFor='password-confirm'>Confirm password</label>
+      {errors.passwordConfirm && <span role='alert'>{errors.passwordConfirm.message}</span>}
+      <div className={styles.buttonContainer}>
+        <button
+          className={clsx(buttonStyles.button, buttonStyles.primary)}
+          onClick={() => dispatch({ type: 'PREVIOUS_STEP', payload: getValues() })}
+        >
+          Previous
+        </button>
+        <button
+          className={clsx(buttonStyles.button, buttonStyles.primary)}
+          onClick={handleSubmit(payload => dispatch({ type: 'SUBMIT_PART_TWO', payload }))}
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 }
 
-function RegistrationFormPartThree({ form: { errors, register } }: { form: UseFormMethods<RegistrationForm> }) {
+function RegistrationFormPartThree() {
+  const [{ formState }, dispatch] = useRegistrationFormContext();
+  const { register, errors, handleSubmit, getValues } = useForm<RegistrationFormPartThreeState>({
+    defaultValues: formState,
+  });
   return (
     <>
       <input
@@ -164,17 +209,19 @@ function RegistrationFormPartThree({ form: { errors, register } }: { form: UseFo
         name='email'
         type='email'
         className={inputStyles.input}
+        placeholder=''
         required
         ref={register({
           required: 'Please enter your email',
         })}
       />
       <label htmlFor='email'>Email</label>
-      {errors.email && <span>{errors.email.message}</span>}
+      {errors.email && <span role='alert'>{errors.email.message}</span>}
       <input
         id='has-accepted-terms-and-conditions'
         name='hasAcceptedTermsAndConditions'
         className={inputStyles.input}
+        placeholder=''
         type='checkbox'
         required
         ref={register({
@@ -182,13 +229,39 @@ function RegistrationFormPartThree({ form: { errors, register } }: { form: UseFo
         })}
       />
       <label htmlFor='has-accepted-terms-and-conditions'>Accept terms and conditions</label>
-      {errors.hasAcceptedTermsAndConditions && <span>{errors.hasAcceptedTermsAndConditions.message}</span>}
+      {errors.hasAcceptedTermsAndConditions && <span role='alert'>{errors.hasAcceptedTermsAndConditions.message}</span>}
+      <div className={styles.buttonContainer}>
+        <button
+          className={clsx(buttonStyles.button, buttonStyles.primary)}
+          onClick={() => dispatch({ type: 'PREVIOUS_STEP', payload: getValues() })}
+        >
+          Previous
+        </button>
+        <button
+          className={clsx(buttonStyles.button, buttonStyles.primary)}
+          onClick={handleSubmit(payload => dispatch({ type: 'SUBMIT_PART_THREE', payload }))}
+        >
+          Sign up
+        </button>
+      </div>
     </>
   );
 }
 
 interface RegistrationFormProps {
-  onSubmit?: (data: RegistrationForm) => void;
+  onSubmit?: (data: Omit<RegistrationFormState, 'passwordConfirm'>) => void;
 }
-
-type RegistrationForm = UserRegistration;
+interface RegistrationFormContext {
+  currentStep: number;
+  onSubmit: NonNullable<RegistrationFormProps['onSubmit']>;
+  formState: Partial<RegistrationFormState>;
+}
+type RegistrationFormState = UserRegistration & { passwordConfirm: string };
+type RegistrationFormPartOneState = Pick<RegistrationFormState, 'firstName' | 'lastName' | 'dateOfBirth'>;
+type RegistrationFormPartTwoState = Pick<RegistrationFormState, 'username' | 'password' | 'passwordConfirm'>;
+type RegistrationFormPartThreeState = Pick<RegistrationFormState, 'email' | 'hasAcceptedTermsAndConditions'>;
+type RegistrationFormAction =
+  | { type: 'SUBMIT_PART_ONE'; payload: RegistrationFormPartOneState }
+  | { type: 'SUBMIT_PART_TWO'; payload: RegistrationFormPartTwoState }
+  | { type: 'SUBMIT_PART_THREE'; payload: RegistrationFormPartThreeState }
+  | { type: 'PREVIOUS_STEP'; payload: Partial<RegistrationFormState> };

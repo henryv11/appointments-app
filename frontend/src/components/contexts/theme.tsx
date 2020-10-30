@@ -1,9 +1,9 @@
-import MakeContext from '@/components/higher-order/make-context';
+import { createReducerContext } from '@/lib/create-reducer-context';
 import { setTheme, Theme } from '@/lib/theme';
 
 setTheme('dark');
 
-const [ThemeContextProvider, useThemeContext] = MakeContext<ThemeState, Theme>(
+const [ThemeContextProvider, ThemeContextConsumer, useThemeContext] = createReducerContext<ThemeState, Theme>(
   { theme: 'dark' },
   (_, theme: Theme) => (setTheme(theme), { theme }),
 );
@@ -12,4 +12,4 @@ interface ThemeState {
   theme: Theme;
 }
 
-export { ThemeContextProvider, useThemeContext };
+export { ThemeContextProvider, ThemeContextConsumer, useThemeContext };

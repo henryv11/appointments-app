@@ -1,7 +1,7 @@
-import MakeContext from '@/components/higher-order/make-context';
+import { createReducerContext } from '@/lib/create-reducer-context';
 import { User } from '@/types/user';
 
-const [AuthContextProvider, useAuthContext] = MakeContext<AuthState, AuthAction>(
+const [AuthContextProvider, AuthContextConsumer, useAuthContext] = createReducerContext<AuthState, AuthAction>(
   { isAuthenticated: false },
   (state, action) => {
     switch (action.type) {
@@ -33,4 +33,4 @@ type AuthAction =
   | { type: 'LOG_IN'; payload: Pick<LoggedInState, 'token' | 'user'> & { refreshToken: string } }
   | { type: 'LOG_OUT' };
 
-export { AuthContextProvider, useAuthContext };
+export { AuthContextProvider, AuthContextConsumer, useAuthContext };

@@ -21,7 +21,7 @@ export default function LoginForm({ onSubmit = () => void 0 }: LoginFormProps) {
         })}
       />
       <label htmlFor='username'>username</label>
-      {errors.username && <span>{errors.username.message}</span>}
+      {errors.username && <span role='alert'>{errors.username.message}</span>}
       <input
         className={inputStyles.input}
         id='password'
@@ -33,7 +33,7 @@ export default function LoginForm({ onSubmit = () => void 0 }: LoginFormProps) {
         })}
       />
       <label htmlFor='password'>password</label>
-      {errors.password && <span>{errors.password.message}</span>}
+      {errors.password && <span role='alert'>{errors.password.message}</span>}
       <button className={clsx(buttonStyles.button, buttonStyles.primary)} type='submit'>
         Log In
       </button>

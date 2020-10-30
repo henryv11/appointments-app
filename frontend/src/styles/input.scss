@@ -28,7 +28,8 @@ $section-height: 25px;
 
   &[type='checkbox'] + label,
   &:focus + label,
-  &:not(:invalid) + label {
+  &:not(:invalid) + label,
+  &:not(:placeholder-shown) + label {
     top: -$section-height * 2;
     color: inherit;
     cursor: inherit;
@@ -54,7 +55,8 @@ $section-height: 25px;
     user-select: none;
   }
 
-  & + label + span {
+  & + span[role='alert'],
+  & + label + span[role='alert'] {
     color: var(--color-danger-hex);
   }
 }

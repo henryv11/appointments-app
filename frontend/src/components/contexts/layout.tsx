@@ -1,6 +1,6 @@
-import MakeContext from '@/components/higher-order/make-context';
+import { createReducerContext } from '@/lib/create-reducer-context';
 
-const [LayoutContextProvider, useLayoutContext] = MakeContext(
+const [LayoutContextProvider, LayoutContextConsumer, useLayoutContext] = createReducerContext(
   { isSidebarOpen: true },
   (state: LayoutState, action: LayoutAction) => {
     switch (action.type) {
@@ -19,4 +19,4 @@ interface LayoutState {
 
 type LayoutAction = { type: 'OPEN_SIDEBAR' | 'CLOSE_SIDEBAR' };
 
-export { LayoutContextProvider, useLayoutContext };
+export { LayoutContextProvider, LayoutContextConsumer, useLayoutContext };
