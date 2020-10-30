@@ -9,10 +9,6 @@ $section-height: 25px;
   box-shadow: inset 0 1px 2px rgba(var(--color-dark-rgb), 0.5), 0 -1px 1px var(--color-light-hex),
     0 1px 0 var(--color-light-hex);
 
-  &:first-of-type {
-    margin-top: $section-height;
-  }
-
   &:required + label:after {
     margin-left: 2px;
     content: '*';
@@ -31,17 +27,18 @@ $section-height: 25px;
   }
 
   &[type='checkbox'] + label,
-  &[type='date'] + label,
   &:focus + label,
   &:not(:invalid) + label {
     top: -$section-height * 2;
     color: inherit;
     cursor: inherit;
+    background-color: transparent;
   }
 
   & + label {
     color: rgba(var(--color-dark-rgb), 0.5);
     cursor: pointer;
+    background-color: white;
   }
 
   & + label,
