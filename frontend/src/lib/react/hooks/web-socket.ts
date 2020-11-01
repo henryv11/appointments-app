@@ -1,12 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export function useWebSocket({
-  url,
-  onmessage = null,
-  onclose = null,
-  onerror = null,
-  onopen = null,
-}: UseWebSocketOptions) {
+export function useWebSocket({ url, onmessage, onclose, onerror, onopen }: UseWebSocketOptions) {
   const wsRef = useRef<WebSocket>();
   const onmessageRef = useRef(onmessage);
   const oncloseRef = useRef(onclose);
@@ -55,7 +49,6 @@ export function useWebSocket({
   };
 }
 
-interface UseWebSocketOptions
-  extends Partial<Required<Pick<WebSocket, 'onmessage' | 'onerror' | 'onclose' | 'onopen'>>> {
+interface UseWebSocketOptions extends Partial<Pick<WebSocket, 'onmessage' | 'onerror' | 'onclose' | 'onopen'>> {
   url?: string;
 }

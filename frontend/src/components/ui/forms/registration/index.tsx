@@ -1,9 +1,9 @@
-import { createReducerContext } from '@/lib/create-reducer-context';
+import { createReducerContext } from '@/lib/react/create-reducer-context';
 import buttonStyles from '@/styles/button.scss';
 import inputStyles from '@/styles/input.scss';
 import { UserRegistration } from '@/types/user';
 import clsx from 'clsx';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styles from './styles.scss';
 
@@ -35,7 +35,7 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
         <RegistrationFormConsumer>
           {([{ currentStep }]) => (
             <>
-              <div>
+              <div className={styles.header}>
                 <h4>{['Personal information', 'Account information', 'Almost there...'][currentStep]}</h4>
                 <hr />
                 <h6>
@@ -61,7 +61,14 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
 
 function RegistrationFormPartOne() {
   const [{ formState }, dispatch] = useRegistrationFormContext();
-  const { register, errors, handleSubmit } = useForm<RegistrationFormPartOneState>({ defaultValues: formState });
+  const { register, errors, handleSubmit } = useForm<RegistrationFormPartOneState>({
+    defaultValues: formState,
+    mode: 'onChange',
+  });
+  const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
+  useEffect(() => {
+    setIsNextButtonDisabled(!!Object.keys(errors).length);
+  });
   return (
     <>
       <div>
@@ -97,7 +104,7 @@ function RegistrationFormPartOne() {
           required: 'Please enter your date of birth',
           validate(value) {
             const age = Math.floor((new Date().getTime() - new Date(value).getTime()) / 3.154e10);
-            if (isNaN(age) || age <= 0) return 'Please enter a correct date';
+            if (isNaN(age) || age <= 0) return 'Please enter a correct date of birth';
             if (age <= 12) return 'You must be at least 12 years old to register';
             if (age >= 120) return "You can't possibly be older than 120";
             return;
@@ -106,10 +113,14 @@ function RegistrationFormPartOne() {
       />
       <label htmlFor='date-of-birth'>Date of birth</label>
       {errors.dateOfBirth && <span role='alert'>{errors.dateOfBirth.message}</span>}
-      <div className={styles.buttonContainer}>
+      <div className={styles.controls}>
         <button
           className={clsx(buttonStyles.button, buttonStyles.primary)}
-          onClick={handleSubmit(payload => dispatch({ type: 'SUBMIT_PART_ONE', payload }))}
+          disabled={isNextButtonDisabled}
+          onClick={handleSubmit(
+            payload => dispatch({ type: 'SUBMIT_PART_ONE', payload }),
+            () => setIsNextButtonDisabled(true),
+          )}
         >
           Next
         </button>
@@ -122,6 +133,11 @@ function RegistrationFormPartTwo() {
   const [{ formState }, dispatch] = useRegistrationFormContext();
   const { register, errors, handleSubmit, getValues } = useForm<RegistrationFormPartTwoState>({
     defaultValues: formState,
+    mode: 'onChange',
+  });
+  const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
+  useEffect(() => {
+    setIsNextButtonDisabled(!!Object.keys(errors).length);
   });
   return (
     <>
@@ -179,7 +195,7 @@ function RegistrationFormPartTwo() {
       />
       <label htmlFor='password-confirm'>Confirm password</label>
       {errors.passwordConfirm && <span role='alert'>{errors.passwordConfirm.message}</span>}
-      <div className={styles.buttonContainer}>
+      <div className={styles.controls}>
         <button
           className={clsx(buttonStyles.button, buttonStyles.primary)}
           onClick={() => dispatch({ type: 'PREVIOUS_STEP', payload: getValues() })}
@@ -188,7 +204,11 @@ function RegistrationFormPartTwo() {
         </button>
         <button
           className={clsx(buttonStyles.button, buttonStyles.primary)}
-          onClick={handleSubmit(payload => dispatch({ type: 'SUBMIT_PART_TWO', payload }))}
+          disabled={isNextButtonDisabled}
+          onClick={handleSubmit(
+            payload => dispatch({ type: 'SUBMIT_PART_TWO', payload }),
+            () => setIsNextButtonDisabled(true),
+          )}
         >
           Next
         </button>
@@ -201,6 +221,11 @@ function RegistrationFormPartThree() {
   const [{ formState }, dispatch] = useRegistrationFormContext();
   const { register, errors, handleSubmit, getValues } = useForm<RegistrationFormPartThreeState>({
     defaultValues: formState,
+    mode: 'onChange',
+  });
+  const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
+  useEffect(() => {
+    setIsNextButtonDisabled(!!Object.keys(errors).length);
   });
   return (
     <>
@@ -230,7 +255,7 @@ function RegistrationFormPartThree() {
       />
       <label htmlFor='has-accepted-terms-and-conditions'>Accept terms and conditions</label>
       {errors.hasAcceptedTermsAndConditions && <span role='alert'>{errors.hasAcceptedTermsAndConditions.message}</span>}
-      <div className={styles.buttonContainer}>
+      <div className={styles.controls}>
         <button
           className={clsx(buttonStyles.button, buttonStyles.primary)}
           onClick={() => dispatch({ type: 'PREVIOUS_STEP', payload: getValues() })}
@@ -239,7 +264,12 @@ function RegistrationFormPartThree() {
         </button>
         <button
           className={clsx(buttonStyles.button, buttonStyles.primary)}
-          onClick={handleSubmit(payload => dispatch({ type: 'SUBMIT_PART_THREE', payload }))}
+          disabled={isNextButtonDisabled}
+          type='submit'
+          onClick={handleSubmit(
+            payload => dispatch({ type: 'SUBMIT_PART_THREE', payload }),
+            () => setIsNextButtonDisabled(true),
+          )}
         >
           Sign up
         </button>

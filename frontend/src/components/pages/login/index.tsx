@@ -2,9 +2,10 @@ import { useAuthContext } from '@/components/contexts/auth';
 import SimpleLayout from '@/components/layouts/simple';
 import LoginForm from '@/components/ui/forms/login';
 import RegistrationForm from '@/components/ui/forms/registration';
-import { useTimeout } from '@/lib/hooks/timeout';
+import { useTimeout } from '@/lib/react/hooks/timeout';
 import { loginUser, registerUser } from '@/services/auth';
 import React, { useRef, useState } from 'react';
+import { Redirect } from 'react-router-dom';
 import styles from './styles.scss';
 
 export default function LoginPage() {
@@ -15,9 +16,9 @@ export default function LoginPage() {
 
   useTimeout(() => setError(''), timeoutRef.current);
 
-  // if (isAuthenticated) {
-  //   return <Redirect to='/' />;
-  // }
+  if (isAuthenticated) {
+    return <Redirect to='/' />;
+  }
 
   function onError(message: string) {
     setError(message);

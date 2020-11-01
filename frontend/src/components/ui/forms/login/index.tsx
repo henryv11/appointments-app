@@ -15,6 +15,7 @@ export default function LoginForm({ onSubmit = () => void 0 }: LoginFormProps) {
         className={inputStyles.input}
         id='username'
         name='username'
+        placeholder=''
         required
         ref={register({
           required: 'Username is required',
@@ -27,6 +28,7 @@ export default function LoginForm({ onSubmit = () => void 0 }: LoginFormProps) {
         id='password'
         name='password'
         type='password'
+        placeholder=''
         required
         ref={register({
           required: 'Password is required',

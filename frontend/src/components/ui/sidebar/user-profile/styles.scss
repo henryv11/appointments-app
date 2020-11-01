@@ -1,0 +1,36 @@
+.root {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0 10px;
+  user-select: none;
+  color: rgba(var(--color-dark-rgb), 0.9);
+  font-weight: 300;
+
+  .profileImage {
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid rgba(var(--color-dark-rgb), 0.3);
+    box-shadow: 0px 0px 2px 1px rgba(var(--color-dark-rgb), 0.4);
+
+    img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &.open {
+    .profileImage {
+      width: 64px;
+      height: 64px;
+    }
+  }
+
+  &.closed {
+    .profileImage {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}

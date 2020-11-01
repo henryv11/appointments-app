@@ -8,7 +8,7 @@ export function createReducerContext<T, D>(
   const context = createContext([
     initialState,
     () => {
-      throw new Error(`you need to provide for "${displayName || 'unknown'}" context first in order to dispatch`);
+      throw new Error(`you need to provide for reducer context "${displayName || 'unknown'}" before you can dispatch`);
     },
   ] as [T, Dispatch<D>]);
   if (displayName) context.displayName = displayName;

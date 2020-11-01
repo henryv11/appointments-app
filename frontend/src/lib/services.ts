@@ -4,7 +4,8 @@ import { join } from './path';
 
 export const getServiceUrl = (...path: string[]) => join(SERVER_BASE_URL, ...path);
 
-export const getServiceWebSocketUrl = (...path: string[]) => getServiceUrl(...path).replace(/^(http:\/\/)/, 'ws://');
+export const getServiceWebSocketUrl = (...path: string[]) =>
+  getServiceUrl('ws', ...path).replace(/^(http:\/\/)/, 'ws://');
 
 export function makeServiceFetch(...basePath: string[]) {
   const baseUrl = getServiceUrl(...basePath);

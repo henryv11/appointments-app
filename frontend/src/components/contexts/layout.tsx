@@ -1,6 +1,6 @@
-import { createReducerContext } from '@/lib/create-reducer-context';
+import { createReducerContext } from '@/lib/react/create-reducer-context';
 
-const [LayoutContextProvider, LayoutContextConsumer, useLayoutContext] = createReducerContext(
+export const [LayoutContextProvider, LayoutContextConsumer, useLayoutContext] = createReducerContext(
   { isSidebarOpen: true },
   (state: LayoutState, action: LayoutAction) => {
     switch (action.type) {
@@ -9,6 +9,9 @@ const [LayoutContextProvider, LayoutContextConsumer, useLayoutContext] = createR
 
       case 'CLOSE_SIDEBAR':
         return { ...state, isSidebarOpen: false };
+
+      case 'TOGGLE_SIDEBAR':
+        return { ...state, isSidebarOpen: !state.isSidebarOpen };
     }
   },
 );
@@ -17,6 +20,4 @@ interface LayoutState {
   isSidebarOpen: boolean;
 }
 
-type LayoutAction = { type: 'OPEN_SIDEBAR' | 'CLOSE_SIDEBAR' };
-
-export { LayoutContextProvider, LayoutContextConsumer, useLayoutContext };
+type LayoutAction = { type: 'OPEN_SIDEBAR' | 'CLOSE_SIDEBAR' | 'TOGGLE_SIDEBAR' };

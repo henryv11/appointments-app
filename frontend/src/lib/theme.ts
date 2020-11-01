@@ -2,8 +2,8 @@ import Color from 'color';
 
 const getColorContrast = (color: Color, ratio = 0.8) => (color.isDark() ? color.lighten(ratio) : color.darken(ratio));
 
-const generateCssThemeVariables = (theme: Record<string, Color>) =>
-  Object.entries(theme).reduce<Record<string, string>>((acc, [key, color]) => {
+const generateCssColorVariables = (colors: Record<string, Color>) =>
+  Object.entries(colors).reduce<Record<string, string>>((acc, [key, color]) => {
     acc[`--color-${key}-hex`] = color.hex();
     acc[`--color-${key}-rgb`] = color.rgb().array().join(', ');
     acc[`--color-${key}-contrast-hex`] = getColorContrast(color).hex();
@@ -21,7 +21,7 @@ function generateCssBreakpointVariables(breakPoints: Record<string, number>) {
 }
 
 const themeColors = {
-  dark: generateCssThemeVariables({
+  dark: generateCssColorVariables({
     primary: Color([56, 128, 255]),
     secondary: Color([61, 194, 255]),
     tertiary: Color([82, 96, 255]),

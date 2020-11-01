@@ -29,11 +29,12 @@ $section-height: 25px;
   &[type='checkbox'] + label,
   &:focus + label,
   &:not(:invalid) + label,
-  &:not(:placeholder-shown) + label {
-    top: -$section-height * 2;
+  &:not(:placeholder-shown):not([type='date']) + label {
+    top: -$section-height * 1.8;
     color: inherit;
     cursor: inherit;
     background-color: transparent;
+    font-size: 0.8em;
   }
 
   & + label {
@@ -51,12 +52,14 @@ $section-height: 25px;
   }
 
   & + label,
-  & + span {
+  & + span,
+  & + label + span {
     user-select: none;
   }
 
   & + span[role='alert'],
   & + label + span[role='alert'] {
     color: var(--color-danger-hex);
+    font-size: 0.8em;
   }
 }
