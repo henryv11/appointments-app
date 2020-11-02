@@ -25,6 +25,7 @@
         "jsonwebtoken": "^8.5.1",
         "node-pg-migrate": "^5.8.0",
         "pg": "^8.3.3",
+        "pg-native": "^3.0.0",
         "pino": "^6.6.1",
         "pino-pretty": "^4.2.1",
         "rand-token": "^1.0.1",

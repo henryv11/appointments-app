@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import migrate, { RunnerOption } from 'node-pg-migrate';
-import { Client, ClientConfig, Pool, QueryResult } from 'pg';
+import { ClientConfig, native as pg, Pool, QueryResult } from 'pg';
 
 const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
   app,
@@ -9,7 +9,8 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
 ) {
   await createDatabase(connectionOptions, app.log);
   await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
-  const pool = new Pool(connectionOptions);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const pool = new pg!.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
   const database: Database = {
     query: pool.query.bind(pool),
@@ -33,7 +34,8 @@ async function createDatabase(
   logger: FastifyInstance['log'],
 ) {
   logger.info(`attempting to create database "${database}"`);
-  const client = new Client(connectionOptions);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const client = new pg!.Client(connectionOptions);
   try {
     await client.connect();
     const {
@@ -66,7 +68,8 @@ async function runMigrations(
   logger: FastifyInstance['log'],
 ) {
   logger.info('attempting to run migrations');
-  const client = new Client(connectionOptions);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const client = new pg!.Client(connectionOptions);
   try {
     await client.connect();
     await migrate({
