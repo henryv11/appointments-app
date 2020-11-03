@@ -1,20 +1,21 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
+import { parse } from 'querystring';
 import { uid } from 'rand-token';
 import { WebSocket } from '../lib';
 
-const decoder = new TextDecoder('utf-8');
-function parseMessage(message: ArrayBuffer) {
-  const decoded = decoder.decode(message);
-  if (decoded[0] === '{')
-    try {
-      return { message: undefined, payload: JSON.parse(decoded) };
-    } catch {}
-  return { message: decoded, payload: undefined };
-}
-
 const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done) {
   const connections: Record<string, WebSocket> = {};
+
+  const decoder = new TextDecoder('utf-8');
+  function parseMessage(message: ArrayBuffer) {
+    const decoded = decoder.decode(message);
+    if (decoded[0] === '{')
+      try {
+        return { message: undefined, payload: JSON.parse(decoded) };
+      } catch {}
+    return { message: decoded, payload: undefined };
+  }
 
   app.ws('/*', {
     compression: app.wsCompression['32kb'],
@@ -23,9 +24,13 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
     idleTimeout: 30,
 
     upgrade(res, req, context) {
+      const url = '/' + req.getUrl().replace(/(^\/+|\/+$)/, '');
+      const query = parse(req.getQuery());
+
       res.upgrade(
         {
-          url: req.getUrl(),
+          url,
+          query,
           id: uid(16),
         },
         req.getHeader('sec-websocket-key'),

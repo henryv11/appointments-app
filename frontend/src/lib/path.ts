@@ -1,2 +1,4 @@
-export const join = (...segments: string[]) =>
-    segments.map(segment => segment.replace(/(^\/+|\/+$)/g, ''), '').join('/');
+export const join = (...segments: (string | false | undefined | null)[]) =>
+  segments
+    .reduce<string[]>((acc, segment) => (segment && acc.push(segment.replace(/(^\/+|\/+$)/g, '')), acc), [])
+    .join('/');

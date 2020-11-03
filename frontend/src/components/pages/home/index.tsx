@@ -1,3 +1,4 @@
+import { useAuthContext } from '@/components/contexts/auth';
 import RequireAuthentication from '@/components/higher-order/require-authentication';
 import MainLayout from '@/components/layouts/main';
 import { useInterval } from '@/lib/react/hooks/interval';
@@ -6,8 +7,12 @@ import { getServiceWebSocketUrl } from '@/lib/services';
 import React from 'react';
 
 export default function HomePage() {
+  const [authState] = useAuthContext();
   const ws = useWebSocket({
-    url: getServiceWebSocketUrl(),
+    url: getServiceWebSocketUrl(
+      'hello',
+      authState.isAuthenticated && '?' + new URLSearchParams({ user_id: String(authState.user.id) }).toString(),
+    ),
     onmessage: ev => console.log('on websocket message', ev),
     onerror: ev => console.log('on websocket error', ev),
     onopen: ev => (console.log('websocket open', ev), ws.send('hello')),
