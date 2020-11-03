@@ -38,8 +38,8 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     async (req, res) => {
       res.status(201);
       const user = await app.services.auth.registerUser(req.body);
-      const { session, token } = await app.services.auth.getSession({ tokenPayload: user });
-      return { user, token, refreshToken: session.token };
+      const session = await app.services.auth.getNewOrContinuedSession(user.id);
+      return { user, token: app.signToken({ userId: user.id, sessionId: session.id }), refreshToken: session.token };
     },
   );
 
@@ -64,8 +64,8 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     },
     async req => {
       const user = await app.services.auth.loginUser(req.body);
-      const { session, token } = await app.services.auth.getSession({ tokenPayload: user });
-      return { user, token, refreshToken: session.token };
+      const session = await app.services.auth.getNewOrContinuedSession(user.id);
+      return { user, token: app.signToken({ userId: user.id, sessionId: session.id }), refreshToken: session.token };
     },
   );
 
@@ -74,7 +74,7 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     { authorize: true, schema: { description: 'Logout user', summary: 'Logout', tags } },
     async req => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await app.services.auth.logoutUser({ userId: req.user!.id });
+      await app.services.auth.logoutUser({ userId: req.user!.userId });
       return '';
     },
   );
@@ -97,9 +97,9 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
       },
     },
     async req => {
-      const { session, token } = await app.services.auth.refreshSession(req.params.sessionToken);
+      const session = await app.services.auth.refreshSession(req.params.sessionToken);
       const user = await app.repositories.user.findById(session.userId);
-      return { user, token, refreshToken: session.token };
+      return { user, token: app.signToken({ sessionId: session.id, userId: user.id }), refreshToken: session.token };
     },
   );
 

@@ -3,26 +3,24 @@ import { FastifyInstance } from 'fastify';
 import { suid } from 'rand-token';
 import { User, UserAuth, UserLogin, UserRegistration } from '../types';
 
-export const authService = ({ errors, repositories, signToken, database, log }: FastifyInstance) => ({
-  async getSession({ tokenPayload }: { tokenPayload: Parameters<FastifyInstance['signToken']>[0] }) {
-    const token = signToken(tokenPayload);
-    const activeSession = await repositories.session.findActiveForUser(tokenPayload.id);
-    if (activeSession) return { session: activeSession, token };
+export const authService = ({ errors, repositories, database, log }: FastifyInstance) => ({
+  async getNewOrContinuedSession(userId: User['id']) {
+    const activeSession = await repositories.session.findActiveForUser(userId);
+    if (activeSession) return activeSession;
     const refreshToken = suid(64);
-    const session = await repositories.session.create({ userId: tokenPayload.id, token: refreshToken });
-    return { session, token };
+    return repositories.session.create({ userId, token: refreshToken });
   },
 
   async refreshSession(refreshToken: string) {
     const session = await repositories.session.findSessionByToken(refreshToken);
     if (!session) throw errors.badRequest();
     // TODO: session validation
-    if (session.endedAt) return this.getSession({ tokenPayload: { id: session.userId } });
+    if (session.endedAt) return this.getNewOrContinuedSession(session.userId);
     if (new Date().getTime() - new Date(session.startedAt).getTime() >= 8.64e7 * 14) {
       await repositories.session.update({ id: session.id, endedAt: new Date() });
-      return this.getSession({ tokenPayload: { id: session.userId } });
+      return this.getNewOrContinuedSession(session.userId);
     }
-    return { session, token: signToken({ id: session.userId }) };
+    return session;
   },
 
   async logoutUser({ userId }: { userId: User['id'] }) {

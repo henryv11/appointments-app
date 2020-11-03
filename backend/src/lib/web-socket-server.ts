@@ -5,14 +5,14 @@ import uws from 'uWebSockets.js';
 const compressionOptions = {
   disabled: uws.DISABLED,
   shared: uws.SHARED_COMPRESSOR,
-  '3kb': uws.DEDICATED_COMPRESSOR_3KB,
-  '4kb': uws.DEDICATED_COMPRESSOR_4KB,
-  '8kb': uws.DEDICATED_COMPRESSOR_8KB,
-  '16kb': uws.DEDICATED_COMPRESSOR_16KB,
-  '32kb': uws.DEDICATED_COMPRESSOR_32KB,
-  '64kb': uws.DEDICATED_COMPRESSOR_64KB,
-  '128kb': uws.DEDICATED_COMPRESSOR_128KB,
-  '256kb': uws.DEDICATED_COMPRESSOR_256KB,
+  dedicated3kb: uws.DEDICATED_COMPRESSOR_3KB,
+  dedicated4kb: uws.DEDICATED_COMPRESSOR_4KB,
+  dedicated8kb: uws.DEDICATED_COMPRESSOR_8KB,
+  dedicated16kb: uws.DEDICATED_COMPRESSOR_16KB,
+  dedicated32kb: uws.DEDICATED_COMPRESSOR_32KB,
+  dedicated64kb: uws.DEDICATED_COMPRESSOR_64KB,
+  dedicated128kb: uws.DEDICATED_COMPRESSOR_128KB,
+  dedicated256kb: uws.DEDICATED_COMPRESSOR_256KB,
 };
 
 const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function (app, { port, sslOptions }, done) {
@@ -25,8 +25,7 @@ const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function 
       })
     : uws.App();
   socketServer.any('/*', res => res.writeStatus('404 Not Found').end());
-  app.decorate('ws', socketServer.ws.bind(socketServer));
-  app.decorate('wsCompression', compressionOptions);
+  app.decorate('webSocket', { handler: socketServer.ws.bind(socketServer), compressionOptions });
   app.addHook('onReady', done => {
     socketServer.listen(port, token => {
       if (token) (listenSocket = token), app.log.info(`web socket server listening at port "${port}"`);
@@ -46,8 +45,7 @@ export const webSocketServer = fp(webSocketServerPlugin);
 
 declare module 'fastify' {
   interface FastifyInstance {
-    ws: uws.TemplatedApp['ws'];
-    wsCompression: typeof compressionOptions;
+    webSocket: { handler: uws.TemplatedApp['ws']; compressionOptions: typeof compressionOptions };
   }
 }
 

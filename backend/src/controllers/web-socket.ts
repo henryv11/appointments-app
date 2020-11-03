@@ -17,8 +17,8 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
     return { message: decoded, payload: undefined };
   }
 
-  app.ws('/*', {
-    compression: app.wsCompression['32kb'],
+  app.webSocket.handler('/*', {
+    compression: app.webSocket.compressionOptions.shared,
     maxPayloadLength: 16 * 1024 * 1024,
     maxBackpressure: 1024,
     idleTimeout: 30,
@@ -26,18 +26,23 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
     upgrade(res, req, context) {
       const url = '/' + req.getUrl().replace(/(^\/+|\/+$)/, '');
       const query = parse(req.getQuery());
-
-      res.upgrade(
-        {
-          url,
-          query,
-          id: uid(16),
-        },
-        req.getHeader('sec-websocket-key'),
-        req.getHeader('sec-websocket-protocol'),
-        req.getHeader('sec-websocket-extensions'),
-        context,
-      );
+      const { token } = query;
+      try {
+        res.upgrade(
+          {
+            url,
+            query,
+            user: app.decodeToken(token as string),
+            id: uid(16),
+          },
+          req.getHeader('sec-websocket-key'),
+          req.getHeader('sec-websocket-protocol'),
+          req.getHeader('sec-websocket-extensions'),
+          context,
+        );
+      } catch (error) {
+        return res.writeStatus('401 Unauthorized').end();
+      }
     },
 
     open(ws) {

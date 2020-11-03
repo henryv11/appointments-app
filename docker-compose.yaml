@@ -6,7 +6,7 @@ services:
         container_name: nginx_container
         restart: unless-stopped
         ports:
-            - 80:80
+            - 81:80
         depends_on:
             - backend
             - frontend
@@ -46,8 +46,9 @@ services:
             PGDATA: /data/postgres
         volumes:
             - postgres:/data/postgres
+        command: -p 5431
         ports:
-            - 5432:5432
+            - 5431:5432
         restart: unless-stopped
 
     pgadmin:

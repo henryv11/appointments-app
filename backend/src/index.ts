@@ -5,7 +5,7 @@ import helmet from 'fastify-helmet';
 import swagger from 'fastify-swagger';
 import pino from 'pino';
 import { controllers } from './controllers';
-import { database, errors, exitHandler, handleExit, healthCheck, jwtAuth, webSocketServer } from './lib';
+import { database, errors, exitHandler, grpcServer, handleExit, healthCheck, jwtAuth, webSocketServer } from './lib';
 import { repositories } from './repositories';
 import { services } from './services';
 
@@ -18,6 +18,7 @@ const app = Fastify({ logger: pino(get('logger')) })
   .register(jwtAuth, get('jwt'))
   .register(healthCheck)
   .register(webSocketServer, get('webSocket'))
+  .register(grpcServer, { host: '0.0.0.0', port: 30000 })
   .register(swagger, { ...get('docs') })
   .register(repositories)
   .register(services)

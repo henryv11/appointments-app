@@ -13,10 +13,13 @@ const jwtAuthPlugin: FastifyPluginCallback<{
   secret: string;
   algorithm: Algorithm;
 }> = function (app, { secret, algorithm }, done) {
-  const signToken: AuthInstance['signToken'] = ({ id }) => sign({ id }, secret, { algorithm });
-  const decodeToken: AuthInstance['decodeToken'] = function (token: string) {
+  const signToken: AuthInstance['signToken'] = ({ userId, sessionId }) =>
+    sign({ userId, sessionId }, secret, { algorithm });
+  const decodeToken: AuthInstance['decodeToken'] = function (token) {
+    if (!token) throw new Error('missing token');
     const decoded = verify(token, secret, { algorithms: [algorithm] });
-    if (!decoded || typeof decoded !== 'object') return;
+    if (!decoded || typeof decoded !== 'object' || !['userId', 'sessionId'].every(key => key in decoded))
+      throw new Error('invalid token payload');
     return decoded as Exclude<AuthRequest['user'], null>;
   };
   app.decorate('signToken', signToken);
@@ -25,11 +28,8 @@ const jwtAuthPlugin: FastifyPluginCallback<{
   app.decorateRequest('tokenError', '');
   app.addHook('onRequest', (req, _, done) => {
     const [, token] = req.headers['authorization']?.split(' ') || [];
-    if (!token) return (req.tokenError = 'missing token'), done();
     try {
-      const decodedToken = decodeToken(token);
-      if (decodedToken) req.user = decodedToken;
-      else req.tokenError = 'invalid token';
+      req.user = decodeToken(token);
       done();
     } catch (error) {
       req.tokenError = error.message;
@@ -70,7 +70,8 @@ declare module 'fastify' {
 }
 
 interface TokenPayload {
-  id: number;
+  userId: number;
+  sessionId: number;
 }
 
 interface AuthRequest {
@@ -84,5 +85,5 @@ interface AuthRouteOptions {
 
 interface AuthInstance {
   signToken: (payload: TokenPayload) => string;
-  decodeToken: (payload: string) => Exclude<AuthRequest['user'], null> | undefined;
+  decodeToken: (payload: string | undefined | null) => Exclude<AuthRequest['user'], null>;
 }
