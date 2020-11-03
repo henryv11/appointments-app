@@ -1,5 +1,6 @@
 {
-    "watch": ["src"],
-    "ext": "ts",
-    "exec": "ts-node ./src/index.ts"
+  "watch": ["src"],
+  "ext": "ts",
+  "exec": "ts-node ./src/index.ts",
+  "ignore": ["src/types/db-generated.d.ts"]
 }

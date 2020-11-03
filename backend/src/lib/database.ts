@@ -1,5 +1,7 @@
+import sqlts from '@rmp135/sql-ts';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
+import { writeFileSync } from 'fs';
 import migrate, { RunnerOption } from 'node-pg-migrate';
 import { ClientConfig, native as pg, Pool, QueryResult } from 'pg';
 
@@ -9,6 +11,7 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
 ) {
   await createDatabase(connectionOptions, app.log);
   await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
+  await generateTsTypes(connectionOptions, app.log);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const pool = new pg!.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
@@ -86,6 +89,24 @@ async function runMigrations(
   } finally {
     await client.end();
   }
+}
+
+async function generateTsTypes(opts: DatabaseConnectionOptions, logger: FastifyInstance['log']) {
+  // if (process.env.NODE_ENV !== 'development') return;
+  logger.info('generating TypeScript types from database');
+  const types = await sqlts.toTypeScript({
+    client: 'pg',
+    connection: opts,
+    columnNameCasing: 'camel',
+    tableNameCasing: 'pascal',
+    interfaceNameFormat: '${table}',
+    typeMap: {
+      Date: ['timestamptz'],
+      number: ['int8'],
+    },
+  });
+  writeFileSync('./src/types/db-generated.d.ts', types);
+  logger.info('TypeScript types generated');
 }
 
 export const database = fp(databasePlugin);
