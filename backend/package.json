@@ -6,8 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "dev": "nodemon",
-    "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts"
+    "dev": "nodemon"
   },
   "keywords": [],
   "author": "Henry Viirmäe",
@@ -25,11 +24,11 @@
     "fastify-swagger": "^3.3.0",
     "grpc": "^1.24.3",
     "jsonwebtoken": "^8.5.1",
-    "node-pg-migrate": "^5.8.0",
     "pg": "^8.3.3",
     "pg-native": "^3.0.0",
     "pino": "^6.6.1",
     "pino-pretty": "^4.2.1",
+    "postgres-migrations": "^5.1.0",
     "rand-token": "^1.0.1",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v18.8.0"
   },

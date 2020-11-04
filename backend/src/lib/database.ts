@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
-import migrate, { RunnerOption } from 'node-pg-migrate';
 import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
+import { createDb, migrate } from 'postgres-migrations';
 
 const pg = native
   ? (console.log('using pg-native bindings'), native)
@@ -9,10 +9,10 @@ const pg = native
 
 const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
   app,
-  { dir = './migrations', migrationsTable = 'pgmigrations', ...connectionOptions },
+  { migrationsDirectory = './migrations', ...connectionOptions },
 ) {
   await createDatabase(connectionOptions, app.log);
-  await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
+  await runMigrations({ ...connectionOptions, migrationsDirectory }, app.log);
   const pool = new pg.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
   const database: Database = {
@@ -40,23 +40,7 @@ async function createDatabase(
   const client = new pg.Client(connectionOptions);
   try {
     await client.connect();
-    const {
-      rows: [{ dbExists }],
-    } = await client.query<{ dbExists: boolean }>(
-      `
-      SELECT EXISTS (
-        SELECT
-          datname
-        FROM
-          pg_catalog.pg_database
-        WHERE
-          lower(datname) = lower($1)
-      ) AS "dbExists"
-      `,
-      [database],
-    );
-    if (dbExists) return logger.info(`database "${database}" already exists`);
-    await client.query(`CREATE DATABASE ${database}`);
+    await createDb(database, { client });
   } catch (error) {
     logger.error(error, `failed to create database "${database}"`);
     throw error;
@@ -66,21 +50,14 @@ async function createDatabase(
 }
 
 async function runMigrations(
-  { dir, migrationsTable, ...connectionOptions }: DatabaseConnectionOptions & MigrationsOptions,
+  { migrationsDirectory, ...connectionOptions }: DatabaseConnectionOptions & MigrationsOptions,
   logger: FastifyInstance['log'],
 ) {
   logger.info('attempting to run migrations');
   const client = new pg.Client(connectionOptions);
   try {
     await client.connect();
-    await migrate({
-      dir,
-      migrationsTable,
-      logger,
-      dbClient: client,
-      direction: 'up',
-      count: Infinity,
-    });
+    await migrate({ client }, migrationsDirectory);
   } catch (error) {
     logger.error(error, 'failed to run migrations');
     throw error;
@@ -99,7 +76,7 @@ declare module 'fastify' {
 
 type DatabaseConnectionOptions = Required<Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>>;
 
-type MigrationsOptions = Pick<RunnerOption, 'dir' | 'migrationsTable'>;
+type MigrationsOptions = { migrationsDirectory: string };
 
 interface Transaction {
   query: Pool['query'];
