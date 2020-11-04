@@ -1,4 +1,4 @@
-import { CreatePerson } from './person';
+import { CreatePerson, Person } from './person';
 
 export interface User {
   id: number;
@@ -17,4 +17,4 @@ export type UserAuth = Pick<User, 'username' | 'password' | 'id'>;
 
 export type CreateUser = Pick<User, 'username' | 'password'>;
 
-export type UserLogin = Pick<User, 'username' | 'password'> & Pick<Person, 'email'>;
+export type UserLogin = Partial<Pick<User, 'username'> & Pick<Person, 'email'>> & Pick<User, 'password'>;

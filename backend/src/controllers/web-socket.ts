@@ -32,7 +32,7 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
           {
             url,
             query,
-            user: app.decodeToken(token as string),
+            user: app.jwt.decode(token as string),
             id: uid(16),
           },
           req.getHeader('sec-websocket-key'),

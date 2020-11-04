@@ -1,6 +1,9 @@
 
 FROM node:15-alpine
 
+# libc6-compat for uwebsocjet.js, grpc
+# postgresql-dev for pg-native
+# git, python, make, g++ for building
 RUN set -x \
     && apk update \
     && apk add --no-cache --update bash git openssh libc6-compat python make g++ postgresql-dev \

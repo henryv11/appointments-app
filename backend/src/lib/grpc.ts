@@ -8,6 +8,7 @@ const grpcServerPlugin: FastifyPluginCallback<GRPCServerOptions> = function (app
   grpcServer.bind(`${host}:${port}`, grpc.ServerCredentials.createInsecure());
   const fastifyGrpc: FastifyGrpc = {
     addService: grpcServer.addService.bind(grpcServer),
+    register: grpcServer.register.bind(grpcServer),
     loadProto: (filename: string) =>
       grpc.loadPackageDefinition(
         protoLoader.loadSync(filename, {
@@ -25,7 +26,7 @@ const grpcServerPlugin: FastifyPluginCallback<GRPCServerOptions> = function (app
   );
   app.addHook(
     'onClose',
-    (app, done) => (app.log.info('shutting down grpc server'), grpcServer.tryShutdown(() => done())),
+    (app, done) => (app.log.info('shutting down grpc server ...'), grpcServer.tryShutdown(() => done())),
   );
   done();
 };
@@ -34,6 +35,7 @@ export const grpcServer = fp(grpcServerPlugin);
 
 interface FastifyGrpc {
   addService: grpc.Server['addService'];
+  register: grpc.Server['register'];
   loadProto: (filename: string) => grpc.GrpcObject;
 }
 

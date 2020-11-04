@@ -1,71 +1,57 @@
+import { Static as S, Type as T } from '@sinclair/typebox';
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
 const tags = ['auth'];
 
+const userRegistrationBody = T.Object({
+  username: T.String(),
+  password: T.String(),
+  firstName: T.String(),
+  lastName: T.String(),
+  email: T.String(),
+  dateOfBirth: T.String(),
+  hasAcceptedTermsAndConditions: T.Boolean(),
+});
+
+const userLoginBody = T.Object({
+  username: T.Optional(T.String()),
+  password: T.String(),
+  email: T.Optional(T.String()),
+});
+
+const refreshSessionParams = T.Object({
+  sessionToken: T.String({ description: "User's current session's refresh token" }),
+});
+
 const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
-  app.put<{ Body: Parameters<typeof app.services.auth.registerUser>[0] }>(
+  app.put<{ Body: S<typeof userRegistrationBody> }>(
     '/auth',
     {
-      schema: {
-        description: 'Register a new user',
-        summary: 'Registration',
-        tags,
-        body: {
-          type: 'object',
-          description: "User's registration details",
-          required: [
-            'username',
-            'password',
-            'firstName',
-            'lastName',
-            'dateOfBirth',
-            'email',
-            'hasAcceptedTermsAndConditions',
-          ],
-          properties: {
-            username: { type: 'string' },
-            password: { type: 'string' },
-            firstName: { type: 'string' },
-            lastName: { type: 'string' },
-            email: { type: 'string' },
-            dateOfBirth: { type: 'string' },
-            hasAcceptedTermsAndConditions: { type: 'boolean' },
-          },
-        },
-      },
+      schema: { description: "User's registration details", summary: 'Registration', tags, body: userRegistrationBody },
     },
     async (req, res) => {
       res.status(201);
       const user = await app.services.auth.registerUser(req.body);
       const session = await app.services.auth.getNewOrContinuedSession(user.id);
-      return { user, token: app.signToken({ userId: user.id, sessionId: session.id }), refreshToken: session.token };
+      return { user, token: app.jwt.sign({ userId: user.id, sessionId: session.id }), refreshToken: session.token };
     },
   );
 
-  app.post<{ Body: Parameters<typeof app.services.auth.loginUser>[0] }>(
+  app.post<{ Body: S<typeof userLoginBody> }>(
     '/auth',
     {
       schema: {
         description: 'Login an existing user',
         summary: 'Login',
         tags,
-        body: {
-          type: 'object',
-          description: "User's login details",
-          required: ['password'],
-          properties: {
-            username: { type: 'string' },
-            password: { type: 'string' },
-            email: { type: 'string' },
-          },
-        },
+        body: userLoginBody,
       },
     },
     async req => {
       const user = await app.services.auth.loginUser(req.body);
       const session = await app.services.auth.getNewOrContinuedSession(user.id);
-      return { user, token: app.signToken({ userId: user.id, sessionId: session.id }), refreshToken: session.token };
+      return { user, token: app.jwt.sign({ userId: user.id, sessionId: session.id }), refreshToken: session.token };
     },
   );
 
@@ -79,27 +65,19 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     },
   );
 
-  app.get<{ Params: { sessionToken: string } }>(
+  app.get<{ Params: S<typeof refreshSessionParams> }>(
     '/auth/session/:sessionToken/refresh',
     {
       schema: {
         description: 'Refresh session token',
-        summary: '',
         tags,
-        params: {
-          type: 'object',
-          description: "User's current session's refresh token",
-          required: ['sessionToken'],
-          properties: {
-            sessionToken: { type: 'string' },
-          },
-        },
+        params: refreshSessionParams,
       },
     },
     async req => {
       const session = await app.services.auth.refreshSession(req.params.sessionToken);
       const user = await app.repositories.user.findById(session.userId);
-      return { user, token: app.signToken({ sessionId: session.id, userId: user.id }), refreshToken: session.token };
+      return { user, token: app.jwt.sign({ sessionId: session.id, userId: user.id }), refreshToken: session.token };
     },
   );
 

@@ -13,23 +13,23 @@ const jwtAuthPlugin: FastifyPluginCallback<{
   secret: string;
   algorithm: Algorithm;
 }> = function (app, { secret, algorithm }, done) {
-  const signToken: AuthInstance['signToken'] = ({ userId, sessionId }) =>
-    sign({ userId, sessionId }, secret, { algorithm });
-  const decodeToken: AuthInstance['decodeToken'] = function (token) {
-    if (!token) throw new Error('missing token');
-    const decoded = verify(token, secret, { algorithms: [algorithm] });
-    if (!decoded || typeof decoded !== 'object' || !['userId', 'sessionId'].every(key => key in decoded))
-      throw new Error('invalid token payload');
-    return decoded as Exclude<AuthRequest['user'], null>;
+  const jwt: FastifyJWT = {
+    sign: ({ userId, sessionId }) => sign({ userId, sessionId }, secret, { algorithm }),
+    decode(token) {
+      if (!token) throw new Error('missing token');
+      const decoded = verify(token, secret, { algorithms: [algorithm] });
+      if (!decoded || typeof decoded !== 'object' || ['userId', 'sessionId'].some(key => !(key in decoded)))
+        throw new Error('invalid token payload');
+      return decoded as Exclude<AuthRequest['user'], null>;
+    },
   };
-  app.decorate('signToken', signToken);
-  app.decorate('decodeToken', decodeToken);
+  app.decorate('jwt', jwt);
   app.decorateRequest('user', null);
   app.decorateRequest('tokenError', '');
   app.addHook('onRequest', (req, _, done) => {
     const [, token] = req.headers['authorization']?.split(' ') || [];
     try {
-      req.user = decodeToken(token);
+      req.user = jwt.decode(token);
       done();
     } catch (error) {
       req.tokenError = error.message;
@@ -66,7 +66,9 @@ declare module 'fastify' {
   interface FastifyRequest extends AuthRequest {}
   interface RouteOptions extends AuthRouteOptions {}
   interface RouteShorthandOptions extends AuthRouteOptions {}
-  interface FastifyInstance extends AuthInstance {}
+  interface FastifyInstance {
+    jwt: FastifyJWT;
+  }
 }
 
 interface TokenPayload {
@@ -83,7 +85,7 @@ interface AuthRouteOptions {
   authorize?: boolean;
 }
 
-interface AuthInstance {
-  signToken: (payload: TokenPayload) => string;
-  decodeToken: (payload: string | undefined | null) => Exclude<AuthRequest['user'], null>;
+interface FastifyJWT {
+  sign: (payload: TokenPayload) => string;
+  decode: (payload: string | undefined | null) => Exclude<AuthRequest['user'], null>;
 }

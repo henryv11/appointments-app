@@ -1,9 +1,11 @@
-import sqlts from '@rmp135/sql-ts';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
-import { writeFileSync } from 'fs';
 import migrate, { RunnerOption } from 'node-pg-migrate';
-import { ClientConfig, native as pg, Pool, QueryResult } from 'pg';
+import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
+
+const pg = native
+  ? (console.log('using pg-native bindings'), native)
+  : (console.log('using pg-js bindings'), { Pool, Client });
 
 const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
   app,
@@ -11,9 +13,7 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
 ) {
   await createDatabase(connectionOptions, app.log);
   await runMigrations({ ...connectionOptions, dir, migrationsTable }, app.log);
-  await generateTsTypes(connectionOptions, app.log);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const pool = new pg!.Pool(connectionOptions);
+  const pool = new pg.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
   const database: Database = {
     query: pool.query.bind(pool),
@@ -37,8 +37,7 @@ async function createDatabase(
   logger: FastifyInstance['log'],
 ) {
   logger.info(`attempting to create database "${database}"`);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const client = new pg!.Client(connectionOptions);
+  const client = new pg.Client(connectionOptions);
   try {
     await client.connect();
     const {
@@ -71,8 +70,7 @@ async function runMigrations(
   logger: FastifyInstance['log'],
 ) {
   logger.info('attempting to run migrations');
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const client = new pg!.Client(connectionOptions);
+  const client = new pg.Client(connectionOptions);
   try {
     await client.connect();
     await migrate({
@@ -89,24 +87,6 @@ async function runMigrations(
   } finally {
     await client.end();
   }
-}
-
-async function generateTsTypes(opts: DatabaseConnectionOptions, logger: FastifyInstance['log']) {
-  // if (process.env.NODE_ENV !== 'development') return;
-  logger.info('generating TypeScript types from database');
-  const types = await sqlts.toTypeScript({
-    client: 'pg',
-    connection: opts,
-    columnNameCasing: 'camel',
-    tableNameCasing: 'pascal',
-    interfaceNameFormat: '${table}',
-    typeMap: {
-      Date: ['timestamptz'],
-      number: ['int8'],
-    },
-  });
-  writeFileSync('./src/types/db-generated.d.ts', types);
-  logger.info('TypeScript types generated');
 }
 
 export const database = fp(databasePlugin);
