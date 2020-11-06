@@ -1,31 +1,18 @@
-import { Static as S, Type as T } from '@sinclair/typebox';
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
+import {
+  RefreshSessionParams,
+  refreshSessionParams,
+  userLoginBody,
+  UserLoginBody,
+  UserRegistrationBody,
+  userRegistrationBody,
+} from '../schemas';
 
 const tags = ['auth'];
 
-const userRegistrationBody = T.Object({
-  username: T.String(),
-  password: T.String(),
-  firstName: T.String(),
-  lastName: T.String(),
-  email: T.String(),
-  dateOfBirth: T.String(),
-  hasAcceptedTermsAndConditions: T.Boolean(),
-});
-
-const userLoginBody = T.Object({
-  username: T.Optional(T.String()),
-  password: T.String(),
-  email: T.Optional(T.String()),
-});
-
-const refreshSessionParams = T.Object({
-  sessionToken: T.String({ description: "User's current session's refresh token" }),
-});
-
 const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
-  app.put<{ Body: S<typeof userRegistrationBody> }>(
+  app.put<{ Body: UserRegistrationBody }>(
     '/auth',
     {
       schema: { description: "User's registration details", summary: 'Registration', tags, body: userRegistrationBody },
@@ -38,7 +25,7 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     },
   );
 
-  app.post<{ Body: S<typeof userLoginBody> }>(
+  app.post<{ Body: UserLoginBody }>(
     '/auth',
     {
       schema: {
@@ -65,7 +52,7 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     },
   );
 
-  app.get<{ Params: S<typeof refreshSessionParams> }>(
+  app.get<{ Params: RefreshSessionParams }>(
     '/auth/session/:sessionToken/refresh',
     {
       schema: {
