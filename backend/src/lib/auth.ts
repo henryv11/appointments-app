@@ -72,8 +72,8 @@ declare module 'fastify' {
 }
 
 interface TokenPayload {
-  userId: number;
-  sessionId: number;
+  userId: BigInt;
+  sessionId: BigInt;
 }
 
 interface AuthRequest {

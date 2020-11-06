@@ -1,17 +1,17 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
-import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
+import { Client, ClientConfig, native, Pool, QueryResult, types } from 'pg';
 import { createDb, migrate } from 'postgres-migrations';
-
-const pg = native
-  ? (console.log('using pg-native bindings'), native)
-  : (console.log('using pg-js bindings'), { Pool, Client });
 
 const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
   app,
   connectionOptions,
 ) {
-  await databaseInit(connectionOptions, app.log);
+  const pg = native
+    ? (app.log.info('using native bindings'), native)
+    : (app.log.info('using javascript bindings'), { Pool, Client });
+  types.setTypeParser(types.TypeId.INT8, BigInt);
+  await databaseInit(pg.Client, connectionOptions, app.log);
   const pool = new pg.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
   const database: Database = {
@@ -32,6 +32,7 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
 };
 
 async function databaseInit(
+  pgClient: typeof Client,
   {
     migrationsDirectory = './migrations',
     database,
@@ -41,13 +42,13 @@ async function databaseInit(
 ) {
   let client: Client | undefined = undefined;
   try {
-    client = new pg.Client(connectionOptions);
+    client = new pgClient(connectionOptions);
     await client.connect();
     logger.info(`creating database "${database}" ...`);
     await createDb(database, { client });
     await client.end();
     logger.info('running migrations');
-    client = new pg.Client({ database, ...connectionOptions });
+    client = new pgClient({ database, ...connectionOptions });
     await client.connect();
     const migrations = await migrate({ client }, migrationsDirectory);
     migrations.length ? logger.info({ migrations }, 'ran migrations successfully') : logger.info('no new migrations');

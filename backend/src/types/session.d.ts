@@ -1,7 +1,7 @@
 import { User } from './user';
 
 export interface Session {
-  id: number;
+  id: BigInt;
   userId: User['number'];
   token: string;
   startedAt: Date;
