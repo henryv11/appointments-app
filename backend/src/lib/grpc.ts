@@ -25,7 +25,7 @@ const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
         app.log.info(`grpc server listening at "${host}:${port}"`);
         cb();
       } catch (error) {
-        app.log.error(`failed to start grpc server`);
+        app.log.error(error, `failed to start grpc server`);
         cb(error);
       }
     },

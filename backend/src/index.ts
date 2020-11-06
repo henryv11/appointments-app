@@ -6,7 +6,7 @@ import swagger from 'fastify-swagger';
 import pino from 'pino';
 import { controllers } from './controllers';
 import { database, errors, exitHandler, grpcServer, healthCheck, jwtAuth, webSocketServer } from './lib';
-import { grpcControllers } from './proto';
+import { grpcControllers } from './grpc';
 import { repositories } from './repositories';
 import { services } from './services';
 import { webSocketController } from './web-socket';

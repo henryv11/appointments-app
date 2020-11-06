@@ -1,9 +1,7 @@
-
-
 ###!/bin/bash
 
-PROTO_DIR="./proto"
-OUT_DIR="./src/proto/"
+PROTO_DIR="./src/grpc/proto"
+OUT_DIR="./src/grpc/generated"
 PROTOC_GEN_TS_PATH="./node_modules/.bin/protoc-gen-ts"
 GRPC_TOOLS_NODE_PROTOC="./node_modules/.bin/grpc_tools_node_protoc"
 

@@ -20,7 +20,6 @@ services:
       - ./backend/src:/usr/src/app/src
       - ./backend/migrations:/usr/src/app/migrations
       - ./backend/config:/usr/src/app/config
-      - ./backend/proto:/usr/src/app/proto
     ports:
       - 8080:8080
     depends_on:
