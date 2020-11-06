@@ -6,10 +6,11 @@ const exitHandlerPlugin: FastifyPluginCallback = (app, _, done) => (
     process.on(signal, signal => handleExit(signal, undefined, 0, app)),
   ),
   process.on('uncaughtException', error => handleExit(undefined, error, 1, app)),
+  app.decorate('exit', (code: number, error?: Error, signal?: NodeJS.Signals) => handleExit(signal, error, code, app)),
   done()
 );
 
-export async function handleExit(
+async function handleExit(
   signal: NodeJS.Signals | undefined,
   error: Error | undefined,
   code: number,
@@ -23,3 +24,9 @@ export async function handleExit(
 }
 
 export const exitHandler = fp(exitHandlerPlugin);
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    exit: (code: number, error?: Error, signal?: NodeJS.Signals) => Promise<never>;
+  }
+}

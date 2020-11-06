@@ -15,24 +15,27 @@ const compressionOptions = {
   dedicated256kb: uws.DEDICATED_COMPRESSOR_256KB,
 };
 
-const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function (app, { port, sslOptions }, done) {
+const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function (app, { sslOptions }, done) {
   let listenSocket: uws.us_listen_socket | undefined;
-  const socketServer = sslOptions
+  const webSocketServer = sslOptions
     ? uws.SSLApp({
         key_file_name: sslOptions.keyFileName,
         cert_file_name: sslOptions.certFileName,
         passphrase: sslOptions.passphrase,
       })
     : uws.App();
-  socketServer.any('/*', res => res.writeStatus('404 Not Found').end());
-  app.decorate('webSocket', { handler: socketServer.ws.bind(socketServer), compressionOptions });
-  app.addHook('onReady', done => {
-    socketServer.listen(port, token => {
-      if (token) (listenSocket = token), app.log.info(`web socket server listening at port "${port}"`);
-      else app.log.error(`web socket server failed to listen ${port}`);
-    });
-    done();
-  });
+  webSocketServer.any('/*', res => res.writeStatus('404 Not Found').end());
+  const webSocket: FastifyWebSocket = {
+    handler: webSocketServer.ws.bind(webSocketServer),
+    compressionOptions,
+    listen: (port, cb = () => void 0) =>
+      webSocketServer.listen(port, token =>
+        token
+          ? ((listenSocket = token), app.log.info(`web socket server listening at port "${port}"`), cb())
+          : (app.log.error(`web socket server failed to listen ${port}`), cb(new Error('web socket failed to start'))),
+      ),
+  };
+  app.decorate('webSocket', webSocket);
   app.addHook('onClose', (app, done) => {
     if (listenSocket)
       uws.us_listen_socket_close(listenSocket), (listenSocket = undefined), app.log.info('web socket server closed');
@@ -45,8 +48,14 @@ export const webSocketServer = fp(webSocketServerPlugin);
 
 declare module 'fastify' {
   interface FastifyInstance {
-    webSocket: { handler: uws.TemplatedApp['ws']; compressionOptions: typeof compressionOptions };
+    webSocket: FastifyWebSocket;
   }
+}
+
+interface FastifyWebSocket {
+  handler: uws.TemplatedApp['ws'];
+  compressionOptions: typeof compressionOptions;
+  listen: (port: number, cb?: (err?: Error) => void) => void;
 }
 
 interface SSLOptions {
@@ -56,7 +65,6 @@ interface SSLOptions {
 }
 
 interface WebSocketOptions {
-  port: number;
   sslOptions?: SSLOptions;
 }
 

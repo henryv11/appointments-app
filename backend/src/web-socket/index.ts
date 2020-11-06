@@ -6,7 +6,6 @@ import { WebSocket } from '../lib';
 
 const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done) {
   const connections: Record<string, WebSocket> = {};
-
   const decoder = new TextDecoder('utf-8');
   function parseMessage(message: ArrayBuffer) {
     const decoded = decoder.decode(message);
@@ -27,22 +26,24 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
       const url = '/' + req.getUrl().replace(/(^\/+|\/+$)/, '');
       const query = parse(req.getQuery());
       const { token } = query;
+      let user;
       try {
-        res.upgrade(
-          {
-            url,
-            query,
-            user: app.jwt.decode(token as string),
-            id: uid(16),
-          },
-          req.getHeader('sec-websocket-key'),
-          req.getHeader('sec-websocket-protocol'),
-          req.getHeader('sec-websocket-extensions'),
-          context,
-        );
+        user = app.jwt.decode(token as string);
       } catch (error) {
         return res.writeStatus('401 Unauthorized').end();
       }
+      res.upgrade(
+        {
+          url,
+          query,
+          user,
+          id: uid(16),
+        },
+        req.getHeader('sec-websocket-key'),
+        req.getHeader('sec-websocket-protocol'),
+        req.getHeader('sec-websocket-extensions'),
+        context,
+      );
     },
 
     open(ws) {

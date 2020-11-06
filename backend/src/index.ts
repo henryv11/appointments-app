@@ -5,9 +5,11 @@ import helmet from 'fastify-helmet';
 import swagger from 'fastify-swagger';
 import pino from 'pino';
 import { controllers } from './controllers';
-import { database, errors, exitHandler, handleExit, healthCheck, jwtAuth, webSocketServer } from './lib';
+import { database, errors, exitHandler, grpcServer, healthCheck, jwtAuth, webSocketServer } from './lib';
+import { grpcControllers } from './proto';
 import { repositories } from './repositories';
 import { services } from './services';
+import { webSocketController } from './web-socket';
 
 const app = Fastify({ logger: pino(get('logger')) })
   .register(exitHandler)
@@ -18,16 +20,20 @@ const app = Fastify({ logger: pino(get('logger')) })
   .register(jwtAuth, get('jwt'))
   .register(healthCheck)
   .register(webSocketServer, get('webSocket'))
-  // .register(grpcServer, { host: '0.0.0.0', port: 30000 })
+  .register(grpcServer)
   .register(swagger, { ...get('docs') })
   .register(repositories)
   .register(services)
-  .register(controllers);
+  .register(controllers)
+  .register(webSocketController)
+  .register(grpcControllers);
 
 app.ready(err =>
   err
-    ? handleExit(undefined, err, 1, app)
-    : app.listen(get('server.port'), get('server.host'), err =>
-        err ? handleExit(undefined, err, 1, app) : app.log.info(app.printRoutes()),
-      ),
+    ? app.exit(1, err)
+    : (app.grpc.listen('0.0.0.0', 30000, err => err && app.exit(1, err)),
+      app.webSocket.listen(9000, err => err && app.exit(1, err)),
+      app.listen(get('server.port'), get('server.host'), err =>
+        err ? app.exit(1, err) : app.log.info(app.printRoutes()),
+      )),
 );

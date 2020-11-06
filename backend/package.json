@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "proto-gen": "sh ./scripts/build-protos.sh"
   },
   "keywords": [],
   "author": "Henry Viirmäe",
@@ -43,6 +44,8 @@
     "eslint": "^7.10.0",
     "eslint-config-prettier": "^6.12.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "grpc-tools": "^1.9.1",
+    "grpc_tools_node_protoc_ts": "^5.0.1",
     "nodemon": "^2.0.4",
     "prettier": "^2.1.2",
     "ts-node": "^9.0.0",

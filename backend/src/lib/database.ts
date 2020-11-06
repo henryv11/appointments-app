@@ -9,10 +9,9 @@ const pg = native
 
 const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
   app,
-  { migrationsDirectory = './migrations', ...connectionOptions },
+  connectionOptions,
 ) {
-  await createDatabase(connectionOptions, app.log);
-  await runMigrations({ ...connectionOptions, migrationsDirectory }, app.log);
+  await databaseInit(connectionOptions, app.log);
   const pool = new pg.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
   const database: Database = {
@@ -32,37 +31,31 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
   app.addHook('onClose', async () => (app.log.info('ending database pool ...'), await pool.end()));
 };
 
-async function createDatabase(
-  { database, ...connectionOptions }: DatabaseConnectionOptions,
+async function databaseInit(
+  {
+    migrationsDirectory = './migrations',
+    database,
+    ...connectionOptions
+  }: DatabaseConnectionOptions & Partial<MigrationsOptions>,
   logger: FastifyInstance['log'],
 ) {
-  logger.info(`attempting to create database "${database}"`);
-  const client = new pg.Client(connectionOptions);
+  let client: Client | undefined = undefined;
   try {
+    client = new pg.Client(connectionOptions);
     await client.connect();
+    logger.info(`creating database "${database}" ...`);
     await createDb(database, { client });
-  } catch (error) {
-    logger.error(error, `failed to create database "${database}"`);
-    throw error;
-  } finally {
     await client.end();
-  }
-}
-
-async function runMigrations(
-  { migrationsDirectory, ...connectionOptions }: DatabaseConnectionOptions & MigrationsOptions,
-  logger: FastifyInstance['log'],
-) {
-  logger.info('attempting to run migrations');
-  const client = new pg.Client(connectionOptions);
-  try {
+    logger.info('running migrations');
+    client = new pg.Client({ database, ...connectionOptions });
     await client.connect();
-    await migrate({ client }, migrationsDirectory);
-  } catch (error) {
-    logger.error(error, 'failed to run migrations');
-    throw error;
-  } finally {
+    const migrations = await migrate({ client }, migrationsDirectory);
+    migrations.length ? logger.info({ migrations }, 'ran migrations successfully') : logger.info('no new migrations');
     await client.end();
+  } catch (error) {
+    logger.error(error, 'database init failed');
+    await client?.end();
+    throw error;
   }
 }
 
