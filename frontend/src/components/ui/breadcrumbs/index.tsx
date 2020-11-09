@@ -6,14 +6,9 @@ export default function Breadcrumbs() {
   const { pathname } = useLocation();
   const { push } = useHistory();
   const path = pathname.split('/').filter(Boolean);
-  const length = path.length;
   return (
     <nav className={styles.root}>
-      <span onClick={() => push('/')} className={styles.link}>
-        ..
-      </span>
-      {!!length && <span>/</span>}
-      {path.map((el, i) => (
+      {['', ...path].map((el, i, { length }) => (
         <Fragment key={el}>
           <span onClick={() => push('/' + path.slice(0, i + 1).join('/'))} className={styles.link}>
             {el}
