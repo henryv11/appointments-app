@@ -47,11 +47,11 @@ async function databaseInit(
     logger.info(`creating database "${database}" ...`);
     await createDb(database, { client });
     await client.end();
-    logger.info('running migrations');
+    logger.info('running migrations ...');
     client = new pgClient({ database, ...connectionOptions });
     await client.connect();
     const migrations = await migrate({ client }, migrationsDirectory);
-    migrations.length ? logger.info({ migrations }, 'ran migrations successfully') : logger.info('no new migrations');
+    migrations.length ? logger.info({ migrations }, 'ran migrations successfully') : logger.info('no migrations to run');
     await client.end();
   } catch (error) {
     logger.error(error, 'database init failed');

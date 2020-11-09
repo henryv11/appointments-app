@@ -1,5 +1,5 @@
 import SvgIcon from '@/components/ui/icon/svg';
-import { useLayoutContext } from '@/contexts/layout';
+import { useLayoutContext, LayoutContextActionType } from '@/contexts/layout';
 import { useInterval } from '@/lib/react/hooks/interval';
 import buttonStyles from '@/styles/button.scss';
 import clsx from 'clsx';
@@ -27,7 +27,7 @@ export default function SidebarHeader() {
     <div className={clsx(styles.root, isSidebarOpen ? styles.open : styles.closed)}>
       {isSidebarOpen && <Clock />}
       <button
-        onClick={() => dispatch({ type: 'TOGGLE_SIDEBAR' })}
+        onClick={() => dispatch({ type: LayoutContextActionType.TOGGLE_SIDEBAR })}
         className={clsx(buttonStyles.button, buttonStyles.primary, buttonStyles.link)}
       >
         {<SvgIcon icon={isSidebarOpen ? 'chevronLeft' : 'chevronRight'} />}

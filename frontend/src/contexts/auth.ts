@@ -1,3 +1,4 @@
+import { LocalStorageKey } from '@/lib/constants';
 import { createReducerContext } from '@/lib/react/create-reducer-context';
 import { User } from '@/types/user';
 
@@ -5,17 +6,22 @@ export const [AuthContextProvider, AuthContextConsumer, useAuthContext] = create
   { isAuthenticated: false },
   (state, action) => {
     switch (action.type) {
-      case 'LOG_IN':
+      case AuthContextActionType.LOG_IN:
         const { refreshToken, ...rest } = action.payload;
-        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem(LocalStorageKey.REFRESH_TOKEN, refreshToken);
         return { ...state, isAuthenticated: true, ...rest };
 
-      case 'LOG_OUT':
-        localStorage.removeItem('refreshToken');
+      case AuthContextActionType.LOG_OUT:
+        localStorage.removeItem(LocalStorageKey.REFRESH_TOKEN);
         return { ...state, isAuthenticated: false, token: undefined, user: undefined };
     }
   },
 );
+
+export enum AuthContextActionType {
+  LOG_IN,
+  LOG_OUT,
+}
 
 interface LoggedInState {
   isAuthenticated: true;
@@ -30,5 +36,5 @@ interface LoggedOutState {
 type AuthState = LoggedInState | LoggedOutState;
 
 type AuthAction =
-  | { type: 'LOG_IN'; payload: Pick<LoggedInState, 'token' | 'user'> & { refreshToken: string } }
-  | { type: 'LOG_OUT' };
+  | { type: AuthContextActionType.LOG_IN; payload: Pick<LoggedInState, 'token' | 'user'> & { refreshToken: string } }
+  | { type: AuthContextActionType.LOG_OUT };

@@ -1,6 +1,7 @@
 import { AuthContextProvider } from '@/contexts/auth';
 import { LayoutContextProvider } from '@/contexts/layout';
 import { ThemeContextProvider } from '@/contexts/theme';
+import { RoutePath } from '@/lib/constants';
 import React from 'react';
 import { HashRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/home';
@@ -15,13 +16,13 @@ export default function App() {
         <LayoutContextProvider>
           <Router>
             <Switch>
-              <Route exact path='/'>
+              <Route exact path={RoutePath.HOME}>
                 <HomePage />
               </Route>
-              <Route exact path='/profile'>
+              <Route exact path={RoutePath.PROFILE}>
                 <ProfilePage />
               </Route>
-              <Route path='/login'>
+              <Route path={RoutePath.LOGIN}>
                 <LoginPage />
               </Route>
               <Route>

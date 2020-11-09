@@ -7,27 +7,6 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styles from './styles.scss';
 
-const [RegistrationFormProvider, RegistrationFormConsumer, useRegistrationFormContext] = createReducerContext<
-  RegistrationFormContext,
-  RegistrationFormAction
->(
-  { currentStep: 0, onSubmit: () => void 0, formState: {} },
-  (state, action) => {
-    switch (action.type) {
-      case 'SUBMIT_PART_ONE':
-      case 'SUBMIT_PART_TWO':
-        return { ...state, currentStep: state.currentStep + 1, formState: { ...state.formState, ...action.payload } };
-      case 'SUBMIT_PART_THREE':
-        const { passwordConfirm, ...formState } = { ...state.formState, ...action.payload };
-        state.onSubmit(formState as Omit<RegistrationFormState, 'passwordConfirm'>);
-        return { ...state, formState: { passwordConfirm, ...formState } };
-      case 'PREVIOUS_STEP':
-        return { ...state, currentStep: state.currentStep - 1, formState: { ...state.formState, ...action.payload } };
-    }
-  },
-  'registration form',
-);
-
 export default function RegistrationForm({ onSubmit = () => void 0 }: RegistrationFormProps) {
   return (
     <RegistrationFormProvider onSubmit={onSubmit}>
@@ -35,19 +14,7 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
         <RegistrationFormConsumer>
           {([{ currentStep }]) => (
             <>
-              <div className={styles.header}>
-                <h4>{['Personal information', 'Account information', 'Almost there...'][currentStep]}</h4>
-                <hr />
-                <h6>
-                  {
-                    [
-                      'Please tell us about yourself',
-                      'Please choose your username and password',
-                      'We need to know this shit man',
-                    ][currentStep]
-                  }
-                </h6>
-              </div>
+              <RegistrationFormHeader />
               {currentStep === 0 && <RegistrationFormPartOne />}
               {currentStep === 1 && <RegistrationFormPartTwo />}
               {currentStep === 2 && <RegistrationFormPartThree />}
@@ -56,6 +23,25 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
         </RegistrationFormConsumer>
       </form>
     </RegistrationFormProvider>
+  );
+}
+
+function RegistrationFormHeader() {
+  const [{ currentStep }] = useRegistrationFormContext();
+  return (
+    <div className={styles.header}>
+      <h4>{['Personal information', 'Account information', 'Almost there...'][currentStep]}</h4>
+      <hr />
+      <h6>
+        {
+          [
+            'Please tell us about yourself',
+            'Please choose your username and password',
+            'We need to know this shit man',
+          ][currentStep]
+        }
+      </h6>
+    </div>
   );
 }
 
@@ -118,7 +104,7 @@ function RegistrationFormPartOne() {
           className={clsx(buttonStyles.button, buttonStyles.primary)}
           disabled={isNextButtonDisabled}
           onClick={handleSubmit(
-            payload => dispatch({ type: 'SUBMIT_PART_ONE', payload }),
+            payload => dispatch({ type: RegistrationFormContextActionType.SUBMIT_PART_ONE, payload }),
             () => setIsNextButtonDisabled(true),
           )}
         >
@@ -198,7 +184,7 @@ function RegistrationFormPartTwo() {
       <div className={styles.controls}>
         <button
           className={clsx(buttonStyles.button, buttonStyles.primary)}
-          onClick={() => dispatch({ type: 'PREVIOUS_STEP', payload: getValues() })}
+          onClick={() => dispatch({ type: RegistrationFormContextActionType.PREVIOUS_STEP, payload: getValues() })}
         >
           Previous
         </button>
@@ -206,7 +192,7 @@ function RegistrationFormPartTwo() {
           className={clsx(buttonStyles.button, buttonStyles.primary)}
           disabled={isNextButtonDisabled}
           onClick={handleSubmit(
-            payload => dispatch({ type: 'SUBMIT_PART_TWO', payload }),
+            payload => dispatch({ type: RegistrationFormContextActionType.SUBMIT_PART_TWO, payload }),
             () => setIsNextButtonDisabled(true),
           )}
         >
@@ -258,7 +244,7 @@ function RegistrationFormPartThree() {
       <div className={styles.controls}>
         <button
           className={clsx(buttonStyles.button, buttonStyles.primary)}
-          onClick={() => dispatch({ type: 'PREVIOUS_STEP', payload: getValues() })}
+          onClick={() => dispatch({ type: RegistrationFormContextActionType.PREVIOUS_STEP, payload: getValues() })}
         >
           Previous
         </button>
@@ -267,7 +253,7 @@ function RegistrationFormPartThree() {
           disabled={isNextButtonDisabled}
           type='submit'
           onClick={handleSubmit(
-            payload => dispatch({ type: 'SUBMIT_PART_THREE', payload }),
+            payload => dispatch({ type: RegistrationFormContextActionType.SUBMIT_PART_THREE, payload }),
             () => setIsNextButtonDisabled(true),
           )}
         >
@@ -278,20 +264,50 @@ function RegistrationFormPartThree() {
   );
 }
 
-interface RegistrationFormProps {
-  onSubmit?: (data: Omit<RegistrationFormState, 'passwordConfirm'>) => void;
+const [RegistrationFormProvider, RegistrationFormConsumer, useRegistrationFormContext] = createReducerContext<
+  RegistrationFormContext,
+  RegistrationFormAction
+>(
+  { currentStep: 0, onSubmit: () => void 0, formState: {} },
+  (state, action) => {
+    switch (action.type) {
+      case RegistrationFormContextActionType.SUBMIT_PART_ONE:
+      case RegistrationFormContextActionType.SUBMIT_PART_TWO:
+        return { ...state, currentStep: state.currentStep + 1, formState: { ...state.formState, ...action.payload } };
+      case RegistrationFormContextActionType.SUBMIT_PART_THREE:
+        const { passwordConfirm, ...formState } = { ...state.formState, ...action.payload };
+        state.onSubmit(formState as RegistrationFormSubmit);
+        return { ...state, formState: { passwordConfirm, ...formState } };
+      case RegistrationFormContextActionType.PREVIOUS_STEP:
+        return { ...state, currentStep: state.currentStep - 1, formState: { ...state.formState, ...action.payload } };
+    }
+  },
+  'registration form',
+);
+
+enum RegistrationFormContextActionType {
+  SUBMIT_PART_ONE,
+  SUBMIT_PART_TWO,
+  SUBMIT_PART_THREE,
+  PREVIOUS_STEP,
 }
+
+interface RegistrationFormProps {
+  onSubmit?: (data: RegistrationFormSubmit) => void;
+}
+
 interface RegistrationFormContext {
   currentStep: number;
   onSubmit: NonNullable<RegistrationFormProps['onSubmit']>;
   formState: Partial<RegistrationFormState>;
 }
 type RegistrationFormState = UserRegistration & { passwordConfirm: string };
+type RegistrationFormSubmit = Omit<RegistrationFormState, 'passwordConfirm'>;
 type RegistrationFormPartOneState = Pick<RegistrationFormState, 'firstName' | 'lastName' | 'dateOfBirth'>;
 type RegistrationFormPartTwoState = Pick<RegistrationFormState, 'username' | 'password' | 'passwordConfirm'>;
 type RegistrationFormPartThreeState = Pick<RegistrationFormState, 'email' | 'hasAcceptedTermsAndConditions'>;
 type RegistrationFormAction =
-  | { type: 'SUBMIT_PART_ONE'; payload: RegistrationFormPartOneState }
-  | { type: 'SUBMIT_PART_TWO'; payload: RegistrationFormPartTwoState }
-  | { type: 'SUBMIT_PART_THREE'; payload: RegistrationFormPartThreeState }
-  | { type: 'PREVIOUS_STEP'; payload: Partial<RegistrationFormState> };
+  | { type: RegistrationFormContextActionType.SUBMIT_PART_ONE; payload: RegistrationFormPartOneState }
+  | { type: RegistrationFormContextActionType.SUBMIT_PART_TWO; payload: RegistrationFormPartTwoState }
+  | { type: RegistrationFormContextActionType.SUBMIT_PART_THREE; payload: RegistrationFormPartThreeState }
+  | { type: RegistrationFormContextActionType.PREVIOUS_STEP; payload: Partial<RegistrationFormState> };

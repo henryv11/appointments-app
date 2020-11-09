@@ -1,7 +1,7 @@
 import SimpleLayout from '@/components/layouts/simple';
 import LoginForm from '@/components/ui/forms/login';
 import RegistrationForm from '@/components/ui/forms/registration';
-import { useAuthContext } from '@/contexts/auth';
+import { AuthContextActionType, useAuthContext } from '@/contexts/auth';
 import { useTimeout } from '@/lib/react/hooks/timeout';
 import { loginUser, registerUser } from '@/services/auth';
 import React, { useRef, useState } from 'react';
@@ -10,7 +10,7 @@ import styles from './styles.scss';
 
 export default function LoginPage() {
   const [{ isAuthenticated }, dispatch] = useAuthContext();
-  const [isRegistration, setIsRegistration] = useState(true);
+  const [isRegistration, setIsRegistration] = useState(false);
   const [error, setError] = useState('');
   const timeoutRef = useRef<number>();
 
@@ -37,8 +37,7 @@ export default function LoginPage() {
             <RegistrationForm
               onSubmit={async data => {
                 try {
-                  const payload = await registerUser(data);
-                  dispatch({ type: 'LOG_IN', payload });
+                  dispatch({ type: AuthContextActionType.LOG_IN, payload: await registerUser(data) });
                 } catch (error) {
                   onError(error.message);
                 }
@@ -48,8 +47,7 @@ export default function LoginPage() {
             <LoginForm
               onSubmit={async data => {
                 try {
-                  const payload = await loginUser(data);
-                  dispatch({ type: 'LOG_IN', payload });
+                  dispatch({ type: AuthContextActionType.LOG_IN, payload: await loginUser(data) });
                 } catch (error) {
                   onError(error.message);
                 }

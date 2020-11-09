@@ -8,12 +8,12 @@ export default function Breadcrumbs() {
   const path = pathname.split('/').filter(Boolean);
   return (
     <nav className={styles.root}>
-      {['', ...path].map((el, i, { length }) => (
+      {['', ...path].map((el, i, path) => (
         <Fragment key={el}>
-          <span onClick={() => push('/' + path.slice(0, i + 1).join('/'))} className={styles.link}>
-            {el}
+          <span onClick={() => push(path.slice(0, i + 1).join('/'))} className={styles.link}>
+            {el || '..'}
           </span>
-          {i < length - 1 && <span>/</span>}
+          {i < path.length - 1 && <span>/</span>}
         </Fragment>
       ))}
     </nav>
