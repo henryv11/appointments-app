@@ -8,7 +8,7 @@ import { getServiceWebSocketUrl } from '@/lib/services';
 import { stringify } from 'querystring';
 import React from 'react';
 
-export default function HomePage() {
+export default function ProfilePage() {
   const [authState] = useAuthContext();
   const ws = useWebSocket({
     url: authState.isAuthenticated ? getServiceWebSocketUrl('?' + stringify({ token: authState.token })) : undefined,
@@ -17,18 +17,11 @@ export default function HomePage() {
     onopen: ev => (console.log('websocket open', ev), ws.send('hello')),
   });
   useInterval(() => ws.send('ping'), 5000);
-
-  const servers = [{ name: 'blin' }, { name: 'fidget spinner' }];
-
   return (
     <RequireAuthentication>
       <MainLayout>
         <Breadcrumbs />
-        <div>
-          {servers.map(server => (
-            <div key={server.name}>{server.name}</div>
-          ))}
-        </div>
+        Profile page
       </MainLayout>
     </RequireAuthentication>
   );

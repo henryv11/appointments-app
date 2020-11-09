@@ -1,7 +1,7 @@
 import { User } from './user';
 
 export interface Person {
-  id: BigInt;
+  id: number;
   userId: User['id'];
   firstName: string;
   lastName: string;

@@ -18,6 +18,11 @@
       width: 100%;
       object-fit: cover;
     }
+
+    &:hover {
+      cursor: pointer;
+      filter: brightness(1.03);
+    }
   }
 
   &.open {

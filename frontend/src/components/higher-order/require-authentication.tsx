@@ -1,4 +1,4 @@
-import { useAuthContext } from '@/components/contexts/auth';
+import { useAuthContext } from '@/contexts/auth';
 import { refreshSession } from '@/services/auth';
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { Redirect } from 'react-router-dom';

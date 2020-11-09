@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
-import { Client, ClientConfig, native, Pool, QueryResult, types } from 'pg';
+import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
 import { createDb, migrate } from 'postgres-migrations';
 
 const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
@@ -10,12 +10,12 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
   const pg = native
     ? (app.log.info('using native bindings'), native)
     : (app.log.info('using javascript bindings'), { Pool, Client });
-  types.setTypeParser(types.TypeId.INT8, BigInt);
   await databaseInit(pg.Client, connectionOptions, app.log);
   const pool = new pg.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
+  const query = pool.query.bind(pool);
   const database: Database = {
-    query: pool.query.bind(pool),
+    query,
     connect: pool.connect.bind(pool),
     firstRow: queryResult => queryResult.rows[0],
     allRows: queryResult => queryResult.rows,

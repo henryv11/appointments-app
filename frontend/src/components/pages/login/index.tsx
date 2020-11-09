@@ -1,7 +1,7 @@
-import { useAuthContext } from '@/components/contexts/auth';
 import SimpleLayout from '@/components/layouts/simple';
 import LoginForm from '@/components/ui/forms/login';
 import RegistrationForm from '@/components/ui/forms/registration';
+import { useAuthContext } from '@/contexts/auth';
 import { useTimeout } from '@/lib/react/hooks/timeout';
 import { loginUser, registerUser } from '@/services/auth';
 import React, { useRef, useState } from 'react';

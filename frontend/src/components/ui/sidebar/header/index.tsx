@@ -1,5 +1,5 @@
-import { useLayoutContext } from '@/components/contexts/layout';
 import SvgIcon from '@/components/ui/icon/svg';
+import { useLayoutContext } from '@/contexts/layout';
 import { useInterval } from '@/lib/react/hooks/interval';
 import buttonStyles from '@/styles/button.scss';
 import clsx from 'clsx';
@@ -21,9 +21,8 @@ function Clock() {
   return <span>{dateString}</span>;
 }
 
-export function SidebarHeader() {
+export default function SidebarHeader() {
   const [{ isSidebarOpen }, dispatch] = useLayoutContext();
-
   return (
     <div className={clsx(styles.root, isSidebarOpen ? styles.open : styles.closed)}>
       {isSidebarOpen && <Clock />}
