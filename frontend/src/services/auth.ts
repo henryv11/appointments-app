@@ -1,10 +1,10 @@
 import { makeServiceFetch } from '@/lib/services';
 import { User, UserLogin, UserRegistration } from '@/types/user';
 
-const fetch = makeServiceFetch('backend', 'auth');
+const fetch = makeServiceFetch('backend');
 
 export async function loginUser(body: UserLogin) {
-  const res = await fetch<AuthResponseBody>({ method: 'POST', body });
+  const res = await fetch<AuthResponseBody>({ method: 'POST', path: 'auth', body });
   if (res.status !== 200) throw new Error('login failed');
   return res.json();
 }
@@ -12,13 +12,14 @@ export async function loginUser(body: UserLogin) {
 export async function logoutUser(token: string) {
   const res = await fetch({
     method: 'DELETE',
+    path: 'auth',
     token,
   });
   if (res.status !== 200) throw new Error('logout failed');
 }
 
 export async function registerUser(body: UserRegistration) {
-  const res = await fetch<AuthResponseBody>({ method: 'PUT', body });
+  const res = await fetch<AuthResponseBody>({ method: 'PUT', path: 'auth', body });
   if (res.status !== 201) throw new Error('registration failed');
   return res.json();
 }

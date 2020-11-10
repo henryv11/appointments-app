@@ -1,13 +1,6 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
-import {
-  RefreshSessionParams,
-  refreshSessionParams,
-  userLoginBody,
-  UserLoginBody,
-  UserRegistrationBody,
-  userRegistrationBody,
-} from '../schemas';
+import { userLoginBody, UserLoginBody, UserRegistrationBody, userRegistrationBody } from '../schemas';
 
 const tags = ['auth'];
 
@@ -36,18 +29,6 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
   app.delete('/auth', { authorize: true, schema: { description: 'Logout user', summary: 'Logout', tags } }, req =>
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     app.services.auth.logoutUser({ userId: req.user!.userId }),
-  );
-
-  app.get<{ Params: RefreshSessionParams }>(
-    '/auth/session/:sessionToken/refresh',
-    {
-      schema: {
-        description: 'Refresh session token',
-        tags,
-        params: refreshSessionParams,
-      },
-    },
-    req => app.services.session.refreshSession(req.params.sessionToken),
   );
 
   done();

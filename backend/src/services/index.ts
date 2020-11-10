@@ -1,26 +1,21 @@
-import { FastifyPluginCallback } from 'fastify';
+import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
-import { authService } from './auth';
-import { boardService } from './board';
-import { sessionService } from './session';
+import { AuthService } from './auth';
+import { BoardService } from './board';
+import { SessionService } from './session';
 
-const servicesPlugin: FastifyPluginCallback = (app, _, done) => (
-  app.decorate('services', {
-    auth: authService(app),
-    board: boardService(app),
-    session: sessionService(app),
-  }),
-  done()
-);
+const getServices = (app: FastifyInstance) => ({
+  auth: new AuthService(app),
+  board: new BoardService(app),
+  session: new SessionService(app),
+});
+
+const servicesPlugin: FastifyPluginCallback = (app, _, done) => (app.decorate('services', getServices(app)), done());
 
 export const services = fp(servicesPlugin);
 
 declare module 'fastify' {
   interface FastifyInstance {
-    services: {
-      auth: ReturnType<typeof authService>;
-      board: ReturnType<typeof boardService>;
-      session: ReturnType<typeof sessionService>;
-    };
+    services: ReturnType<typeof getServices>;
   }
 }

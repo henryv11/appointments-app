@@ -1,21 +1,21 @@
 import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
-import { boardRepository } from './board';
-import { channelRepository } from './channel';
-import { messageRepository } from './message';
-import { personRepository } from './person';
-import { personAgreementsRepository } from './person-agreements';
-import { sessionRepository } from './session';
-import { userRepository } from './user';
+import { BoardRepository } from './board';
+import { ChannelRepository } from './channel';
+import { MessageRepository } from './message';
+import { PersonRepository } from './person';
+import { PersonAgreementsRepository } from './person-agreements';
+import { SessionRepository } from './session';
+import { UserRepository } from './user';
 
 const getRepositories = (app: FastifyInstance) => ({
-  user: userRepository(app),
-  person: personRepository(app),
-  personAgreements: personAgreementsRepository(app),
-  session: sessionRepository(app),
-  message: messageRepository(app),
-  channel: channelRepository(app),
-  board: boardRepository(app),
+  user: new UserRepository(app),
+  person: new PersonRepository(app),
+  personAgreements: new PersonAgreementsRepository(app),
+  session: new SessionRepository(app),
+  message: new MessageRepository(app),
+  channel: new ChannelRepository(app),
+  board: new BoardRepository(app),
 });
 
 const repositoriesPlugin: FastifyPluginCallback = (app, _, done) => (
