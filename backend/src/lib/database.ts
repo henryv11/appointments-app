@@ -1,15 +1,14 @@
-import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
 import { createDb, migrate } from 'postgres-migrations';
 
-const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<MigrationsOptions>> = async function (
-  app,
-  connectionOptions,
-) {
+const tag = '[database]';
+
+export const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
   const pg = native
-    ? (app.log.info('using native bindings'), native)
-    : (app.log.info('using javascript bindings'), { Pool, Client });
+    ? (app.log.info(`${tag} using native bindings`), native)
+    : (app.log.info(`${tag} using postgres bindings`), { Pool, Client });
   await databaseInit(pg.Client, connectionOptions, app.log);
   const pool = new pg.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
@@ -29,7 +28,7 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
   });
   app.decorate('database', database);
   app.addHook('onClose', async () => (app.log.info('ending database pool ...'), await pool.end()));
-};
+});
 
 async function databaseInit(
   pgClient: typeof Client,
@@ -44,25 +43,23 @@ async function databaseInit(
   try {
     client = new pgClient(connectionOptions);
     await client.connect();
-    logger.info(`creating database "${database}" ...`);
+    logger.info(`${tag} creating database "${database}" ...`);
     await createDb(database, { client });
     await client.end();
-    logger.info('running migrations ...');
+    logger.info(`${tag} running migrations ...`);
     client = new pgClient({ database, ...connectionOptions });
     await client.connect();
     const migrations = await migrate({ client }, migrationsDirectory);
     migrations.length
-      ? logger.info({ migrations }, 'ran migrations successfully')
-      : logger.info('no migrations to run');
+      ? logger.info({ migrations }, `${tag} ran migrations successfully`)
+      : logger.info(`${tag} no migrations to run`);
     await client.end();
   } catch (error) {
-    logger.error(error, 'database init failed');
+    logger.error(error, `${tag} database init failed`);
     await client?.end();
     throw error;
   }
 }
-
-export const database = fp(databasePlugin);
 
 declare module 'fastify' {
   interface FastifyInstance {
