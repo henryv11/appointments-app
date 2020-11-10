@@ -1,5 +1,5 @@
 import { AbstractRepository } from '../lib';
-import { CreatedPersonAgreement, CreatePersonAgreement } from '../types';
+import { CreatedPersonAgreement, CreatePersonAgreement } from '../schemas';
 
 export class PersonAgreementsRepository extends AbstractRepository {
   create = ({ personId, agreementType, hasAccepted }: CreatePersonAgreement, _query = this.query) =>

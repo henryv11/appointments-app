@@ -1,9 +1,9 @@
 import { suid } from 'rand-token';
 import { AbstractService } from '../lib';
-import { Session, User } from '../types';
+import { AuthResponse, Session, User } from '../schemas';
 
 export class SessionService extends AbstractService {
-  getSessionResponse = async (session: Session) => ({
+  getSessionResponse = async (session: Session): Promise<AuthResponse> => ({
     user: await this.repositories.user.findById(session.userId),
     token: this.jwt.sign({ userId: session.userId, sessionId: session.id }),
     refreshToken: session.token,

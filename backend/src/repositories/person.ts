@@ -1,5 +1,5 @@
 import { AbstractRepository } from '../lib';
-import { CreatedPerson, CreatePerson, UpdatePerson } from '../types';
+import { CreatedPerson, CreatePerson, UpdatePerson } from '../schemas';
 
 export class PersonRepository extends AbstractRepository {
   create = ({ firstName, lastName, email, dateOfBirth, userId }: CreatePerson, _query = this.query) =>
@@ -7,7 +7,7 @@ export class PersonRepository extends AbstractRepository {
       `insert into person ( first_name, last_name, email, date_of_birth, user_id ) 
         values ( $1, $2, $3, $4, $5 )
         returning id, first_name as "firstName", last_name as "lastName", email as "email",
-        date_of_birth as "dateOfBirth" user_id as "userId"`,
+        date_of_birth as "dateOfBirth", user_id as "userId"`,
       [firstName, lastName, email, dateOfBirth, userId],
     ).then(this.firstRow);
 

@@ -1,6 +1,6 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
-import { userLoginBody, UserLoginBody, UserRegistrationBody, userRegistrationBody } from '../schemas';
+import { authResponse, userLoginBody, UserLoginBody, UserRegistrationBody, userRegistrationBody } from '../schemas';
 
 const tags = ['auth'];
 
@@ -8,7 +8,15 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
   app.put<{ Body: UserRegistrationBody }>(
     '/auth',
     {
-      schema: { description: "User's registration details", summary: 'Registration', tags, body: userRegistrationBody },
+      schema: {
+        description: "User's registration details",
+        summary: 'Registration',
+        tags,
+        body: userRegistrationBody,
+        response: {
+          201: authResponse,
+        },
+      },
     },
     (req, res) => (res.status(201), app.services.auth.registerUser(req.body)),
   );
@@ -21,6 +29,9 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
         summary: 'Login',
         tags,
         body: userLoginBody,
+        response: {
+          200: authResponse,
+        },
       },
     },
     req => app.services.auth.loginUser(req.body),

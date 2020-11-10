@@ -1,6 +1,13 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
-import { createBoardBody, CreateBoardBody } from '../schemas';
+import {
+  createBoardBody,
+  CreateBoardBody,
+  getBoardParams,
+  GetBoardParams,
+  getBoardsQuery,
+  GetBoardsQuery,
+} from '../schemas';
 
 const tags = ['board'];
 
@@ -17,6 +24,24 @@ const boardControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     },
     (req, res) => (res.status(201), app.services.board.createNewBoard(req.body)),
   );
+
+  app.get<{ Params: GetBoardParams }>(
+    '/board/:boardId',
+    {
+      authorize: true,
+      schema: { description: 'Get board by id', tags, params: getBoardParams },
+    },
+    req => app.repositories.board.findById(req.params.boardId),
+  );
+
+  app.get<{ Querystring: GetBoardsQuery }>(
+    '/boards',
+    { authorize: true, schema: { description: 'List boards', tags, querystring: getBoardsQuery } },
+    () => {
+      // noop
+    },
+  );
+
   done();
 };
 

@@ -1,5 +1,5 @@
 import { AbstractService } from '../lib';
-import { CreateBoard } from '../types';
+import { CreateBoard } from '../schemas';
 
 export class BoardService extends AbstractService {
   async createNewBoard(board: CreateBoard) {

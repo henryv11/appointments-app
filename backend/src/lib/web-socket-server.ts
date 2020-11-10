@@ -2,7 +2,7 @@ import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import uws from 'uWebSockets.js';
 
-const compressionOptions = {
+const compressionOptions = Object.freeze({
   disabled: uws.DISABLED,
   shared: uws.SHARED_COMPRESSOR,
   dedicated3kb: uws.DEDICATED_COMPRESSOR_3KB,
@@ -13,7 +13,7 @@ const compressionOptions = {
   dedicated64kb: uws.DEDICATED_COMPRESSOR_64KB,
   dedicated128kb: uws.DEDICATED_COMPRESSOR_128KB,
   dedicated256kb: uws.DEDICATED_COMPRESSOR_256KB,
-};
+});
 
 const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function (app, { sslOptions }, done) {
   let listenSocket: uws.us_listen_socket | undefined;
@@ -25,7 +25,7 @@ const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function 
       })
     : uws.App();
   webSocketServer.any('/*', res => res.writeStatus('404 Not Found').end());
-  const webSocket: FastifyWebSocket = {
+  const webSocket: FastifyWebSocket = Object.freeze({
     handler: webSocketServer.ws.bind(webSocketServer),
     compressionOptions,
     listen: (port, cb = () => void 0) =>
@@ -34,7 +34,7 @@ const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function 
           ? ((listenSocket = token), app.log.info(`web socket server listening at port "${port}"`), cb())
           : (app.log.error(`web socket server failed to listen ${port}`), cb(new Error('web socket failed to start'))),
       ),
-  };
+  });
   app.decorate('webSocket', webSocket);
   app.addHook('onClose', (app, done) => {
     if (listenSocket)
@@ -48,7 +48,7 @@ export const webSocketServer = fp(webSocketServerPlugin);
 
 declare module 'fastify' {
   interface FastifyInstance {
-    webSocket: FastifyWebSocket;
+    webSocket: Readonly<FastifyWebSocket>;
   }
 }
 

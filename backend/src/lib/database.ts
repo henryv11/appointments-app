@@ -14,7 +14,7 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
   const pool = new pg.Pool(connectionOptions);
   pool.on('error', err => app.log.error(err, 'database pool error'));
   const query = pool.query.bind(pool);
-  const database: Database = {
+  const database: Database = Object.freeze({
     query,
     connect: pool.connect.bind(pool),
     firstRow: queryResult => queryResult.rows[0],
@@ -26,7 +26,7 @@ const databasePlugin: FastifyPluginAsync<DatabaseConnectionOptions & Partial<Mig
         rollback: () => connection.query('ROLLBACK').then(() => connection.release()),
         query: connection.query.bind(connection),
       })),
-  };
+  });
   app.decorate('database', database);
   app.addHook('onClose', async () => (app.log.info('ending database pool ...'), await pool.end()));
 };
@@ -66,7 +66,7 @@ export const database = fp(databasePlugin);
 
 declare module 'fastify' {
   interface FastifyInstance {
-    database: Database;
+    database: Readonly<Database>;
   }
 }
 

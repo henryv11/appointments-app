@@ -10,7 +10,16 @@ const getServices = (app: FastifyInstance) => ({
   session: new SessionService(app),
 });
 
-const servicesPlugin: FastifyPluginCallback = (app, _, done) => (app.decorate('services', getServices(app)), done());
+const servicesPlugin: FastifyPluginCallback = (app, _, done) => {
+  app.decorate('services', {});
+  Object.entries(getServices(app)).forEach(([serviceName, service]) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    app.services[serviceName] = service;
+  });
+  Object.freeze(app.services);
+  done();
+};
 
 export const services = fp(servicesPlugin);
 

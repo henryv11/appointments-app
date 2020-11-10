@@ -1,5 +1,5 @@
 import { AbstractRepository } from '../lib';
-import { CreateSession, Session, UpdateSession, User } from '../types';
+import { CreateSession, Session, UpdateSession, User } from '../schemas';
 
 export class SessionRepository extends AbstractRepository {
   create = ({ userId, token }: CreateSession, _query = this.query) =>

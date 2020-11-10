@@ -1,5 +1,6 @@
+import { Channel } from 'grpc';
 import { AbstractRepository } from '../lib';
-import { Channel, CreateChannel } from '../types';
+import { CreateChannel } from '../schemas';
 
 export class ChannelRepository extends AbstractRepository {
   create = ({ boardId, name }: CreateChannel, _query = this.query) =>
