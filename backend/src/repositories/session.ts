@@ -1,102 +1,50 @@
 import { FastifyInstance } from 'fastify';
-import { CreatedSession, CreateSession, Session, UpdateSession, User } from '../types';
+import { CreateSession, Session, UpdateSession, User } from '../types';
 
 export const sessionRepository = ({ database: { query, firstRow, allRows } }: FastifyInstance) => ({
-  create: ({ userId, token }: CreateSession, queryMethod = query) =>
-    queryMethod<CreatedSession>(
-      `
-INSERT INTO session (
-  user_id,
-  token
-)
-VALUES (
-  $1,
-  $2
-)
-RETURNING
-  id,
-  user_id AS "userId",
-  token
-`,
+  create: ({ userId, token }: CreateSession, _query = query) =>
+    _query<Session>(
+      `insert into session ( user_id, token )
+        values ( $1, $2 )
+        returning id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
+        updated_at as "updatedAt", created_at as "createdAt"`,
       [userId, token],
     ).then(firstRow),
-  findActiveForUser: (userId: User['id'], queryMethod = query) =>
-    queryMethod<Session>(
-      `
-SELECT
-  id,
-  user_id AS "userId",
-  token,
-  started_at AS "startedAt",
-  ended_at AS "endedAt",
-  updated_at AS "updatedAt",
-  created_at AS "createdAt"
-FROM
-  session
-WHERE
-  user_id = $1 AND
-  ended_at IS NULL
-ORDER BY started_at DESC
-LIMIT 1
-`,
+  findActiveForUser: (userId: User['id'], _query = query) =>
+    _query<Session>(
+      `select id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
+        updated_at as "updatedAt", created_at as "createdAt"
+        from session
+        where user_id = $1 and ended_at is null
+        order by started_at desc
+        limit 1`,
       [userId],
     ).then(firstRow),
-  findSessionByToken: (token: string, queryMethod = query) =>
-    queryMethod<Session>(
-      `
-SELECT
-  id,
-  user_id AS "userId",
-  token,
-  started_at AS "startedAt",
-  ended_at AS "endedAt",
-  updated_at AS "updatedAt",
-  created_at AS "createdAt"
-FROM
-  session
-WHERE
-  token = $1
-LIMIT 1
-`,
+  findSessionByToken: (token: string, _query = query) =>
+    _query<Session>(
+      `select id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
+        updated_at as "updatedAt", created_at as "createdAt"
+        from session
+        where token = $1
+        limit 1`,
       [token],
     ).then(firstRow),
-  update: (session: UpdateSession, queryMethod = query) =>
-    queryMethod<Session>(
-      `
-UPDATE session
-SET
-  ended_at = COALESCE($2, ended_at)
-WHERE
-  id = $1
-RETURNING
-  id,
-  user_id AS "userId",
-  token,
-  started_at AS "startedAt",
-  ended_at AS "endedAt",
-  updated_at AS "updatedAt",
-  created_at AS "createdAt"
-`,
+  update: (session: UpdateSession, _query = query) =>
+    _query<Session>(
+      `update session
+        set ended_at = coalesce($2, ended_at)
+        where id = $1
+        returning id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
+        updated_at as "updatedAt", created_at as "createdAt"`,
       [session.id, session.endedAt],
     ).then(firstRow),
-  endAllBelongingToUser: (userId: User['id'], queryMethod = query) =>
-    queryMethod<Session>(
-      `
-UPDATE session
-SET
-    ended_at = NOW()
-WHERE
-  user_id = $1 AND
-  ended_at IS NULL
-RETURNING
-  id,
-  user_id AS "userId",
-  token,
-  started_at AS "startedAt",
-  ended_at AS "endedAt",
-  updated_at AS "updatedAt",
-  created_at AS "createdAt"
-`,
+  endAllBelongingToUser: (userId: User['id'], _query = query) =>
+    _query<Session>(
+      `update session
+        set ended_at = now()
+        where user_id = $1 and ended_at is null
+        returning id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
+        updated_at as "updatedAt", created_at as "createdAt"`,
       [userId],
     ).then(allRows),
 });

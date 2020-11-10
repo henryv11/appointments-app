@@ -1,28 +1,8 @@
 import { compare, hash } from 'bcrypt';
 import { FastifyInstance } from 'fastify';
-import { suid } from 'rand-token';
 import { User, UserAuth, UserLogin, UserRegistration } from '../types';
 
-export const authService = ({ errors, repositories, database, log }: FastifyInstance) => ({
-  async getNewOrContinuedSession(userId: User['id']) {
-    const activeSession = await repositories.session.findActiveForUser(userId);
-    if (activeSession) return activeSession;
-    const refreshToken = suid(64);
-    return repositories.session.create({ userId, token: refreshToken });
-  },
-
-  async refreshSession(refreshToken: string) {
-    const session = await repositories.session.findSessionByToken(refreshToken);
-    if (!session) throw errors.badRequest();
-    // TODO: session validation
-    if (session.endedAt) return this.getNewOrContinuedSession(session.userId);
-    if (new Date().getTime() - new Date(session.startedAt).getTime() >= 8.64e7 * 14) {
-      await repositories.session.update({ id: session.id, endedAt: new Date() });
-      return this.getNewOrContinuedSession(session.userId);
-    }
-    return session;
-  },
-
+export const authService = ({ errors, repositories, database, log, services: { session } }: FastifyInstance) => ({
   async logoutUser({ userId }: { userId: User['id'] }) {
     await repositories.session.endAllBelongingToUser(userId);
   },
@@ -51,7 +31,7 @@ export const authService = ({ errors, repositories, database, log }: FastifyInst
         transaction.query,
       );
       await transaction.commit();
-      return user;
+      return this.loginUser({ username, password });
     } catch (error) {
       log.error(error, 'failed to create user');
       await transaction.rollback();
@@ -63,6 +43,6 @@ export const authService = ({ errors, repositories, database, log }: FastifyInst
     let user: UserAuth | undefined | '' = username && (await repositories.user.findByUsername(username));
     if (!user && email) user = await repositories.user.findByEmail(email);
     if (!user || !(await compare(password, user.password))) throw errors.badRequest();
-    return { id: user.id, username: user.username };
+    return session.getContinuedOrNewSession(user.id);
   },
 });

@@ -31,6 +31,7 @@
     "pino-pretty": "^4.2.1",
     "postgres-migrations": "^5.1.0",
     "rand-token": "^1.0.1",
+    "sql-bricks": "^2.0.5",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v18.8.0"
   },
   "devDependencies": {
@@ -39,6 +40,7 @@
     "@types/jsonwebtoken": "^8.5.0",
     "@types/pg": "^7.14.5",
     "@types/pino": "^6.3.1",
+    "@types/sql-bricks": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",
     "eslint": "^7.10.0",

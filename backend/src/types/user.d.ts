@@ -4,8 +4,8 @@ export interface User {
   id: number;
   username: string;
   password: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type PublicUser = Pick<User, 'id' | 'username'>;

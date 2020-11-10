@@ -51,7 +51,9 @@ async function databaseInit(
     client = new pgClient({ database, ...connectionOptions });
     await client.connect();
     const migrations = await migrate({ client }, migrationsDirectory);
-    migrations.length ? logger.info({ migrations }, 'ran migrations successfully') : logger.info('no migrations to run');
+    migrations.length
+      ? logger.info({ migrations }, 'ran migrations successfully')
+      : logger.info('no migrations to run');
     await client.end();
   } catch (error) {
     logger.error(error, 'database init failed');

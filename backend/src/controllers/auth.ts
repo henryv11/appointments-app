@@ -17,12 +17,7 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     {
       schema: { description: "User's registration details", summary: 'Registration', tags, body: userRegistrationBody },
     },
-    async (req, res) => {
-      res.status(201);
-      const user = await app.services.auth.registerUser(req.body);
-      const session = await app.services.auth.getNewOrContinuedSession(user.id);
-      return { user, token: app.jwt.sign({ userId: user.id, sessionId: session.id }), refreshToken: session.token };
-    },
+    (req, res) => (res.status(201), app.services.auth.registerUser(req.body)),
   );
 
   app.post<{ Body: UserLoginBody }>(
@@ -35,21 +30,12 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
         body: userLoginBody,
       },
     },
-    async req => {
-      const user = await app.services.auth.loginUser(req.body);
-      const session = await app.services.auth.getNewOrContinuedSession(user.id);
-      return { user, token: app.jwt.sign({ userId: user.id, sessionId: session.id }), refreshToken: session.token };
-    },
+    req => app.services.auth.loginUser(req.body),
   );
 
-  app.delete(
-    '/auth',
-    { authorize: true, schema: { description: 'Logout user', summary: 'Logout', tags } },
-    async req => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await app.services.auth.logoutUser({ userId: req.user!.userId });
-      return '';
-    },
+  app.delete('/auth', { authorize: true, schema: { description: 'Logout user', summary: 'Logout', tags } }, req =>
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    app.services.auth.logoutUser({ userId: req.user!.userId }),
   );
 
   app.get<{ Params: RefreshSessionParams }>(
@@ -61,11 +47,7 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
         params: refreshSessionParams,
       },
     },
-    async req => {
-      const session = await app.services.auth.refreshSession(req.params.sessionToken);
-      const user = await app.repositories.user.findById(session.userId);
-      return { user, token: app.jwt.sign({ sessionId: session.id, userId: user.id }), refreshToken: session.token };
-    },
+    req => app.services.session.refreshSession(req.params.sessionToken),
   );
 
   done();

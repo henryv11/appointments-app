@@ -7,8 +7,8 @@ export interface Person {
   lastName: string;
   email: string;
   dateOfBirth: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type UpdatePerson = Pick<Person, 'id'> & Partial<CreatePerson>;
