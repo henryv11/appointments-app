@@ -1,46 +1,81 @@
-import { useEffect, useState } from 'react';
-
-type Await<T> = T extends {
-  then(onfulfilled?: (value: infer U) => unknown): unknown;
-}
-  ? U
-  : T;
+import { useEffect, useRef } from 'react';
+import { useSimpleReducer } from './simple-reducer';
 
 export function useAsync<
-  F extends (...args: R) => Promise<G>,
-  G extends ReturnType<F>,
+  F extends (...args: R) => Promise<unknown>,
   R extends unknown[],
-  T = G extends Promise<infer R> ? R : G
+  T = ReturnType<F> extends Promise<infer R> ? R : ReturnType<F>
 >(asyncFn?: F, ...args: R) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<G>();
-  const [error, setError] = useState<Error>();
+  const abortController = useRef<() => void>();
+  const [{ promiseState, result, error }, setState] = useSimpleReducer<{
+    promiseState: PromiseState;
+    result?: T;
+    error?: Error;
+  }>({
+    promiseState: PromiseState.IDLE,
+  });
 
   useEffect(() => {
     if (!asyncFn) return;
-    let isCancelled = false;
-    setResult(undefined);
-    setError(undefined);
-    setIsLoading(true);
-    asyncFn(...args).then(
-      result => (isCancelled ? void 0 : (setResult(result), setIsLoading(false))),
-      error =>
-        isCancelled
-          ? void 0
-          : (setError(error || new Error('useAsync hook callback rejected with unknown error')), setIsLoading(false)),
+    abortController.current?.();
+    let isAborted = false;
+    abortController.current = () => (
+      (isAborted = true),
+      setState({ result: undefined, error: undefined, promiseState: PromiseState.IDLE }),
+      (abortController.current = undefined)
     );
-    return () => ((isCancelled = true), setIsLoading(false));
+    setState({ promiseState: PromiseState.PENDING });
+    asyncFn(...args)
+      .then(result => !isAborted && setState({ result: result as T, promiseState: PromiseState.RESOLVED }))
+      .catch(
+        error =>
+          !isAborted &&
+          setState({
+            error: error || new Error('useAsync function rejected with an undefined error'),
+            promiseState: PromiseState.REJECTED,
+          }),
+      )
+      .finally(() => !isAborted && (abortController.current = undefined));
+    return abortController.current;
   }, [asyncFn, ...args]);
 
-  return [isLoading, result, error] as UseAsyncState<T>;
+  return {
+    isIdle: promiseState === PromiseState.IDLE,
+    isPending: promiseState === PromiseState.PENDING,
+    isRejected: promiseState === PromiseState.REJECTED,
+    isResolved: promiseState === PromiseState.RESOLVED,
+    error,
+    result,
+    abort: abortController.current,
+  } as UseAsyncState<T>;
 }
 
-type IdleState = [false, undefined, undefined];
+enum PromiseState {
+  IDLE,
+  PENDING,
+  RESOLVED,
+  REJECTED,
+}
 
-type LoadingState = [true, undefined, undefined];
+interface UseAsyncStateBase<IsIdle = true, IsPending = false, IsRejected = false, IsResolved = false> {
+  isIdle: IsIdle;
+  isPending: IsPending;
+  isRejected: IsRejected;
+  isResolved: IsResolved;
+}
 
-type RejectedState = [false, undefined, Error];
+interface IdleState extends UseAsyncStateBase {}
 
-type ResolvedState<T> = [false, T, undefined];
+interface LoadingState extends UseAsyncStateBase<false, true> {
+  abort: () => void;
+}
+
+interface RejectedState extends UseAsyncStateBase<false, false, true> {
+  error: Error;
+}
+
+interface ResolvedState<T> extends UseAsyncStateBase<false, false, false, true> {
+  result: T;
+}
 
 type UseAsyncState<T> = IdleState | LoadingState | RejectedState | ResolvedState<T>;
