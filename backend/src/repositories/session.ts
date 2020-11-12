@@ -1,4 +1,4 @@
-import { CreateSession, Session, UpdateSession, User } from '../schemas';
+import { CreateSession, Session } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class SessionRepository extends AbstractRepository {
@@ -11,44 +11,43 @@ export class SessionRepository extends AbstractRepository {
       [userId, token],
     ).then(this.firstRow);
 
-  findActiveForUser = (userId: User['id'], conn = this.query) =>
-    conn<Session>(
-      `select id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
-      updated_at as "updatedAt", created_at as "createdAt"
-      from session
-      where user_id = $1 and ended_at is null
-      order by started_at desc
-      limit 1`,
-      [userId],
+  findOne(filter: Partial<Pick<Session, 'id' | 'userId' | 'endedAt' | 'token'>>, conn = this.query) {
+    const { where, params } = this.buildFilters(filter);
+    return conn<Session>(
+      this.ordinal(
+        `select id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
+          updated_at as "updatedAt", created_at as "createdAt"
+          from session ${where} limit 1`,
+      ),
+      params,
     ).then(this.firstRow);
+  }
 
-  findSessionByToken = (token: string, conn = this.query) =>
-    conn<Session>(
-      `select id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
-      updated_at as "updatedAt", created_at as "createdAt"
-      from session
-      where token = $1
-      limit 1`,
-      [token],
+  update(
+    update: Pick<Session, 'endedAt'>,
+    filter: Partial<Pick<Session, 'id' | 'userId' | 'endedAt'>>,
+    conn = this.query,
+  ) {
+    const { where, params } = this.buildFilters(filter);
+    if (!where) throw new Error('updating session without filters is not allowed');
+    return conn<Session>(
+      this.ordinal(
+        `update session
+          set ended_at = coalesce(?, ended_at) ${where}
+          returning id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
+          updated_at as "updatedAt", created_at as "createdAt"`,
+      ),
+      [update.endedAt, ...params],
     ).then(this.firstRow);
+  }
 
-  update = (session: UpdateSession, conn = this.query) =>
-    conn<Session>(
-      `update session
-      set ended_at = coalesce($2, ended_at)
-      where id = $1
-      returning id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
-      updated_at as "updatedAt", created_at as "createdAt"`,
-      [session.id, session.endedAt],
-    ).then(this.firstRow);
-
-  endAllBelongingToUser = (userId: User['id'], conn = this.query) =>
-    conn<Session>(
-      `update session
-      set ended_at = now()
-      where user_id = $1 and ended_at is null
-      returning id, user_id as "userId", token, started_at as "startedAt", ended_at as "endedAt",
-      updated_at as "updatedAt", created_at as "createdAt"`,
-      [userId],
-    ).then(this.allRows);
+  private buildFilters(filter: Partial<Pick<Session, 'id' | 'userId' | 'endedAt' | 'token'>>) {
+    const where: string[] = [];
+    const params: (string | number | null | Date)[] = [];
+    if (filter.id) where.push('id = ?'), params.push(filter.id);
+    if (filter.userId) where.push('user_id = ?'), params.push(filter.userId);
+    if (filter.endedAt !== undefined) where.push('ended_at = ?'), params.push(filter.endedAt);
+    if (filter.token) where.push('token = ?'), params.push(filter.token);
+    return { where: where.length ? 'where ' + where.join(' and ') : '', params };
+  }
 }

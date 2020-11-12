@@ -1,10 +1,10 @@
 import { compare, hash } from 'bcrypt';
-import { User, UserAuth, UserLoginBody, UserRegistrationBody } from '../schemas';
+import { AgreementType, User, UserLoginBody, UserRegistrationBody } from '../schemas';
 import { AbstractService } from './abstract';
 
 export class AuthService extends AbstractService {
   async logoutUser({ userId }: { userId: User['id'] }) {
-    await this.repositories.session.endAllBelongingToUser(userId);
+    await this.repositories.session.update({ endedAt: new Date() }, { userId, endedAt: null });
   }
 
   async registerUser({ username, password, hasAcceptedTermsAndConditions, ...personDetails }: UserRegistrationBody) {
@@ -21,7 +21,7 @@ export class AuthService extends AbstractService {
       const person = await this.repositories.person.create({ ...personDetails, userId: user.id }, transaction.query);
       await this.repositories.personAgreements.create(
         {
-          agreementType: 'TERMS_AND_CONDITIONS',
+          agreementType: AgreementType.TERMS_AND_CONDITIONS,
           hasAccepted: hasAcceptedTermsAndConditions,
           personId: person.id,
         },
@@ -37,8 +37,7 @@ export class AuthService extends AbstractService {
   }
 
   async loginUser({ email, password, username }: UserLoginBody) {
-    let user: UserAuth | undefined | '' = username && (await this.repositories.user.findByUsername(username));
-    if (!user && email) user = await this.repositories.user.findByEmail(email);
+    const user = await this.repositories.user.findOne({ email, username });
     if (!user || !(await compare(password, user.password))) throw this.errors.badRequest();
     return this.services.session.getContinuedOrNewSession(user.id);
   }

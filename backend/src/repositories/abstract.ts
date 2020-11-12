@@ -1,12 +1,12 @@
 import { FastifyInstance } from 'fastify';
 
-export class AbstractRepository {
-  query!: FastifyInstance['database']['query'];
-  firstRow!: FastifyInstance['database']['firstRow'];
-  allRows!: FastifyInstance['database']['allRows'];
-  transaction!: FastifyInstance['database']['transaction'];
-  ordinal!: FastifyInstance['database']['ordinal'];
-  unnest!: FastifyInstance['database']['unnest'];
+export abstract class AbstractRepository {
+  protected query!: FastifyInstance['database']['query'];
+  protected firstRow!: FastifyInstance['database']['firstRow'];
+  protected allRows!: FastifyInstance['database']['allRows'];
+  protected transaction!: FastifyInstance['database']['transaction'];
+  protected ordinal!: FastifyInstance['database']['ordinal'];
+  protected unnest!: FastifyInstance['database']['unnest'];
 
   register({ database: { query, firstRow, allRows, transaction, ordinal, unnest } }: FastifyInstance) {
     this.query = query;

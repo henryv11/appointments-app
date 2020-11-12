@@ -116,7 +116,9 @@ export type CreatePersonAgreement = Pick<PersonAgreement, 'agreementType' | 'per
 
 export type CreatedPersonAgreement = CreatePersonAgreement;
 
-export type AgreementType = 'TERMS_AND_CONDITIONS';
+export enum AgreementType {
+  TERMS_AND_CONDITIONS = 'TERMS_AND_CONDITIONS',
+}
 
 export interface Person {
   id: number;

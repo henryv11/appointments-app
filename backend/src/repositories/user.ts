@@ -1,4 +1,4 @@
-import { CreateUser, Person, PublicUser, User, UserAuth } from '../schemas';
+import { CreateUser, Person, PublicUser, UserAuth } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class UserRepository extends AbstractRepository {
@@ -10,29 +10,21 @@ export class UserRepository extends AbstractRepository {
       [username, password],
     ).then(this.firstRow);
 
-  findByUsername = (username: string, conn = this.query) =>
-    conn<UserAuth>(
+  findOne(filter: Partial<Pick<UserAuth, 'username' | 'id'> & Pick<Person, 'email'>>, conn = this.query) {
+    const { where, params } = this.buildFilters(filter);
+    return conn<UserAuth>(
       `select id, username, password
-      from app_user
-      where username = $1
-      limit 1`,
-      [username],
+        from app_user ${where} limit 1`,
+      params,
     ).then(this.firstRow);
+  }
 
-  findByEmail = (email: Person['email'], conn = this.query) =>
-    conn<UserAuth>(
-      `select id, username, password
-      from app_user
-      where id = (select user_id from person where email = $1)
-      limit 1`,
-      [email],
-    ).then(this.firstRow);
-
-  findById = (id: User['id'], conn = this.query) =>
-    conn<PublicUser>(
-      `select id, username
-      from app_user
-      where id = $1 limit 1`,
-      [id],
-    ).then(this.firstRow);
+  private buildFilters(filter: Partial<Pick<UserAuth, 'username' | 'id'> & Pick<Person, 'email'>>) {
+    const where = [];
+    const params = [];
+    if (filter.id) where.push('id = ?'), params.push(filter.id);
+    if (filter.username) where.push('username = ?'), params.push(filter.username);
+    if (filter.email) where.push('id = (select user_id from person where email = ?)'), params.push(filter.email);
+    return { where: where.length ? 'where ' + where.join(' and ') : '', params };
+  }
 }
