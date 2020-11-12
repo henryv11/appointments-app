@@ -16,6 +16,8 @@ export const database = fp<DatabaseConnectionOptions>(async (app, connectionOpti
   const query = pool.query.bind(pool);
   const database: Database = Object.freeze({
     query,
+    ordinal,
+    unnest,
     connect: pool.connect.bind(pool),
     firstRow: queryResult => queryResult.rows[0],
     allRows: queryResult => queryResult.rows,
@@ -62,6 +64,22 @@ async function databaseInit(
   }
 }
 
+function ordinal(query: string) {
+  let i = 0;
+  return query
+    .split('')
+    .map(c => (c === '?' ? (i++, '$' + i) : c))
+    .join('');
+}
+
+function unnest<T extends Record<string, unknown>>(values: T[], ...props: (keyof T)[]) {
+  const res: T[keyof T][][] = Array.from(new Array(props.length), () => []);
+  values.forEach(el => {
+    props.forEach((prop, i) => res[i].push(el[prop]));
+  });
+  return res;
+}
+
 declare module 'fastify' {
   interface FastifyInstance {
     database: Readonly<Database>;
@@ -82,6 +100,8 @@ interface Transaction {
 interface Database {
   query: Pool['query'];
   connect: Pool['connect'];
+  ordinal: typeof ordinal;
+  unnest: typeof unnest;
   transaction: () => Promise<Transaction>;
   firstRow: <T>(queryResult: QueryResult<T>) => T;
   allRows: <T>(queryResult: QueryResult<T>) => T[];

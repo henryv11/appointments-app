@@ -1,6 +1,6 @@
-export { _fetch as fetch };
 import { ParsedUrlQueryInput, stringify } from 'querystring';
 
+export { _fetch as fetch };
 
 async function _fetch<T>({
   headers = {},

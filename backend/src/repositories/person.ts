@@ -2,8 +2,8 @@ import { CreatedPerson, CreatePerson, UpdatePerson } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class PersonRepository extends AbstractRepository {
-  create = ({ firstName, lastName, email, dateOfBirth, userId }: CreatePerson, _query = this.query) =>
-    _query<CreatedPerson>(
+  create = ({ firstName, lastName, email, dateOfBirth, userId }: CreatePerson, conn = this.query) =>
+    conn<CreatedPerson>(
       `insert into person ( first_name, last_name, email, date_of_birth, user_id ) 
         values ( $1, $2, $3, $4, $5 )
         returning id, first_name as "firstName", last_name as "lastName", email as "email",
@@ -11,8 +11,8 @@ export class PersonRepository extends AbstractRepository {
       [firstName, lastName, email, dateOfBirth, userId],
     ).then(this.firstRow);
 
-  update = ({ id, firstName, lastName, email, dateOfBirth }: UpdatePerson, _query = this.query) =>
-    _query<CreatedPerson>(
+  update = ({ id, firstName, lastName, email, dateOfBirth }: UpdatePerson, conn = this.query) =>
+    conn<CreatedPerson>(
       `update person
         set first_name = coalesce($2, first_name), last_name = coalesce($3, last_name),
         email = coalesce($4, email), date_of_birth = coalesce($5, date_of_birth)
