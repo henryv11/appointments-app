@@ -1,73 +1,46 @@
 import { useEffect, useState } from 'react';
 
-export function useAsync<F extends (...args: R) => Promise<T>, R extends unknown[], T>(asyncFn: F, ...args: R) {
-  const [promiseState, setPromiseState] = useState<PromiseState>(PromiseState.IDLE);
-  const [result, setResult] = useState<T>();
+type Await<T> = T extends {
+  then(onfulfilled?: (value: infer U) => unknown): unknown;
+}
+  ? U
+  : T;
+
+export function useAsync<
+  F extends (...args: R) => Promise<G>,
+  G extends ReturnType<F>,
+  R extends unknown[],
+  T = G extends Promise<infer R> ? R : G
+>(asyncFn?: F, ...args: R) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<G>();
   const [error, setError] = useState<Error>();
 
   useEffect(() => {
-    if (promiseState !== PromiseState.IDLE) return;
+    if (!asyncFn) return;
     let isCancelled = false;
     setResult(undefined);
     setError(undefined);
-    setPromiseState(PromiseState.PENDING);
+    setIsLoading(true);
     asyncFn(...args).then(
-      result => (isCancelled ? void 0 : (setResult(result), setPromiseState(PromiseState.RESOLVED))),
+      result => (isCancelled ? void 0 : (setResult(result), setIsLoading(false))),
       error =>
         isCancelled
           ? void 0
-          : (setError(error || new Error('useAsync hook callback rejected with unknown error')),
-            setPromiseState(PromiseState.REJECTED)),
+          : (setError(error || new Error('useAsync hook callback rejected with unknown error')), setIsLoading(false)),
     );
-    return () => ((isCancelled = true), setPromiseState(PromiseState.IDLE));
-  }, args);
+    return () => ((isCancelled = true), setIsLoading(false));
+  }, [asyncFn, ...args]);
 
-  return {
-    result,
-    error,
-    isLoading: promiseState === PromiseState.PENDING,
-    isRejected: promiseState === PromiseState.REJECTED,
-    isResolved: promiseState === PromiseState.RESOLVED,
-  } as UseAsyncState<T>;
+  return [isLoading, result, error] as UseAsyncState<T>;
 }
 
-enum PromiseState {
-  PENDING,
-  REJECTED,
-  RESOLVED,
-  IDLE,
-}
+type IdleState = [false, undefined, undefined];
 
-interface IdleState {
-  isLoading: false;
-  isRejected: false;
-  isResolved: false;
-  result: undefined;
-  error: undefined;
-}
+type LoadingState = [true, undefined, undefined];
 
-interface LoadingState {
-  isLoading: true;
-  isRejected: false;
-  isResolved: false;
-  result: undefined;
-  error: undefined;
-}
+type RejectedState = [false, undefined, Error];
 
-interface RejectedState {
-  isLoading: false;
-  isRejected: true;
-  isResolved: false;
-  result: undefined;
-  error: Error;
-}
-
-interface ResolvedState<T> {
-  isLoading: false;
-  isRejected: false;
-  isResolved: true;
-  result: T;
-  error: undefined;
-}
+type ResolvedState<T> = [false, T, undefined];
 
 type UseAsyncState<T> = IdleState | LoadingState | RejectedState | ResolvedState<T>;

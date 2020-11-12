@@ -1,6 +1,6 @@
 import { compare, hash } from 'bcrypt';
-import { AbstractService } from '../lib';
 import { User, UserAuth, UserLoginBody, UserRegistrationBody } from '../schemas';
+import { AbstractService } from './abstract';
 
 export class AuthService extends AbstractService {
   async logoutUser({ userId }: { userId: User['id'] }) {

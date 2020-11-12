@@ -6,12 +6,13 @@ import { createDb, migrate } from 'postgres-migrations';
 const tag = '[database]';
 
 export const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
+  const log = app.log.child({ plugin: 'database' });
   const pg = native
-    ? (app.log.info(`${tag} using native bindings`), native)
-    : (app.log.info(`${tag} using postgres bindings`), { Pool, Client });
-  await databaseInit(pg.Client, connectionOptions, app.log);
+    ? (log.info(`${tag} using native bindings`), native)
+    : (log.info(`${tag} using postgres bindings`), { Pool, Client });
+  await databaseInit(pg.Client, connectionOptions, log);
   const pool = new pg.Pool(connectionOptions);
-  pool.on('error', err => app.log.error(err, 'database pool error'));
+  pool.on('error', err => log.error(err, `${tag} database pool error`));
   const query = pool.query.bind(pool);
   const database: Database = Object.freeze({
     query,
@@ -27,7 +28,7 @@ export const database = fp<DatabaseConnectionOptions>(async (app, connectionOpti
       })),
   });
   app.decorate('database', database);
-  app.addHook('onClose', async () => (app.log.info('ending database pool ...'), await pool.end()));
+  app.addHook('onClose', async () => (log.info(`${tag} ending database pool ...`), await pool.end()));
 });
 
 async function databaseInit(

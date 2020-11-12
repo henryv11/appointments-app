@@ -1,6 +1,6 @@
 import { suid } from 'rand-token';
-import { AbstractService } from '../lib';
 import { AuthResponse, Session, User } from '../schemas';
+import { AbstractService } from './abstract';
 
 export class SessionService extends AbstractService {
   getSessionResponse = async (session: Session): Promise<AuthResponse> => ({

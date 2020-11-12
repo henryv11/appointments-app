@@ -1,5 +1,5 @@
-import { AbstractRepository } from '../lib';
 import { CreateMessage, Message } from '../schemas';
+import { AbstractRepository } from './abstract';
 
 export class MessageRepository extends AbstractRepository {
   create = ({ userId, content }: CreateMessage, _query = this.query) =>

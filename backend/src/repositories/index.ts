@@ -19,11 +19,11 @@ const getRepositories = () =>
     board: new BoardRepository(),
   });
 
-const repositoriesPlugin: FastifyPluginCallback = (app, _, done) => {
-  app.decorate('repositories', getRepositories());
-  Object.values(app.repositories).forEach(repo => repo.register(app));
-  done();
-};
+const repositoriesPlugin: FastifyPluginCallback = (app, _, done) => (
+  app.decorate('repositories', getRepositories()),
+  Object.values(app.repositories).forEach(repo => repo.register(app)),
+  done()
+);
 
 export const repositories = fp(repositoriesPlugin);
 

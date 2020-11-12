@@ -1,17 +1,21 @@
-import { AuthContextActionType, useAuthContext } from '@/contexts/auth';
-import { LocalStorageKey } from '@/lib/constants';
+import { useAuthContext } from '@/contexts/auth';
 import { refreshSession } from '@/services/auth';
+import { useHistory } from 'react-router-dom';
 import { useAsync } from './async';
 
-export function useRequireAuthentication({ onNotAuthenticated = () => void 0 }: { onNotAuthenticated?: () => void }) {
+export function useRequireAuthentication() {
+  const { push } = useHistory();
   const [authState, dispatch] = useAuthContext();
-  const { isResolved } = useAsync(async () => {
-    if (authState.isAuthenticated) return;
-    const token = localStorage.getItem(LocalStorageKey.REFRESH_TOKEN);
-    dispatch({ type: AuthContextActionType.LOG_OUT });
-    if (!token) return;
-    dispatch({ type: AuthContextActionType.LOG_IN, payload: await refreshSession(token) });
+  const [isLoading, result, error] = useAsync(() => {
+    if (authState.isAuthenticated || !authState.refreshToken) return undefined;
+    return refreshSession(authState.refreshToken);
   });
-  if (isResolved && !authState.isAuthenticated) onNotAuthenticated();
+
+  if (isLoading) return authState;
+
+  if (error) return '';
+  // if (result)
+  if (result) return 'f';
+  // if (isResolved && !authState.isAuthenticated) return push(RoutePath.LOGIN) as never;
   return authState;
 }

@@ -1,5 +1,5 @@
-import { AbstractRepository } from '../lib';
 import { CreateUser, Person, PublicUser, User, UserAuth } from '../schemas';
+import { AbstractRepository } from './abstract';
 
 export class UserRepository extends AbstractRepository {
   create = ({ username, password }: CreateUser, _query = this.query) =>
