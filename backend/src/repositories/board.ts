@@ -1,36 +1,58 @@
-import { Board, CreateBoard } from '../schemas';
+import { Board, CreateBoard, FilterBoard, ListOptions } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class BoardRepository extends AbstractRepository {
   create = ({ name }: CreateBoard, conn = this.query) =>
     conn<Board>(
-      `insert into board ( name )
-        values ( $1 )
-        returning id, name, created_at as "createdAt", updated_at as "updatedAt"`,
-      [name],
+      this.sql`insert into ${this.table}
+                      (name)
+              values  (${name})
+              returning ${this.columns}`,
     ).then(this.firstRow);
 
-  findById = (id: Board['id'], conn = this.query) =>
+  findOne = (filter: FilterBoard, conn = this.query) =>
     conn<Board>(
-      `select id, name, created_at as "createdAt", updated_at as "updatedAt"
-        from board
-        where id = $1`,
-      [id],
-    );
+      this.sql`select ${this.columns}
+              from ${this.table}
+              ${this.getWhereClause(filter)}
+              limit 1`,
+    ).then(this.firstRow);
 
-  list(filter: { name?: string; nameLike?: string; limit?: number; offset?: number }, conn = this.query) {
-    const where = [];
-    const params = [];
-    if (filter.name) where.push('name = ?'), params.push(filter.name);
-    if (filter.nameLike) where.push('name ilike ?'), params.push(filter.nameLike);
-    return conn(
-      this.ordinal(
-        `select id, name, created_at as "createdAt", updated_at as "updatedAt"
-        from board` +
-          (where.length ? ' where ' + where.join(' and ') : '') +
-          ' limit ? offset ?',
-      ),
-      [...params, filter.limit || 100, filter.offset || 0],
-    );
+  list = (
+    {
+      limit,
+      offset,
+      orderBy,
+      orderDirection,
+      ...filter
+    }: FilterBoard & ListOptions<'id' | 'name' | 'created_at' | 'updated_at'>,
+    conn = this.query,
+  ) =>
+    conn(
+      this.sql`select ${this.columns}
+              from ${this.table}
+              ${this.getWhereClause(filter)}
+              order by ${orderBy} ${orderDirection}
+              limit ${limit || 100} offset ${offset || 1}`,
+    ).then(this.allRows);
+
+  private getWhereClause({ name, id }: FilterBoard) {
+    const where = this.sql.where``;
+    if (name) where.and`name = ${name}`;
+    if (id) where.and`id = ${id}`;
+    return where;
+  }
+
+  private get table() {
+    return this.sql`board`;
+  }
+
+  private get columns() {
+    return this.sql`
+    id,
+    name,
+    created_at as "createdAt", 
+    updated_at as "updatedAt"
+    `;
   }
 }

@@ -7,6 +7,7 @@ export function useAsync<
   T = ReturnType<F> extends Promise<infer R> ? R : ReturnType<F>
 >(asyncFn?: F, ...args: R) {
   const abortController = useRef<() => void>();
+  const callbackRef = useRef<F>();
   const [{ promiseState, result, error }, setState] = useSimpleReducer<{
     promiseState: PromiseState;
     result?: T;
@@ -16,7 +17,11 @@ export function useAsync<
   });
 
   useEffect(() => {
-    if (!asyncFn) return;
+    callbackRef.current = asyncFn;
+  }, [asyncFn]);
+
+  useEffect(() => {
+    if (!callbackRef.current) return;
     abortController.current?.();
     let isAborted = false;
     abortController.current = () => (
@@ -25,7 +30,8 @@ export function useAsync<
       (abortController.current = undefined)
     );
     setState({ promiseState: PromiseState.PENDING });
-    asyncFn(...args)
+    callbackRef
+      .current(...args)
       .then(result => !isAborted && setState({ result: result as T, promiseState: PromiseState.RESOLVED }))
       .catch(
         error =>
@@ -37,7 +43,7 @@ export function useAsync<
       )
       .finally(() => !isAborted && (abortController.current = undefined));
     return abortController.current;
-  }, [asyncFn, ...args]);
+  }, args);
 
   return {
     isIdle: promiseState === PromiseState.IDLE,

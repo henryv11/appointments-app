@@ -1,5 +1,6 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
+import { registerServices } from '../lib';
 import { AuthService } from './auth';
 import { BoardService } from './board';
 import { SessionService } from './session';
@@ -11,11 +12,9 @@ const getServices = () =>
     session: new SessionService(),
   });
 
-const servicesPlugin: FastifyPluginCallback = (app, _, done) => {
-  app.decorate('services', getServices());
-  Object.values(app.services).forEach(service => service.register(app));
-  done();
-};
+const servicesPlugin: FastifyPluginCallback = (app, _, done) => (
+  app.register(registerServices, { services: getServices(), name: 'services' }), done()
+);
 
 export const services = fp(servicesPlugin);
 

@@ -1,5 +1,5 @@
 import Boom from '@hapi/boom';
-import { FastifyPluginCallback, FastifyRequest, HTTPMethods } from 'fastify';
+import { FastifyError, FastifyPluginCallback, FastifyRequest, HTTPMethods } from 'fastify';
 import fp from 'fastify-plugin';
 
 const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
@@ -31,10 +31,24 @@ const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
       : (error.validation
           ? res.status(422).send(error.validation)
           : res.status(500).send('Internal Server Error')
-        ).log.error({ error, request: formatRequest(req) }),
+        ).log.error(
+          {
+            error: formatError(error),
+            request: formatRequest(req),
+          },
+          'internal server error',
+        ),
   );
   done();
 };
+
+const formatError = ({ code, statusCode, message, name, stack }: FastifyError) => ({
+  name,
+  message,
+  code,
+  statusCode,
+  stack,
+});
 
 const formatRequest = ({ id, body, query, method, headers, url, hostname, ip, user }: FastifyRequest) => ({
   id,

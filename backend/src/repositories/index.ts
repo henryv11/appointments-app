@@ -1,5 +1,6 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
+import { registerServices } from '../lib';
 import { BoardRepository } from './board';
 import { ChannelRepository } from './channel';
 import { MessageRepository } from './message';
@@ -20,9 +21,7 @@ const getRepositories = () =>
   });
 
 const repositoriesPlugin: FastifyPluginCallback = (app, _, done) => (
-  app.decorate('repositories', getRepositories()),
-  Object.values(app.repositories).forEach(repo => repo.register(app)),
-  done()
+  app.register(registerServices, { services: getRepositories(), name: 'repositories' }), done()
 );
 
 export const repositories = fp(repositoriesPlugin);
