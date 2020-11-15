@@ -1,17 +1,15 @@
 const sqlObjControlsSymbol = Symbol('controls');
-const isSqlObject = (obj: unknown): obj is SqlObjBase => (obj as SqlObject)?.[sqlObjControlsSymbol] !== undefined;
+const isSqlObject = (obj: unknown): obj is SqlObjBase => (obj as SqlObj)?.[sqlObjControlsSymbol] !== undefined;
 
 function mergeSqlObject(obj1: SqlObjControl, obj2: SqlObjControl, reverse = false) {
-  switch (obj2.type) {
-    case SqlObjType.WHERE: {
-      if (!obj2.isEmpty) reverse ? obj1.unshiftText('where ') : obj1.pushText('where ');
-    }
-    case SqlObjType.SET: {
-      if (!obj2.isEmpty) reverse ? obj1.unshiftText('set ') : obj1.pushText('set ');
-    }
+  if (!obj2.isEmpty) {
+    if (obj2.type === SqlObjType.WHERE) reverse ? obj1.unshiftText('where ') : obj1.pushText('where ');
+    else if (obj2.type === SqlObjType.SET) reverse ? obj1.unshiftText('set ') : obj1.pushText('set ');
   }
-  if (reverse) obj1.unshiftText(...obj2.text), obj2.unshiftValues(...obj2.values);
-  else obj1.pushText(...obj2.text), obj1.pushValues(...obj2.values);
+
+  reverse
+    ? (obj1.unshiftText(...obj2.text), obj2.unshiftValues(...obj2.values))
+    : (obj1.pushText(...obj2.text), obj1.pushValues(...obj2.values));
 }
 
 function templateStringParserLoop(
@@ -56,7 +54,7 @@ function sqlObjectControl<T extends SqlObjType>(type: T) {
 
 function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
   const control = sqlObjectControl(SqlObjType.WHERE);
-  const sqlObj: WhereSqlObject = {
+  const sqlObj: WhereSqlObj = {
     [sqlObjControlsSymbol]: control,
     and(tempStrs, ...args) {
       if (!control.isEmpty) control.pushText(' and ');
@@ -76,10 +74,10 @@ function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase |
   return sqlObj;
 }
 
-function set(): UpdateSqlObject;
-function set(arg1: KeyValuePairs): UpdateSqlObject;
-function set(arg1: string, arg2: ValidArg): UpdateSqlObject;
-function set(arg1?: string | KeyValuePairs, arg2?: ValidArg): UpdateSqlObject {
+function set(): UpdateSqlObj;
+function set(arg1: KeyValuePairs): UpdateSqlObj;
+function set(arg1: string, arg2: ValidArg): UpdateSqlObj;
+function set(arg1?: string | KeyValuePairs, arg2?: ValidArg): UpdateSqlObj {
   const control = sqlObjectControl(SqlObjType.SET);
   function pushValues(kvPairs: KeyValuePairs) {
     kvPairs.forEach(kv => {
@@ -90,23 +88,23 @@ function set(arg1?: string | KeyValuePairs, arg2?: ValidArg): UpdateSqlObject {
       }
     });
   }
-  const sqlObj: UpdateSqlObject = {
+  const sqlObj: UpdateSqlObj = {
     [sqlObjControlsSymbol]: control,
     add(arg1: string | KeyValuePairs, arg2?: ValidArg) {
-      pushValues(Array.isArray(arg1) ? arg1 : ([[arg1, arg2]] as [string, ValidArg | undefined][]));
+      pushValues(Array.isArray(arg1) ? arg1 : [[arg1, arg2]]);
       return sqlObj;
     },
     get isEmpty() {
       return control.isEmpty;
     },
   };
-  if (arg1) pushValues(Array.isArray(arg1) ? arg1 : ([[arg1, arg2]] as [string, ValidArg | undefined][]));
+  if (arg1) pushValues(Array.isArray(arg1) ? arg1 : [[arg1, arg2]]);
   return sqlObj;
 }
 
 export default function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
   const control = sqlObjectControl(SqlObjType.MAIN);
-  const sqlObj: SqlObject = {
+  const sqlObj: SqlObj = {
     [sqlObjControlsSymbol]: control,
     append(...strOrSql) {
       strOrSql.forEach(
@@ -138,13 +136,15 @@ export default function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg |
 sql.where = where;
 sql.set = set;
 
-type ValidArg = string | number | boolean | Date | null;
-
 enum SqlObjType {
   MAIN,
   WHERE,
   SET,
 }
+
+type ValidArg = string | number | boolean | Date | null;
+
+type KeyValuePairs = ([string, ValidArg | undefined] | undefined | false)[];
 
 interface SqlObjControl<T extends SqlObjType = SqlObjType.MAIN | SqlObjType.WHERE | SqlObjType.SET> {
   readonly values: ValidArg[];
@@ -161,27 +161,25 @@ interface SqlObjBase<T extends SqlObjType = SqlObjType.MAIN | SqlObjType.WHERE |
   [sqlObjControlsSymbol]: SqlObjControl<T>;
 }
 
-interface SqlObject extends SqlObjBase<SqlObjType.MAIN> {
+interface SqlObj extends SqlObjBase<SqlObjType.MAIN> {
   values: ValidArg[];
   readonly text: string;
-  append: (...strOrSql: (string | SqlObjBase | false | undefined)[]) => SqlObject;
-  prepend: (...strOrSql: (string | SqlObjBase | false | undefined)[]) => SqlObject;
+  append: (...strOrSql: (string | SqlObjBase | false | undefined)[]) => SqlObj;
+  prepend: (...strOrSql: (string | SqlObjBase | false | undefined)[]) => SqlObj;
   readonly isEmpty: boolean;
 }
 
-interface WhereSqlObject extends SqlObjBase<SqlObjType.WHERE> {
-  and(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObject;
-  or(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObject;
+interface WhereSqlObj extends SqlObjBase<SqlObjType.WHERE> {
+  and(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj;
+  or(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj;
   readonly isEmpty: boolean;
 }
 
-interface UpdateSqlObject extends SqlObjBase<SqlObjType.SET> {
-  add: UpdateSqlObjectAdd;
+interface UpdateSqlObj extends SqlObjBase<SqlObjType.SET> {
+  add: UpdateSqlObjAdd;
   readonly isEmpty: boolean;
 }
-interface UpdateSqlObjectAdd {
-  (arg1: string | KeyValuePairs): UpdateSqlObject;
-  (arg1: string, arg2: ValidArg | undefined): UpdateSqlObject;
+interface UpdateSqlObjAdd {
+  (arg1: string | KeyValuePairs): UpdateSqlObj;
+  (arg1: string, arg2: ValidArg | undefined): UpdateSqlObj;
 }
-
-type KeyValuePairs = ([string, ValidArg | undefined] | undefined | false)[];
