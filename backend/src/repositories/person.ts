@@ -14,10 +14,10 @@ export class PersonRepository extends AbstractRepository {
     conn<Person>(
       this.sql`update ${this.table}
               ${this.sql.set([
-                !!firstName && ['first_name', firstName],
-                !!lastName && ['last_name', lastName],
-                !!email && ['email', email],
-                !!dateOfBirth && ['date_of_birth', dateOfBirth],
+                ['first_name', firstName],
+                ['last_name', lastName],
+                ['email', email],
+                ['date_of_birth', dateOfBirth],
               ])}
               ${this.getWhereClause(filter)}
               returning ${this.columns}`,

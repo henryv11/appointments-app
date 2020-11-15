@@ -77,11 +77,11 @@ function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase |
 }
 
 function set(): UpdateSqlObject;
-function set(arg1: ([string, ValidArg | undefined] | undefined | false)[]): UpdateSqlObject;
+function set(arg1: KeyValuePairs): UpdateSqlObject;
 function set(arg1: string, arg2: ValidArg): UpdateSqlObject;
-function set(arg1?: string | ([string, ValidArg | undefined] | undefined | false)[], arg2?: ValidArg): UpdateSqlObject {
+function set(arg1?: string | KeyValuePairs, arg2?: ValidArg): UpdateSqlObject {
   const control = sqlObjectControl(SqlObjType.SET);
-  function pushValues(kvPairs: ([string, ValidArg | undefined] | undefined | false)[]) {
+  function pushValues(kvPairs: KeyValuePairs) {
     kvPairs.forEach(kv => {
       if (kv && kv[1] !== undefined) {
         if (!control.isEmpty) control.pushText(', ');
@@ -92,10 +92,7 @@ function set(arg1?: string | ([string, ValidArg | undefined] | undefined | false
   }
   const sqlObj: UpdateSqlObject = {
     [sqlObjControlsSymbol]: control,
-    add(
-      arg1: string | (false | [string, ValidArg | undefined] | undefined)[],
-      arg2?: string | number | boolean | Date | null,
-    ) {
+    add(arg1: string | KeyValuePairs, arg2?: ValidArg) {
       pushValues(Array.isArray(arg1) ? arg1 : ([[arg1, arg2]] as [string, ValidArg | undefined][]));
       return sqlObj;
     },
@@ -139,7 +136,6 @@ export default function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg |
 }
 
 sql.where = where;
-
 sql.set = set;
 
 type ValidArg = string | number | boolean | Date | null;
@@ -184,6 +180,8 @@ interface UpdateSqlObject extends SqlObjBase<SqlObjType.SET> {
   readonly isEmpty: boolean;
 }
 interface UpdateSqlObjectAdd {
-  (arg1: string | ([string, ValidArg | undefined] | undefined | false)[]): UpdateSqlObject;
+  (arg1: string | KeyValuePairs): UpdateSqlObject;
   (arg1: string, arg2: ValidArg | undefined): UpdateSqlObject;
 }
+
+type KeyValuePairs = ([string, ValidArg | undefined] | undefined | false)[];
