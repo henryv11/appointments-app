@@ -30,6 +30,7 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
       try {
         user = app.jwt.decode(token as string);
       } catch (error) {
+        app.log.error(error, 'web socket connection failed to authorize');
         return res.writeStatus('401 Unauthorized').end();
       }
       res.upgrade(

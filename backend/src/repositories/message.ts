@@ -4,10 +4,9 @@ import { AbstractRepository } from './abstract';
 export class MessageRepository extends AbstractRepository {
   create = ({ userId, content }: CreateMessage, conn = this.query) =>
     conn<Message>(
-      this.sql`insert into ${this.table}
-                      ( user_id, content )
-              values  (${userId}, ${content})
-              returning ${this.columns}`,
+      this.sql`INSERT INTO ${this.table} (user_id, content)
+                        ${this.sql.values([userId, content])}
+              RETURNING ${this.columns}`,
     ).then(this.firstRow);
 
   private get table() {
@@ -15,12 +14,12 @@ export class MessageRepository extends AbstractRepository {
   }
 
   private get columns() {
-    return this.sql`
-    id,
-    user_id as "userId",
-    content,
-    created_at as "createdAt",
-    updated_at as "updatedAt"
-    `;
+    return this.sql.columns(
+      'id',
+      'content',
+      ['user_id', 'userId'],
+      ['created_at', 'createdAt'],
+      ['updated_at', 'updatedAt'],
+    );
   }
 }

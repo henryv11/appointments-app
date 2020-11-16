@@ -4,6 +4,7 @@ import { ThemeContextProvider } from '@/contexts/theme';
 import { RoutePath } from '@/lib/constants';
 import React from 'react';
 import { HashRouter as Router, Route, Switch } from 'react-router-dom';
+import RequireAuthentication from './higher-order/require-authentication';
 import HomePage from './pages/home';
 import LoginPage from './pages/login';
 import NotFoundPage from './pages/not-found';
@@ -17,10 +18,14 @@ export default function App() {
           <Router>
             <Switch>
               <Route exact path={RoutePath.HOME}>
-                <HomePage />
+                <RequireAuthentication>
+                  <HomePage />
+                </RequireAuthentication>
               </Route>
               <Route exact path={RoutePath.PROFILE}>
-                <ProfilePage />
+                <RequireAuthentication>
+                  <ProfilePage />
+                </RequireAuthentication>
               </Route>
               <Route path={RoutePath.LOGIN}>
                 <LoginPage />

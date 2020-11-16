@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
+import { FastifyService } from '../lib';
 
-export abstract class AbstractService {
+export abstract class AbstractService implements FastifyService {
   protected repositories!: FastifyInstance['repositories'];
   protected database!: FastifyInstance['database'];
   protected errors!: FastifyInstance['errors'];

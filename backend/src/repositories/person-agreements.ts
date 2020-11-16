@@ -4,10 +4,9 @@ import { AbstractRepository } from './abstract';
 export class PersonAgreementsRepository extends AbstractRepository {
   create = ({ personId, agreementType, hasAccepted }: CreatePersonAgreement, conn = this.query) =>
     conn<PersonAgreement>(
-      this.sql`insert into ${this.table}
-                      (person_id, agreement_type, has_accepted)
-              values  (${personId}, ${agreementType}, ${hasAccepted})
-              returning ${this.columns}`,
+      this.sql`INSERT INTO ${this.table} (person_id, agreement_type, has_accepted)
+                        ${this.sql.values([personId, agreementType, hasAccepted])}
+              RETURNING ${this.columns}`,
     ).then(this.firstRow);
 
   private get table() {
@@ -15,12 +14,12 @@ export class PersonAgreementsRepository extends AbstractRepository {
   }
 
   private get columns() {
-    return this.sql`
-    person_id as "personId",
-    agreement_type as "agreementType",
-    has_accepted as "hasAccepted",
-    created_at as "createdAt",
-    updated_at as "updatedAt"
-    `;
+    return this.sql.columns(
+      ['person_id', 'personId'],
+      ['agreement_type', 'agreementType'],
+      ['has_accepted', 'hasAccepted'],
+      ['created_at', 'createdAt'],
+      ['updated_at', 'updatedAt'],
+    );
   }
 }

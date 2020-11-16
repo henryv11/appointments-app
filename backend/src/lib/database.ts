@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
 import { createDb, migrate } from 'postgres-migrations';
-import SQL from './sql-template-string';
+import sql from './pg-template-string';
 
 const tag = '[database]';
 
@@ -17,11 +17,12 @@ export const database = fp<DatabaseConnectionOptions>(async (app, connectionOpti
   const query = attachLogger(pool.query.bind(pool), log);
   const database: Database = Object.freeze({
     query,
-    ordinal,
-    unnest,
     sql,
-    SQL,
-    firstRow: queryResult => queryResult.rows[0],
+    firstRow: queryResult => {
+      if (queryResult.rowCount > 1) throw app.errors?.badData?.() || new Error('bad data');
+      if (!queryResult.rowCount) throw app.errors?.notFound?.() || new Error('not found');
+      return queryResult.rows[0];
+    },
     allRows: queryResult => queryResult.rows,
     transaction: () =>
       pool.connect().then(connection => ({
@@ -67,43 +68,16 @@ async function databaseInit(
 }
 
 const attachLogger = (query: Pool['query'], log: FastifyInstance['log']) =>
-  ((...args: Parameters<Pool['query']>) => (log.info(args, `${tag} query`), query(...args))) as Pool['query'];
-
-const ordinal = (query: string, i = 0) =>
-  query
-    .split('')
-    .map(c => (c === '?' ? (i++, '$' + i) : c))
-    .join('');
-
-function unnest<T extends Record<string, unknown>>(values: T[], ...props: (keyof T)[]) {
-  return values.reduce<T[keyof T][][]>(
-    (acc, el) => (props.forEach((prop, i) => acc[i].push(el[prop])), acc),
-    Array.from(new Array(props.length), () => []),
-  );
-}
-
-function sql(queryString: string, params: Record<string, unknown>) {
-  const len = queryString.length;
-  const values = [];
-  let text = '';
-
-  for (let i = 0, queryIndex = 1, char = ''; i < len; i++) {
-    char = queryString[i];
-    if (char === '$') {
-      for (let j = i + 1, key = ''; j <= len; j++) {
-        char = queryString[j];
-        if (char === ' ' || j === len) {
-          values.push(params[key]);
-          text += '$' + queryIndex;
-          queryIndex++;
-          break;
-        } else (key += char), i++;
-      }
-    } else text += char;
-  }
-
-  return { text, values };
-}
+  ((...args: Parameters<Pool['query']>) => (
+    log.info(
+      typeof args[0] === 'string'
+        ? { text: args[0], values: args[1] }
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          { text: (args[0] as any).text, values: (args[0] as any).values },
+      `${tag} query`,
+    ),
+    query(...args)
+  )) as Pool['query'];
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -124,10 +98,7 @@ interface Transaction {
 
 interface Database {
   query: Pool['query'];
-  ordinal: typeof ordinal;
-  unnest: typeof unnest;
   sql: typeof sql;
-  SQL: typeof SQL;
   transaction: () => Promise<Transaction>;
   firstRow: <T>(queryResult: QueryResult<T>) => T;
   allRows: <T>(queryResult: QueryResult<T>) => T[];

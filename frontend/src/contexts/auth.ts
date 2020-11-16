@@ -15,6 +15,7 @@ export const [AuthContextProvider, AuthContextConsumer, useAuthContext] = create
         return { isAuthenticated: false };
     }
   },
+  'authContext',
 );
 
 export enum AuthContextActionType {

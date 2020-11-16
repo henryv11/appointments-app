@@ -1,14 +1,14 @@
 import MainLayout from '@/components/layouts/main';
 import Breadcrumbs from '@/components/ui/breadcrumbs';
+import { useAuthContext } from '@/contexts/auth';
 import { useInterval } from '@/lib/react/hooks/interval';
-import { useRequireAuthentication } from '@/lib/react/hooks/require-authentication';
 import { useWebSocket } from '@/lib/react/hooks/web-socket';
 import { getServiceWebSocketUrl } from '@/lib/services';
 import { stringify } from 'querystring';
 import React from 'react';
 
 export default function ProfilePage() {
-  const authState = useRequireAuthentication();
+  const [authState] = useAuthContext();
   const [url, pingInterval] = authState.isAuthenticated
     ? [getServiceWebSocketUrl('?' + stringify({ token: authState.token })), 5000]
     : [];

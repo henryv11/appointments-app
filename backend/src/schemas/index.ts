@@ -4,7 +4,7 @@ export enum AgreementType {
   TERMS_AND_CONDITIONS = 'TERMS_AND_CONDITIONS',
 }
 
-const getGenericFilterObject = <T extends string[]>(...orderByKeys: T) =>
+const getGenericListControlObject = <T extends string[]>(...orderByKeys: T) =>
   T.Object(
     {
       limit: T.Optional(T.Number()),
@@ -23,8 +23,8 @@ const getGenericFilterObject = <T extends string[]>(...orderByKeys: T) =>
     { description: 'Generic database sorting and pagination options', type: 'string' },
   );
 
-const ascOrderDir = T.Literal('asc');
-const descOrderDir = T.Literal('desc');
+const ascOrderDir = T.Literal('ASC');
+const descOrderDir = T.Literal('DESC');
 const orderDirection = T.Union([ascOrderDir, descOrderDir], {
   description: 'Database ordering direction',
   type: 'string',
@@ -83,7 +83,7 @@ export const getBoardParams = T.Object({
   boardId: id,
 });
 
-export const getBoardsQuery = getGenericFilterObject('id', 'name', 'created_at', 'updated_at');
+export const getBoardsQuery = getGenericListControlObject('id', 'name', 'created_at', 'updated_at');
 
 export type UserRegistrationBody = S<typeof userRegistrationBody>;
 export type UserLoginBody = S<typeof userLoginBody>;
@@ -101,14 +101,23 @@ export interface ListOptions<T extends string = string> {
   orderBy?: T;
   orderDirection?: OrderDirection;
 }
+
+/**
+ *    Board table
+ **/
 export interface Board {
   id: number;
   name: string;
   createdAt: Date;
   updatedAt: Date;
 }
+export type UpdateBoard = Pick<Board, 'name'>;
 export type FilterBoard = Partial<Pick<Board, 'id' | 'name' | 'createdAt' | 'updatedAt'>>;
 export type CreateBoard = Pick<Board, 'name'>;
+
+/**
+ *    Channel table
+ **/
 export interface Channel {
   id: number;
   boardId: Board['id'];
@@ -118,6 +127,10 @@ export interface Channel {
 }
 export type FilterChannel = Partial<Pick<Channel, 'id' | 'name' | 'boardId' | 'createdAt' | 'updatedAt'>>;
 export type CreateChannel = Pick<Channel, 'name' | 'boardId'>;
+
+/**
+ *    Message table
+ **/
 export interface Message {
   id: number;
   userId: User['id'];
@@ -127,6 +140,9 @@ export interface Message {
 }
 export type CreateMessage = Pick<Message, 'userId' | 'content'>;
 
+/**
+ *    Person agreements table
+ **/
 export interface PersonAgreement {
   agreementType: AgreementType;
   personId: Person['id'];
@@ -135,6 +151,10 @@ export interface PersonAgreement {
   updatedAt: Date;
 }
 export type CreatePersonAgreement = Pick<PersonAgreement, 'agreementType' | 'personId' | 'hasAccepted'>;
+
+/**
+ *    Person table
+ **/
 export interface Person {
   id: number;
   userId: User['id'];
@@ -148,6 +168,10 @@ export interface Person {
 export type UpdatePerson = Partial<CreatePerson>;
 export type CreatePerson = Omit<Person, 'id' | 'createdAt' | 'updatedAt'>;
 export type FilterPerson = Pick<Person, 'id'>;
+
+/**
+ *    Session table
+ **/
 export interface Session {
   id: number;
   userId: User['id'];
@@ -161,6 +185,9 @@ export type CreateSession = Pick<Session, 'userId' | 'token'>;
 export type FilterSession = Partial<Pick<Session, 'id' | 'userId' | 'endedAt' | 'token'>>;
 export type UpdateSession = Pick<Session, 'endedAt'>;
 
+/**
+ *    User table
+ **/
 export interface User {
   id: number;
   username: string;
@@ -172,3 +199,4 @@ export type PublicUser = Pick<User, 'id' | 'username'>;
 export type UserAuth = Pick<User, 'password'> & PublicUser;
 export type CreateUser = Pick<User, 'username' | 'password'>;
 export type UserLogin = Partial<Pick<User, 'username'> & Pick<Person, 'email'>> & Pick<User, 'password'>;
+export type FilterUser = Partial<Pick<UserAuth, 'username' | 'id'> & Pick<Person, 'email'>>;

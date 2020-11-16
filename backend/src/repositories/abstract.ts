@@ -6,13 +6,15 @@ export abstract class AbstractRepository implements FastifyService {
   protected firstRow!: FastifyInstance['database']['firstRow'];
   protected allRows!: FastifyInstance['database']['allRows'];
   protected transaction!: FastifyInstance['database']['transaction'];
-  protected sql!: FastifyInstance['database']['SQL'];
+  protected sql!: FastifyInstance['database']['sql'];
+  protected errors!: FastifyInstance['errors'];
 
-  register({ database: { query, firstRow, allRows, transaction, SQL } }: FastifyInstance) {
+  register({ database: { query, firstRow, allRows, transaction, sql }, errors }: FastifyInstance) {
     this.query = query;
     this.firstRow = firstRow;
     this.allRows = allRows;
     this.transaction = transaction;
-    this.sql = SQL;
+    this.sql = sql;
+    this.errors = errors;
   }
 }
