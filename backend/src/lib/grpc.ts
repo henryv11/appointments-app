@@ -3,6 +3,7 @@ import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { GrpcObject, loadPackageDefinition, Server, ServerCredentials } from 'grpc';
 
+/* #region  Plugin */
 const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
   const grpcServer = new Server();
   const grpc: FastifyGrpc = {
@@ -39,7 +40,17 @@ const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
 };
 
 export const grpcServer = fp(grpcServerPlugin);
+/* #endregion */
 
+/* #region  Fastify declaration merging */
+declare module 'fastify' {
+  interface FastifyInstance {
+    grpc: FastifyGrpc;
+  }
+}
+/* #endregion */
+
+/* #region  Types */
 interface FastifyGrpc {
   addService: Server['addService'];
   register: Server['register'];
@@ -47,8 +58,4 @@ interface FastifyGrpc {
   listen: (host: string, port: number, cb?: (error?: Error) => void) => void;
 }
 
-declare module 'fastify' {
-  interface FastifyInstance {
-    grpc: FastifyGrpc;
-  }
-}
+/* #endregion */

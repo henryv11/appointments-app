@@ -1,6 +1,6 @@
 import { createReducerContext } from '@/lib/react/create-reducer-context';
 
-export const [LayoutContextProvider, LayoutContextConsumer, useLayoutContext] = createReducerContext(
+const [LayoutContextProvider, LayoutContextConsumer, useLayoutContext] = createReducerContext(
   { isSidebarOpen: true },
   (state: LayoutState, action: LayoutAction) => {
     switch (action.type) {
@@ -15,6 +15,8 @@ export const [LayoutContextProvider, LayoutContextConsumer, useLayoutContext] = 
     }
   },
 );
+
+export { LayoutContextProvider, LayoutContextConsumer, useLayoutContext };
 
 export enum LayoutContextActionType {
   OPEN_SIDEBAR,

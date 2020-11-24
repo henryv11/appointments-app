@@ -4,9 +4,11 @@ services:
   nginx:
     build: ./nginx
     container_name: nginx_container
-    restart: unless-stopped
+    volumes:
+      - ./nginx/static:/usr/src/
     ports:
       - 80:80
+    restart: unless-stopped
     depends_on:
       - backend
       - frontend
@@ -20,6 +22,7 @@ services:
       - ./backend/src:/usr/src/app/src
       - ./backend/migrations:/usr/src/app/migrations
       - ./backend/config:/usr/src/app/config
+      - ./backend/uploads:/usr/src/app/uploads
     ports:
       - 8080:8080
     depends_on:

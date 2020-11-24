@@ -1,5 +1,9 @@
 import React, { CSSProperties } from 'react';
 import accountCircle from './account-circle';
+import arrowDown from './arrow-down';
+import arrowLeft from './arrow-left';
+import arrowRight from './arrow-right';
+import arrowUp from './arrow-up';
 import block from './block';
 import checkBox from './check-box';
 import checkBoxBlank from './check-box-blank';
@@ -9,7 +13,9 @@ import code from './code';
 import coolCar from './cool-car';
 import expandLess from './expand-less';
 import expandMore from './expand-more';
+import flipBoard from './flip-board';
 import menu from './menu';
+import xCircle from './x-circle';
 
 const icons = asIconMap({
   accountCircle,
@@ -23,6 +29,12 @@ const icons = asIconMap({
   expandLess,
   expandMore,
   menu,
+  flipBoard,
+  arrowUp,
+  arrowLeft,
+  arrowRight,
+  arrowDown,
+  xCircle,
 });
 
 export default function SvgIcon<Name extends IconName>({
@@ -32,6 +44,7 @@ export default function SvgIcon<Name extends IconName>({
   size = 24,
   style,
   className,
+  onClick,
   ...iconProps
 }: SvgIconProps<Name>) {
   const { svgProps, Icon } = icons[icon];
@@ -41,10 +54,12 @@ export default function SvgIcon<Name extends IconName>({
     <svg
       aria-labelledby='icon-title'
       xmlns='http://www.w3.org/2000/svg'
+      role='img'
       width={`${width}px`}
       height={`${height}px`}
       className={className}
       style={style}
+      onClick={onClick}
       {...svgProps}
     >
       <title id='icon-title'>{`${icon}Icon`}</title>
@@ -77,4 +92,5 @@ type SvgIconProps<Name extends IconName> = {
   size?: number;
   style?: CSSProperties;
   className?: string;
+  onClick?: (event: React.MouseEvent<SVGSVGElement, MouseEvent>) => void;
 } & InferIconProps<Name>;

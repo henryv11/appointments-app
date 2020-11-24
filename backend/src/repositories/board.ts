@@ -2,6 +2,29 @@ import { Board, CreateBoard, FilterBoard, ListOptions, UpdateBoard } from '../sc
 import { AbstractRepository } from './abstract';
 
 export class BoardRepository extends AbstractRepository {
+  /* #region  Public */
+  constructor() {
+    super({
+      columns: ['id', 'name', 'created_at', 'updated_at'],
+      table: 'board',
+    });
+  }
+
+  findOne = (filter: FilterBoard) => this.find(filter).then(this.firstRow);
+
+  list = ({
+    limit,
+    offset,
+    orderBy = 'id',
+    orderDirection = 'ASC',
+    ...filter
+  }: FilterBoard & ListOptions<keyof Board>) =>
+    this.query<Board>(
+      this.sql`${this.select(filter)}
+              ORDER BY ${this.toSnakeCase(orderBy)} ${orderDirection}
+              LIMIT ${limit || 100} OFFSET ${offset || 1}`,
+    ).then(this.allRows);
+
   create = ({ name }: CreateBoard, conn = this.query) =>
     conn<Board>(
       this.sql`INSERT INTO ${this.table} (name)
@@ -9,53 +32,29 @@ export class BoardRepository extends AbstractRepository {
               RETURNING ${this.columns}`,
     ).then(this.firstRow);
 
-  findOne = (filter: FilterBoard, conn = this.query) =>
-    conn<Board>(
-      this.sql`SELECT ${this.columns}
-              FROM ${this.table}
-              ${this.getWhereClause(filter)}
-              LIMIT 1`,
-    ).then(this.firstRow);
-
   update = ({ name }: UpdateBoard, filter: FilterBoard, conn = this.query) =>
     conn<Board>(
       this.sql`UPDATE ${this.table}
               ${this.sql.set([['name', name]])}
-              ${this.getWhereClause(filter, true)}
+              ${this.where(filter, true)}
               RETURNING ${this.columns}`,
     ).then(this.allRows);
+  /* #endregion */
 
-  list = (
-    {
-      limit,
-      offset,
-      orderBy = 'id',
-      orderDirection = 'ASC',
-      ...filter
-    }: FilterBoard & ListOptions<'id' | 'name' | 'created_at' | 'updated_at'>,
-    conn = this.query,
-  ) =>
-    conn(
-      this.sql`SELECT ${this.columns}
-              FROM ${this.table}
-              ${this.getWhereClause(filter)}
-              ORDER BY ${orderBy} ${orderDirection}
-              LIMIT ${limit || 100} OFFSET ${offset || 1}`,
-    ).then(this.allRows);
+  /* #region  Private */
+  private find = (filter: FilterBoard) => this.query<Board>(this.sql`${this.select(filter)} LIMIT 1`);
 
-  private getWhereClause({ name, id }: FilterBoard, throwOnEmpty = false) {
-    const where = this.sql.where``;
+  private select = (filter: FilterBoard) =>
+    this.sql`SELECT ${this.columns}
+            FROM ${this.table}
+            ${this.where(filter)}`;
+
+  private where({ name, id }: FilterBoard, throwOnEmpty = false) {
+    const where = this.sql.where();
     if (name) where.and`name = ${name}`;
     if (id) where.and`id = ${id}`;
     if (throwOnEmpty && where.isEmpty) throw this.errors.forbidden();
     return where;
   }
-
-  private get table() {
-    return this.sql`board`;
-  }
-
-  private get columns() {
-    return this.sql.columns('id', 'name', ['created_at', 'createdAt'], ['updated_at', 'updatedAt']);
-  }
+  /* #endregion */
 }

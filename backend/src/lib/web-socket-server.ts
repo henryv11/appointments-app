@@ -2,6 +2,7 @@ import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import uws from 'uWebSockets.js';
 
+/* #region  Constants */
 const compressionOptions = Object.freeze({
   disabled: uws.DISABLED,
   shared: uws.SHARED_COMPRESSOR,
@@ -14,7 +15,9 @@ const compressionOptions = Object.freeze({
   dedicated128kb: uws.DEDICATED_COMPRESSOR_128KB,
   dedicated256kb: uws.DEDICATED_COMPRESSOR_256KB,
 });
+/* #endregion */
 
+/* #region  Plugin */
 const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function (app, { sslOptions }, done) {
   let listenSocket: uws.us_listen_socket | undefined;
   const webSocketServer = sslOptions
@@ -45,13 +48,17 @@ const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function 
 };
 
 export const webSocketServer = fp(webSocketServerPlugin);
+/* #endregion */
 
+/* #region  Fastify declaration */
 declare module 'fastify' {
   interface FastifyInstance {
     webSocket: Readonly<FastifyWebSocket>;
   }
 }
+/* #endregion */
 
+/* #region  Types */
 interface FastifyWebSocket {
   handler: uws.TemplatedApp['ws'];
   compressionOptions: typeof compressionOptions;
@@ -69,3 +76,5 @@ interface WebSocketOptions {
 }
 
 export interface WebSocket extends uws.WebSocket {}
+
+/* #endregion */

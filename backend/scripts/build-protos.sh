@@ -1,4 +1,4 @@
-###!/bin/bash
+#!/bin/bash
 
 PROTO_DIR="./src/grpc/proto"
 OUT_DIR="./src/grpc/generated"

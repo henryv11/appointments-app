@@ -26,6 +26,7 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
   );
 }
 
+/* #region  Sub components */
 function RegistrationFormHeader() {
   const [{ currentStep }] = useRegistrationFormContext();
   return (
@@ -263,7 +264,9 @@ function RegistrationFormPartThree() {
     </>
   );
 }
+/* #endregion */
 
+/* #region  Context */
 const [RegistrationFormProvider, RegistrationFormConsumer, useRegistrationFormContext] = createReducerContext<
   RegistrationFormContext,
   RegistrationFormAction
@@ -291,7 +294,9 @@ enum RegistrationFormContextActionType {
   SUBMIT_PART_THREE,
   PREVIOUS_STEP,
 }
+/* #endregion */
 
+/* #region  Types */
 interface RegistrationFormProps {
   onSubmit?: (data: RegistrationFormSubmit) => void;
 }
@@ -311,3 +316,5 @@ type RegistrationFormAction =
   | { type: RegistrationFormContextActionType.SUBMIT_PART_TWO; payload: RegistrationFormPartTwoState }
   | { type: RegistrationFormContextActionType.SUBMIT_PART_THREE; payload: RegistrationFormPartThreeState }
   | { type: RegistrationFormContextActionType.PREVIOUS_STEP; payload: Partial<RegistrationFormState> };
+
+/* #endregion */

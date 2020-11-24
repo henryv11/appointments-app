@@ -8,26 +8,29 @@ import { PersonRepository } from './person';
 import { PersonAgreementsRepository } from './person-agreements';
 import { SessionRepository } from './session';
 import { UserRepository } from './user';
+import { UserProfileViewRepository } from './user-profile-view';
+import { UserUploadRepository } from './user-upload';
 
-const getRepositories = () =>
-  Object.freeze({
-    user: new UserRepository(),
-    person: new PersonRepository(),
-    personAgreements: new PersonAgreementsRepository(),
-    session: new SessionRepository(),
-    message: new MessageRepository(),
-    channel: new ChannelRepository(),
-    board: new BoardRepository(),
-  });
+const services = Object.freeze({
+  user: new UserRepository(),
+  person: new PersonRepository(),
+  personAgreements: new PersonAgreementsRepository(),
+  session: new SessionRepository(),
+  message: new MessageRepository(),
+  channel: new ChannelRepository(),
+  board: new BoardRepository(),
+  userView: new UserProfileViewRepository(),
+  userUpload: new UserUploadRepository(),
+});
 
 const repositoriesPlugin: FastifyPluginCallback = (app, _, done) => (
-  app.register(registerServices, { services: getRepositories(), name: 'repositories' }), done()
+  app.register(registerServices, { services, name: 'repositories' }), done()
 );
 
 export const repositories = fp(repositoriesPlugin);
 
 declare module 'fastify' {
   interface FastifyInstance {
-    repositories: ReturnType<typeof getRepositories>;
+    repositories: typeof services;
   }
 }

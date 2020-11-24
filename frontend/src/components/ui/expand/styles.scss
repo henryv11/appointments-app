@@ -1,0 +1,26 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(var(--color-dark-rgb), 0.2);
+    padding: 3px 10px;
+    border: 1px solid rgba(var(--color-dark-rgb), 0.2);
+    border-radius: 2px 2px 0 0;
+
+    &:hover {
+      cursor: pointer;
+      filter: brightness(1.4);
+    }
+
+    h4 {
+      font-weight: 400;
+      margin: 0;
+    }
+  }
+}

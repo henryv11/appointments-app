@@ -1,11 +1,30 @@
+/* #region  Constants */
 const PLACEHOLDER = '?';
+const PREFIX_PLACEHOLDER = '$';
+
 const sqlObjControlsSymbol = Symbol('controls');
+
+enum SqlObjType {
+  MAIN,
+  WHERE,
+  SET,
+  VALUES,
+  COLUMNS,
+  RAW,
+}
+/* #endregion */
+
+/* #region  Utils */
+/* #region  Type guards */
 const isSqlObject = (obj: unknown): obj is SqlObjBase => (obj as SqlObj)?.[sqlObjControlsSymbol] !== undefined;
+const isColumnsSqlObjectControl = (obj: SqlObjControl): obj is SqlObjControl<SqlObjType.COLUMNS> =>
+  obj.type === SqlObjType.COLUMNS;
+/* #endregion */
 
 function sqlObjectControl<T extends SqlObjType>(type: T) {
   const values: ValidArg[] = [];
   const text: string[] = [];
-  const sqlObj: SqlObjControl<T> = {
+  const sqlObj = {
     get isEmpty() {
       return !text.some(Boolean);
     },
@@ -16,15 +35,23 @@ function sqlObjectControl<T extends SqlObjType>(type: T) {
   return sqlObj;
 }
 
-function mergeSqlObject(obj1: SqlObjControl, obj2: SqlObjControl, reverse = false) {
-  if (!obj2.isEmpty) {
-    if (obj2.type === SqlObjType.WHERE) reverse ? obj1.text.unshift('WHERE ') : obj1.text.push('WHERE ');
-    else if (obj2.type === SqlObjType.SET) reverse ? obj1.text.unshift('SET ') : obj1.text.push('SET ');
-    else if (obj2.type === SqlObjType.VALUES) reverse ? obj1.text.unshift('VALUES ') : obj1.text.push('VALUES ');
-  }
-  reverse
-    ? (obj1.text.unshift(...obj2.text), obj2.values.unshift(...obj2.values))
-    : (obj1.text.push(...obj2.text), obj1.values.push(...obj2.values));
+function mergeColumnsSqlObjects(dest: SqlObjControl, source: SqlObjControl<SqlObjType.COLUMNS>) {
+  const prefix = source.prefix || (isColumnsSqlObjectControl(dest) && dest.prefix);
+  source.text.forEach(txt => {
+    if (txt === PREFIX_PLACEHOLDER) prefix && dest.text.push(prefix + '.');
+    else dest.text.push(txt);
+  });
+  if (dest.isEmpty && isColumnsSqlObjectControl(dest)) dest.text.push(', ');
+}
+
+function mergeSqlObjects(dest: SqlObjControl, source: SqlObjControl) {
+  if (source.isEmpty) return;
+  if (source.type === SqlObjType.WHERE) dest.text.push('WHERE ', ...source.text);
+  else if (source.type === SqlObjType.SET) dest.text.push('SET ', ...source.text);
+  else if (source.type === SqlObjType.VALUES) dest.text.push('VALUES ', ...source.text);
+  else if (isColumnsSqlObjectControl(source)) mergeColumnsSqlObjects(dest, source);
+  else dest.text.push(...source.text);
+  dest.values.push(...source.values);
 }
 
 function templateStringParserLoop(
@@ -36,12 +63,16 @@ function templateStringParserLoop(
     currArg = args[i];
     sqlObj.text.push(tempStrs[i]);
     if (currArg === undefined) continue;
-    if (isSqlObject(currArg)) mergeSqlObject(sqlObj, currArg[sqlObjControlsSymbol]);
+    if (isSqlObject(currArg)) mergeSqlObjects(sqlObj, currArg[sqlObjControlsSymbol]);
     else sqlObj.values.push(currArg), sqlObj.text.push(PLACEHOLDER);
   }
 }
+/* #endregion */
 
-function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
+/* #region  Library functions */
+function where(): WhereSqlObj;
+function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj;
+function where(tempStrs?: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj {
   const control = sqlObjectControl(SqlObjType.WHERE);
   const sqlObj: WhereSqlObj = {
     [sqlObjControlsSymbol]: control,
@@ -59,7 +90,7 @@ function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase |
       return control.isEmpty;
     },
   };
-  templateStringParserLoop(tempStrs, args, control);
+  tempStrs && templateStringParserLoop(tempStrs, args, control);
   return sqlObj;
 }
 
@@ -95,50 +126,55 @@ function values(...rows: ValidArg[][]) {
       return control.isEmpty;
     },
   };
+  const rowsLen = rows.length - 1;
   rows.forEach((row, i) => {
+    const rowLen = row.length - 1;
     control.text.push('(');
     row.forEach((col, j) => {
       control.text.push(PLACEHOLDER);
       control.values.push(col);
-      j < row.length - 1 && control.text.push(', ');
+      j < rowLen && control.text.push(', ');
     });
-    control.text.push(')' + (i < rows.length - 1 ? ', ' : ''));
+    control.text.push(')' + (i < rowsLen ? ', ' : ''));
   });
   return sqlObj;
 }
 
-function columns(...columns: (string | [string, string])[]) {
-  const control = sqlObjectControl(SqlObjType.UTIL);
-  const sqlObj: UtilSqlObject = {
+function columns(columns: (string | [string, string] | ColumnsSqlObject)[], prefix = '') {
+  const control = Object.assign(sqlObjectControl(SqlObjType.COLUMNS), { prefix });
+  const sqlObj: ColumnsSqlObject = {
     [sqlObjControlsSymbol]: control,
     get isEmpty() {
       return control.isEmpty;
     },
   };
-  columns.forEach((col, i) =>
-    Array.isArray(col)
-      ? control.text.push(col[0] + ' AS ' + '"' + col[1] + '"' + (i < columns.length - 1 ? ', ' : ''))
-      : control.text.push(col + (i < columns.length - 1 ? ', ' : '')),
-  );
+  const len = columns.length - 1;
+  columns.forEach((col, i) => {
+    if (isSqlObject(col)) mergeSqlObjects(control, col[sqlObjControlsSymbol]);
+    else if (Array.isArray(col))
+      control.text.push(PREFIX_PLACEHOLDER, col[0] + ' AS ' + '"' + col[1] + '"' + (i < len ? ', ' : ''));
+    else control.text.push(PREFIX_PLACEHOLDER, col + (i < len ? ', ' : ''));
+  });
   return sqlObj;
 }
 
-function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
+function raw(str: string) {
+  const control = sqlObjectControl(SqlObjType.RAW);
+  const sqlObj: RawSqlObj = {
+    [sqlObjControlsSymbol]: control,
+  };
+  control.text.push(str);
+  return sqlObj;
+}
+
+/* #region  Export */
+export default function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
   const control = sqlObjectControl(SqlObjType.MAIN);
   const sqlObj: SqlObj = {
     [sqlObjControlsSymbol]: control,
     append(...strOrSql) {
       strOrSql.forEach(
-        sos =>
-          sos && (isSqlObject(sos) ? mergeSqlObject(control, sos[sqlObjControlsSymbol]) : control.text.unshift(sos)),
-      );
-      return sqlObj;
-    },
-    prepend(...strOrSql) {
-      strOrSql.forEach(
-        sos =>
-          sos &&
-          (isSqlObject(sos) ? (mergeSqlObject(control, sos[sqlObjControlsSymbol]), true) : control.text.unshift(sos)),
+        sos => sos && (isSqlObject(sos) ? mergeSqlObjects(control, sos[sqlObjControlsSymbol]) : control.text.push(sos)),
       );
       return sqlObj;
     },
@@ -154,27 +190,36 @@ function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | u
   templateStringParserLoop(tempStrs, args, control);
   return sqlObj;
 }
+/* #endregion */
 
-export default Object.assign(sql, { where, set, values, columns });
+/* #region  Assignments */
+sql.where = where;
+sql.set = set;
+sql.values = values;
+sql.columns = columns;
+sql.raw = raw;
+/* #endregion */
+/* #endregion */
 
-enum SqlObjType {
-  MAIN,
-  WHERE,
-  SET,
-  VALUES,
-  UTIL,
-}
-
+/* #region  Types */
 type ValidArg = string | number | boolean | Date | null;
 
 type KeyValuePairs = ([string, ValidArg | undefined] | undefined | false)[];
 
-interface SqlObjControl<T extends SqlObjType = SqlObjType> {
+type SqlObjControl<T extends SqlObjType = SqlObjType> = {
   values: ValidArg[];
   text: string[];
   readonly isEmpty: boolean;
   type: T;
-}
+} & ExtraParams[T];
+
+type ExtraParamsMap = {
+  [SqlObjType.COLUMNS]: {
+    prefix: string;
+  };
+};
+
+type ExtraParams = ExtraParamsMap & Record<Exclude<SqlObjType, keyof ExtraParamsMap>, Record<string, unknown>>;
 
 interface SqlObjBase<T extends SqlObjType = SqlObjType> {
   [sqlObjControlsSymbol]: SqlObjControl<T>;
@@ -184,7 +229,6 @@ interface SqlObj extends SqlObjBase<SqlObjType.MAIN> {
   values: ValidArg[];
   readonly text: string;
   append: (...strOrSql: (string | SqlObjBase | false | undefined)[]) => SqlObj;
-  prepend: (...strOrSql: (string | SqlObjBase | false | undefined)[]) => SqlObj;
   readonly isEmpty: boolean;
 }
 
@@ -198,7 +242,7 @@ interface ValuesSqlObject extends SqlObjBase<SqlObjType.VALUES> {
   readonly isEmpty: boolean;
 }
 
-interface UtilSqlObject extends SqlObjBase<SqlObjType.UTIL> {
+interface ColumnsSqlObject extends SqlObjBase<SqlObjType.COLUMNS> {
   readonly isEmpty: boolean;
 }
 
@@ -206,7 +250,11 @@ interface UpdateSqlObj extends SqlObjBase<SqlObjType.SET> {
   add: UpdateSqlObjAdd;
   readonly isEmpty: boolean;
 }
+
+interface RawSqlObj extends SqlObjBase<SqlObjType.RAW> {}
+
 interface UpdateSqlObjAdd {
   (arg1: string | KeyValuePairs): UpdateSqlObj;
   (arg1: string, arg2: ValidArg | undefined): UpdateSqlObj;
 }
+/* #endregion */

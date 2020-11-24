@@ -14,7 +14,7 @@ export function makeServiceFetch(...basePath: Parameters<typeof join>) {
     token,
     headers = {},
     ...opts
-  }: FetchOptions & { path?: string | Parameters<typeof join>; token?: string }) => {
+  }: Omit<FetchOptions, 'url'> & { path?: string | Parameters<typeof join>; token?: string }) => {
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return fetch<T>({
       url: path ? join(baseUrl, ...new Array<Parameters<typeof join>[0]>().concat(path)) : baseUrl,

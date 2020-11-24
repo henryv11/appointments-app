@@ -39,7 +39,6 @@ const boardControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     { authorize: true, schema: { description: 'List boards', tags, querystring: getBoardsQuery } },
     req => app.repositories.board.list(req.query),
   );
-
   done();
 };
 

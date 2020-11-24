@@ -1,11 +1,11 @@
 import SimpleLayout from '@/components/layouts/simple';
-import LoginForm from '@/components/ui/forms/login';
-import RegistrationForm from '@/components/ui/forms/registration';
 import { AuthContextActionType, useAuthContext } from '@/contexts/auth';
 import { useTimeout } from '@/lib/react/hooks/timeout';
 import { loginUser, registerUser } from '@/services/auth';
 import React, { useRef, useState } from 'react';
 import { Redirect } from 'react-router-dom';
+import LoginForm from './forms/login';
+import RegistrationForm from './forms/registration';
 import styles from './styles.scss';
 
 export default function LoginPage() {

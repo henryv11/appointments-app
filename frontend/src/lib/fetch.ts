@@ -2,14 +2,9 @@ import { ParsedUrlQueryInput, stringify } from 'querystring';
 
 export { _fetch as fetch };
 
-async function _fetch<T>({
-  headers = {},
-  body,
-  url,
-  query,
-  ...opts
-}: FetchOptions & { url: string }): Promise<FetchResponse<T>> {
-  if (body && typeof body === 'object') (body = JSON.stringify(body)), (headers['Content-Type'] = 'application/json');
+async function _fetch<T>({ headers = {}, body, url, query, ...opts }: FetchOptions): Promise<FetchResponse<T>> {
+  if (body && typeof body === 'object' && !(body instanceof FormData))
+    (body = JSON.stringify(body)), (headers['Content-Type'] = 'application/json');
   const res = await fetch(query ? url + '?' + stringify(query) : url, {
     ...opts,
     body,
@@ -40,4 +35,5 @@ export interface FetchOptions extends Omit<RequestInit, 'body' | 'query' | 'head
   body?: any;
   query?: ParsedUrlQueryInput;
   headers?: Record<string, string>;
+  url: string;
 }

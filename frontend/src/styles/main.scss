@@ -350,3 +350,15 @@ template {
 [hidden] {
   display: none;
 }
+
+/**
+  * Box sizing border box override for all elements
+  */
+html {
+  box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}

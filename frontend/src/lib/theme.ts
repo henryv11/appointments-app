@@ -20,8 +20,8 @@ function generateCssBreakpointVariables(breakPoints: Record<string, number>) {
   }, {});
 }
 
-const themeColors = {
-  dark: generateCssColorVariables({
+export const colors = {
+  dark: {
     primary: Color([56, 128, 255]),
     secondary: Color([61, 194, 255]),
     tertiary: Color([82, 96, 255]),
@@ -31,7 +31,11 @@ const themeColors = {
     dark: Color([34, 36, 40]),
     medium: Color([146, 148, 156]),
     light: Color([244, 245, 248]),
-  }),
+  },
+};
+
+const cssColors = {
+  dark: generateCssColorVariables(colors.dark),
 };
 
 const breakpoints = generateCssBreakpointVariables({
@@ -41,8 +45,8 @@ const breakpoints = generateCssBreakpointVariables({
 });
 
 export const setTheme = (theme: Theme = 'dark') =>
-  Object.entries({ ...themeColors[theme], ...breakpoints }).forEach(([key, value]) => {
+  Object.entries({ ...cssColors[theme], ...breakpoints }).forEach(([key, value]) => {
     document.body.style.setProperty(key, value);
   });
 
-export type Theme = keyof typeof themeColors;
+export type Theme = keyof typeof cssColors;

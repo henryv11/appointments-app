@@ -1,5 +1,6 @@
-import { useReducer } from 'react';
+import { useState } from 'react';
 
 export function useSimpleReducer<T>(initialState: T) {
-  return useReducer((state: T, updates: Partial<T>) => ({ ...state, ...updates }), initialState);
+  const [state, setState] = useState(initialState);
+  return [state, (updates: Partial<T>) => setState({ ...state, ...updates })] as const;
 }

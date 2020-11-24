@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
+/* #region  Plugin */
 const exitHandlerPlugin: FastifyPluginCallback = (app, _, done) => (
   ['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal =>
     process.on(signal, signal => handleExit(signal, undefined, 0, app)),
@@ -10,6 +11,10 @@ const exitHandlerPlugin: FastifyPluginCallback = (app, _, done) => (
   done()
 );
 
+export const exitHandler = fp(exitHandlerPlugin);
+/* #endregion */
+
+/* #region  Utils */
 async function handleExit(
   signal: NodeJS.Signals | undefined,
   error: Error | undefined,
@@ -17,16 +22,18 @@ async function handleExit(
   app: FastifyInstance,
 ) {
   if (signal) app.log.info(signal, 'caught NodeJS exit signal');
-  if (error) app.log.info(error, 'error caused process to exit');
+  if (error)
+    app.log.info({ message: error.message, stack: error.stack, name: error.name }, 'error caused process to exit');
   app.log.info('shutting down server ...');
   await app.close();
   process.exit(code);
 }
+/* #endregion */
 
-export const exitHandler = fp(exitHandlerPlugin);
-
+/* #region  Fastify declaration merging */
 declare module 'fastify' {
   interface FastifyInstance {
     exit: (code: number, error?: Error, signal?: NodeJS.Signals) => Promise<never>;
   }
 }
+/* #endregion */

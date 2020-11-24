@@ -2,10 +2,14 @@ import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
 import { createDb, migrate } from 'postgres-migrations';
-import sql from './pg-template-string';
 
+export { QueryResult };
+
+/* #region  Constants */
 const tag = '[database]';
+/* #endregion */
 
+/* #region  Plugin */
 export const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
   const log = app.log.child({ plugin: 'database' });
   const pg = native
@@ -13,17 +17,9 @@ export const database = fp<DatabaseConnectionOptions>(async (app, connectionOpti
     : (log.info(`${tag} using postgres bindings`), { Pool, Client });
   await databaseInit(pg.Client, connectionOptions, log);
   const pool = new pg.Pool(connectionOptions);
-  pool.on('error', err => log.error(err, `${tag} database pool error`));
   const query = attachLogger(pool.query.bind(pool), log);
   const database: Database = Object.freeze({
     query,
-    sql,
-    firstRow: queryResult => {
-      if (queryResult.rowCount > 1) throw app.errors?.badData?.() || new Error('bad data');
-      if (!queryResult.rowCount) throw app.errors?.notFound?.() || new Error('not found');
-      return queryResult.rows[0];
-    },
-    allRows: queryResult => queryResult.rows,
     transaction: () =>
       pool.connect().then(connection => ({
         begin: () => connection.query('BEGIN').then(() => void 0),
@@ -35,7 +31,9 @@ export const database = fp<DatabaseConnectionOptions>(async (app, connectionOpti
   app.decorate('database', database);
   app.addHook('onClose', async () => (log.info(`${tag} ending database pool ...`), await pool.end()));
 });
+/* #endregion */
 
+/* #region  Utils */
 async function databaseInit(
   pgClient: typeof Client,
   {
@@ -78,13 +76,17 @@ const attachLogger = (query: Pool['query'], log: FastifyInstance['log']) =>
     ),
     query(...args)
   )) as Pool['query'];
+/* #endregion */
 
+/* #region  Fastify declaration merging */
 declare module 'fastify' {
   interface FastifyInstance {
     database: Readonly<Database>;
   }
 }
+/* #endregion */
 
+/* #region  Types */
 type DatabaseConnectionOptions = Required<Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>>;
 
 type MigrationsOptions = { migrationsDirectory: string };
@@ -98,8 +100,6 @@ interface Transaction {
 
 interface Database {
   query: Pool['query'];
-  sql: typeof sql;
   transaction: () => Promise<Transaction>;
-  firstRow: <T>(queryResult: QueryResult<T>) => T;
-  allRows: <T>(queryResult: QueryResult<T>) => T[];
 }
+/* #endregion */

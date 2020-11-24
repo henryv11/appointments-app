@@ -1,5 +1,5 @@
 import { makeServiceFetch } from '@/lib/services';
-import { User, UserLogin, UserRegistration } from '@/types/user';
+import { User, UserLogin, UserProfile, UserRegistration } from '@/types/user';
 
 const fetch = makeServiceFetch('backend');
 
@@ -29,6 +29,12 @@ export async function refreshSession(refreshToken: string) {
     path: ['session', refreshToken, 'refresh'],
   });
   if (res.status !== 200) throw new Error('refreshing token failed');
+  return res.json();
+}
+
+export async function fetchUserProfile(token: string, userId: User['id']) {
+  const res = await fetch<UserProfile>({ path: ['profile', String(userId)], token });
+  if (res.status !== 200) throw new Error('failed to fetch user profile');
   return res.json();
 }
 

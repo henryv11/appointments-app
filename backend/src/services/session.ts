@@ -1,30 +1,36 @@
 import { suid } from 'rand-token';
-import { AuthResponse, Session, User } from '../schemas';
+import { Session, User } from '../schemas';
 import { AbstractService } from './abstract';
 
 export class SessionService extends AbstractService {
-  getSessionResponse = async (session: Session): Promise<AuthResponse> => ({
-    user: await this.repositories.user.findOne({ id: session.userId }),
-    token: this.jwt.sign({ userId: session.userId, sessionId: session.id }),
-    refreshToken: session.token,
-  });
+  /* #region  Public */
+  async getContinuedOrNewSession(userOrSession: User['id'] | Session) {
+    let session =
+      typeof userOrSession === 'object'
+        ? userOrSession
+        : await this.repositories.session.findMaybeOne({ userId: userOrSession, endedAt: null });
 
-  async getContinuedOrNewSession(userId: User['id']) {
-    const session =
-      (await this.repositories.session.findOne({ userId, endedAt: null })) ||
-      (await this.repositories.session.create({ userId, token: suid(64) }));
-    return this.getSessionResponse(session);
+    if (session) {
+      if (new Date().getTime() - new Date(session.startedAt).getTime() >= 8.64e7 * 14) {
+        await this.repositories.session.update({ endedAt: new Date() }, { id: session.id });
+        session = await this.repositories.session.create({ userId: session.userId, token: suid(64) });
+      }
+    } else {
+      session = await this.repositories.session.create({
+        userId: typeof userOrSession === 'object' ? userOrSession.userId : userOrSession,
+        token: suid(64),
+      });
+    }
+
+    return {
+      user: await this.repositories.user.findOne({ id: session.userId }),
+      token: this.jwt.sign({ userId: session.userId, sessionId: session.id }),
+      refreshToken: session.token,
+    };
   }
 
   async refreshSession(refreshToken: string) {
-    const session = await this.repositories.session.findOne({ token: refreshToken });
-    if (!session) throw this.errors.badRequest();
-    // TODO: session validation
-    if (session.endedAt) return this.getContinuedOrNewSession(session.userId);
-    if (new Date().getTime() - new Date(session.startedAt).getTime() >= 8.64e7 * 14) {
-      await this.repositories.session.update({ endedAt: new Date() }, { id: session.id });
-      return this.getContinuedOrNewSession(session.userId);
-    }
-    return this.getSessionResponse(session);
+    return this.getContinuedOrNewSession(await this.repositories.session.findOne({ token: refreshToken }));
   }
+  /* #endregion */
 }

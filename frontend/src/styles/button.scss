@@ -34,6 +34,7 @@
   font-weight: bold;
   align-items: center;
   align-content: center;
+  justify-content: space-around;
 
   @include themed-buttons();
 
@@ -46,20 +47,9 @@
     filter: brightness(1.1);
   }
 
-  svg {
-    margin-left: auto;
-    margin-right: auto;
-    height: 1.6em;
-    width: 1.6em;
-  }
-
   &.small {
     font-size: small;
     height: 2em;
-  }
-
-  &.link:hover {
-    text-decoration: underline;
   }
 
   &.outline,

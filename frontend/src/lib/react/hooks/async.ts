@@ -5,9 +5,8 @@ export function useAsync<
   F extends (...args: R) => Promise<unknown>,
   R extends unknown[],
   T = ReturnType<F> extends Promise<infer R> ? R : ReturnType<F>
->(asyncFn?: F, ...args: R) {
-  const abortController = useRef<() => void>();
-  const callbackRef = useRef<F>();
+>(asyncFn: F | undefined | boolean, args: R = ([] as unknown) as R) {
+  const abortController = useRef<() => void>(noop);
   const [{ promiseState, result, error }, setState] = useSimpleReducer<{
     promiseState: PromiseState;
     result?: T;
@@ -17,31 +16,31 @@ export function useAsync<
   });
 
   useEffect(() => {
-    callbackRef.current = asyncFn;
-  }, [asyncFn]);
-
-  useEffect(() => {
-    if (!callbackRef.current) return;
-    abortController.current?.();
+    if (!asyncFn || typeof asyncFn !== 'function') return;
+    abortController.current();
     let isAborted = false;
-    abortController.current = () => (
-      (isAborted = true),
-      setState({ result: undefined, error: undefined, promiseState: PromiseState.IDLE }),
-      (abortController.current = undefined)
-    );
+    abortController.current = () => {
+      isAborted = true;
+      abortController.current = noop;
+      setState({ result: undefined, error: undefined, promiseState: PromiseState.IDLE });
+    };
     setState({ promiseState: PromiseState.PENDING });
-    callbackRef
-      .current(...args)
-      .then(result => !isAborted && setState({ result: result as T, promiseState: PromiseState.RESOLVED }))
-      .catch(
-        error =>
-          !isAborted &&
-          setState({
-            error: error || new Error('useAsync function rejected with an undefined error'),
-            promiseState: PromiseState.REJECTED,
-          }),
-      )
-      .finally(() => !isAborted && (abortController.current = undefined));
+    asyncFn(...args)
+      .then(result => {
+        if (!isAborted)
+          (abortController.current = noop),
+            setState({ result: result as T, error: undefined, promiseState: PromiseState.RESOLVED });
+      })
+      .catch(error => {
+        if (!isAborted)
+          (abortController.current = noop),
+            setState({
+              result: undefined,
+              error: error || new Error('useAsync function rejected with an unknown error'),
+              promiseState: PromiseState.REJECTED,
+            });
+      })
+      .finally(() => (isAborted = true) && (abortController.current = noop));
     return abortController.current;
   }, args);
 
@@ -50,11 +49,14 @@ export function useAsync<
     isPending: promiseState === PromiseState.PENDING,
     isRejected: promiseState === PromiseState.REJECTED,
     isResolved: promiseState === PromiseState.RESOLVED,
+    state: promiseState,
     error,
     result,
     abort: abortController.current,
   } as UseAsyncState<T>;
 }
+
+function noop() {}
 
 enum PromiseState {
   IDLE,
@@ -68,6 +70,7 @@ interface UseAsyncStateBase<IsIdle = true, IsPending = false, IsRejected = false
   isPending: IsPending;
   isRejected: IsRejected;
   isResolved: IsResolved;
+  state: PromiseState;
 }
 
 interface IdleState extends UseAsyncStateBase {}
