@@ -1,3 +1,4 @@
+import { getAge } from '@/lib/date';
 import { createReducerContext } from '@/lib/react/create-reducer-context';
 import buttonStyles from '@/styles/button.scss';
 import inputStyles from '@/styles/input.scss';
@@ -26,7 +27,6 @@ export default function RegistrationForm({ onSubmit = () => void 0 }: Registrati
   );
 }
 
-/* #region  Sub components */
 function RegistrationFormHeader() {
   const [{ currentStep }] = useRegistrationFormContext();
   return (
@@ -90,7 +90,7 @@ function RegistrationFormPartOne() {
         ref={register({
           required: 'Please enter your date of birth',
           validate(value) {
-            const age = Math.floor((new Date().getTime() - new Date(value).getTime()) / 3.154e10);
+            const age = getAge(value);
             if (isNaN(age) || age <= 0) return 'Please enter a correct date of birth';
             if (age <= 12) return 'You must be at least 12 years old to register';
             if (age >= 120) return "You can't possibly be older than 120";
@@ -264,9 +264,7 @@ function RegistrationFormPartThree() {
     </>
   );
 }
-/* #endregion */
 
-/* #region  Context */
 const [RegistrationFormProvider, RegistrationFormConsumer, useRegistrationFormContext] = createReducerContext<
   RegistrationFormContext,
   RegistrationFormAction
@@ -294,9 +292,7 @@ enum RegistrationFormContextActionType {
   SUBMIT_PART_THREE,
   PREVIOUS_STEP,
 }
-/* #endregion */
 
-/* #region  Types */
 interface RegistrationFormProps {
   onSubmit?: (data: RegistrationFormSubmit) => void;
 }
@@ -316,5 +312,3 @@ type RegistrationFormAction =
   | { type: RegistrationFormContextActionType.SUBMIT_PART_TWO; payload: RegistrationFormPartTwoState }
   | { type: RegistrationFormContextActionType.SUBMIT_PART_THREE; payload: RegistrationFormPartThreeState }
   | { type: RegistrationFormContextActionType.PREVIOUS_STEP; payload: Partial<RegistrationFormState> };
-
-/* #endregion */

@@ -2,7 +2,8 @@ import { Channel, CreateChannel } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class ChannelRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region [Public]
+
   constructor() {
     super({ table: 'channel', columns: ['id', 'name', 'board_id', 'created_at', 'updated_at'] });
   }
@@ -13,5 +14,6 @@ export class ChannelRepository extends AbstractRepository {
                         ${this.sql.values([boardId, name])}
               RETURNING ${this.columns}`,
     ).then(this.firstRow);
-  /* #endregion */
+
+  //#endregion
 }

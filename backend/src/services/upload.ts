@@ -6,16 +6,23 @@ import { promisify } from 'util';
 import { UploadType, UserUpload } from '../schemas';
 import { AbstractService } from './abstract';
 
-const pump = promisify(pipeline);
+//#region [Constants]
 
 const basePathByUploadType: Record<UploadType, string> = {
   [UploadType.PROFILE_IMAGE]: 'uploads/user-media/profile-images',
 };
 
-type UnwrapPromise<T> = T extends PromiseLike<infer U> ? U : T;
-type File = UnwrapPromise<ReturnType<FastifyRequest['file']>>;
+//#endregion
+
+//#region [Utils]
+
+const pump = promisify(pipeline);
+
+//#endregion
 
 export class UploadService extends AbstractService {
+  //#region [Public]
+
   async upload(file: File, { userId, uploadType }: Pick<UserUpload, 'userId' | 'uploadType'>) {
     const filePath = resolve(basePathByUploadType[uploadType], [userId, Date.now(), file.filename].join('-'));
 
@@ -40,4 +47,13 @@ export class UploadService extends AbstractService {
     const userUpload = await this.repositories.userUpload.findOne({ id });
     return { stream: createReadStream(userUpload.filePath), ...userUpload };
   }
+
+  //#endregion
 }
+
+//#region [Types]
+
+type UnwrapPromise<T> = T extends PromiseLike<infer U> ? U : T;
+type File = UnwrapPromise<ReturnType<FastifyRequest['file']>>;
+
+//#endregion

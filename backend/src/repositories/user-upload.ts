@@ -2,7 +2,8 @@ import { CreateUserUpload, FilterUserUpload, ListOptions, UserUpload } from '../
 import { AbstractRepository } from './abstract';
 
 export class UserUploadRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region [Public]
+
   constructor() {
     super({
       table: 'user_upload',
@@ -33,9 +34,11 @@ export class UserUploadRepository extends AbstractRepository {
                           ${this.sql.values([userId, uploadType, fileName, fileType, filePath])}
             RETURNING ${this.columns}`,
     ).then(this.firstRow);
-  /* #endregion */
 
-  /* #region  Private */
+  //#endregion
+
+  //#region [Private]
+
   private find = (filter: FilterUserUpload) => this.query<UserUpload>(this.sql`${this.select(filter)} LIMIT 1`);
 
   private where({ id, userId, uploadType }: FilterUserUpload) {
@@ -51,5 +54,6 @@ export class UserUploadRepository extends AbstractRepository {
                   FROM ${this.table}
                   ${this.where(filter)}`;
   }
-  /* #endregion */
+
+  //#endregion
 }

@@ -1,10 +1,17 @@
 import { FastifyPluginCallback } from 'fastify';
-import fp from 'fastify-plugin';
-import { authResponse, userLoginBody, UserLoginBody, UserRegistrationBody, userRegistrationBody } from '../schemas';
+import {
+  authResponse,
+  refreshSessionParams,
+  RefreshSessionParams,
+  userLoginBody,
+  UserLoginBody,
+  UserRegistrationBody,
+  userRegistrationBody,
+} from '../schemas';
 
 const tags = ['auth'];
 
-const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
+export const authControllers: FastifyPluginCallback = function (app, _, done) {
   app.put<{ Body: UserRegistrationBody }>(
     '/auth',
     {
@@ -42,7 +49,17 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
     app.services.auth.logoutUser({ userId: req.user!.userId }),
   );
 
+  app.get<{ Params: RefreshSessionParams }>(
+    '/auth/session/:sessionToken/refresh',
+    {
+      schema: {
+        description: 'Refresh session token',
+        tags,
+        params: refreshSessionParams,
+      },
+    },
+    req => app.services.session.refreshSession(req.params.sessionToken),
+  );
+
   done();
 };
-
-export const authControllers = fp(authControllersPlugin);

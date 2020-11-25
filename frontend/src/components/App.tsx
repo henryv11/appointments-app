@@ -10,7 +10,6 @@ import LoginPage from './pages/login';
 import NotFoundPage from './pages/not-found';
 
 export default function App() {
-  console.log('asfasf');
   return (
     <ThemeContextProvider theme='dark'>
       <AuthContextProvider>

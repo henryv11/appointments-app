@@ -1,8 +1,16 @@
-/* #region  Constants */
+export default Object.assign(sql, { where, set, columns, values, raw });
+
+//#region [Constants]
+
 const PLACEHOLDER = '?';
+
 const PREFIX_PLACEHOLDER = '$';
 
 const sqlObjControlsSymbol = Symbol('controls');
+
+//#endregion
+
+//#region [Enums]
 
 enum SqlObjType {
   MAIN,
@@ -12,14 +20,18 @@ enum SqlObjType {
   COLUMNS,
   RAW,
 }
-/* #endregion */
 
-/* #region  Utils */
-/* #region  Type guards */
+//#endregion
+
+//#region [Type guards]
+
 const isSqlObject = (obj: unknown): obj is SqlObjBase => (obj as SqlObj)?.[sqlObjControlsSymbol] !== undefined;
 const isColumnsSqlObjectControl = (obj: SqlObjControl): obj is SqlObjControl<SqlObjType.COLUMNS> =>
   obj.type === SqlObjType.COLUMNS;
-/* #endregion */
+
+//#endregion
+
+//#region [Utils]
 
 function sqlObjectControl<T extends SqlObjType>(type: T) {
   const values: ValidArg[] = [];
@@ -67,9 +79,11 @@ function templateStringParserLoop(
     else sqlObj.values.push(currArg), sqlObj.text.push(PLACEHOLDER);
   }
 }
-/* #endregion */
 
-/* #region  Library functions */
+//#endregion
+
+//#region [Library functions]
+
 function where(): WhereSqlObj;
 function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj;
 function where(tempStrs?: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj {
@@ -167,8 +181,7 @@ function raw(str: string) {
   return sqlObj;
 }
 
-/* #region  Export */
-export default function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
+export function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
   const control = sqlObjectControl(SqlObjType.MAIN);
   const sqlObj: SqlObj = {
     [sqlObjControlsSymbol]: control,
@@ -190,18 +203,11 @@ export default function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg |
   templateStringParserLoop(tempStrs, args, control);
   return sqlObj;
 }
-/* #endregion */
 
-/* #region  Assignments */
-sql.where = where;
-sql.set = set;
-sql.values = values;
-sql.columns = columns;
-sql.raw = raw;
-/* #endregion */
-/* #endregion */
+//#endregion
 
-/* #region  Types */
+//#region [Types]
+
 type ValidArg = string | number | boolean | Date | null;
 
 type KeyValuePairs = ([string, ValidArg | undefined] | undefined | false)[];
@@ -257,4 +263,5 @@ interface UpdateSqlObjAdd {
   (arg1: string | KeyValuePairs): UpdateSqlObj;
   (arg1: string, arg2: ValidArg | undefined): UpdateSqlObj;
 }
-/* #endregion */
+
+//#endregion

@@ -1,13 +1,12 @@
-import { SERVER_BASE_URL } from './constants';
+import { SERVER_BASE_URL, SERVER_WEBSOCKET_BASE_URL } from './constants';
 import { fetch, FetchOptions } from './fetch';
 import { join } from './path';
 
-export const getServiceUrl = (...path: Parameters<typeof join>) => join(SERVER_BASE_URL, ...path);
+export const getServiceUrl = (...path: PathJoinParameters) => join(SERVER_BASE_URL, 'backend', ...path);
 
-export const getServiceWebSocketUrl = (...path: Parameters<typeof join>) =>
-  getServiceUrl('ws', ...path).replace(/^(http:\/\/)/, 'ws://');
+export const getServiceWebSocketUrl = (...path: PathJoinParameters) => join(SERVER_WEBSOCKET_BASE_URL, 'ws', ...path);
 
-export function makeServiceFetch(...basePath: Parameters<typeof join>) {
+export function makeServiceFetch(...basePath: PathJoinParameters) {
   const baseUrl = getServiceUrl(...basePath);
   return <T>({
     path,
@@ -17,9 +16,11 @@ export function makeServiceFetch(...basePath: Parameters<typeof join>) {
   }: Omit<FetchOptions, 'url'> & { path?: string | Parameters<typeof join>; token?: string }) => {
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return fetch<T>({
-      url: path ? join(baseUrl, ...new Array<Parameters<typeof join>[0]>().concat(path)) : baseUrl,
+      url: path ? join(baseUrl, ...new Array<PathJoinParameters[number]>().concat(path)) : baseUrl,
       headers,
       ...opts,
     });
   };
 }
+
+type PathJoinParameters = Parameters<typeof join>;

@@ -2,7 +2,8 @@ import { CreatePerson, FilterPerson, Person, UpdatePerson } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class PersonRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region [Public]
+
   constructor() {
     super({
       table: 'person',
@@ -29,13 +30,16 @@ export class PersonRepository extends AbstractRepository {
               ${this.where(filter)}
               RETURNING ${this.columns}`,
     ).then(this.allRows);
-  /* #endregion */
 
-  /* #region  Private */
+  //#endregion
+
+  //#region [Private]
+
   private where({ id }: FilterPerson) {
     const where = this.sql.where();
     if (id) where.and`id = ${id}`;
     return where;
   }
-  /* #endregion */
+
+  //#endregion
 }

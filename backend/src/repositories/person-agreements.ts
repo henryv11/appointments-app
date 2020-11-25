@@ -2,7 +2,8 @@ import { CreatePersonAgreement, PersonAgreement } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class PersonAgreementsRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region [Public]
+
   constructor() {
     super({
       table: 'person_agreements',
@@ -16,5 +17,6 @@ export class PersonAgreementsRepository extends AbstractRepository {
                         ${this.sql.values([personId, agreementType, hasAccepted])}
               RETURNING ${this.columns}`,
     ).then(this.firstRow);
-  /* #endregion */
+
+  //#endregion
 }

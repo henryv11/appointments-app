@@ -1,12 +1,11 @@
 import { FastifyPluginCallback } from 'fastify';
-import fp from 'fastify-plugin';
 import { User } from '../schemas';
 
 const tags = ['user'];
 
-const userControllersPlugin: FastifyPluginCallback = function (app, _, done) {
+export const userControllers: FastifyPluginCallback = function (app, _, done) {
   app.get<{ Querystring: any }>(
-    '/profile',
+    '/user/profile',
     {
       authorize: true,
       schema: {
@@ -19,12 +18,10 @@ const userControllersPlugin: FastifyPluginCallback = function (app, _, done) {
   );
 
   app.get<{ Params: { userId: User['id'] } }>(
-    '/profile/:userId',
+    '/user/profile/:userId',
     { authorize: true, schema: { description: 'Get user profile by user id', tags } },
     req => app.repositories.userView.findOne({ userId: req.params.userId }),
   );
 
   done();
 };
-
-export const userControllers = fp(userControllersPlugin);

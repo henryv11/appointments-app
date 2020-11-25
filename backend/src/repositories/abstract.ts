@@ -2,11 +2,12 @@ import { FastifyInstance } from 'fastify';
 import { FastifyService, QueryResult, sql } from '../lib';
 
 export abstract class AbstractRepository implements FastifyService {
-  /* #region  Public */
+  //#region [Public]
+
   columns: ReturnType<typeof sql.columns>;
   table: ReturnType<typeof sql.raw>;
 
-  constructor({ columns, table }: { columns: string[]; table: string }) {
+  constructor({ columns = [], table = '' }: { columns?: string[]; table?: string } = {}) {
     this.columns = sql.columns(columns.map(column => [column, toCamelCase(column)]));
     this.table = sql.raw(table);
   }
@@ -15,15 +16,17 @@ export abstract class AbstractRepository implements FastifyService {
     this.query = query;
     this.transaction = transaction;
     this.errors = errors;
-    this.repositores = repositories;
+    this.repositories = repositories;
   }
-  /* #endregion */
 
-  /* #region  Protected */
+  //#endregion
+
+  //#region [Protected]
+
   protected query!: FastifyInstance['database']['query'];
   protected transaction!: FastifyInstance['database']['transaction'];
   protected errors!: FastifyInstance['errors'];
-  protected repositores!: FastifyInstance['repositories'];
+  protected repositories!: FastifyInstance['repositories'];
   protected toSnakeCase = toSnakeCase;
   protected sql = sql;
   protected orderDirection = orderDirection;
@@ -42,10 +45,12 @@ export abstract class AbstractRepository implements FastifyService {
   protected allRows<T>(res: QueryResult<T>): T[] {
     return res.rows;
   }
-  /* #endregion */
+
+  //#endregion
 }
 
-/* #region  Utils */
+//#region [Utils]
+
 function orderDirection(dir: 'ASC' | 'DESC') {
   return dir === 'DESC' ? sql`DESC` : sql`ASC`;
 }
@@ -63,4 +68,5 @@ function toSnakeCase(str: string) {
     ?.map(x => x.toLowerCase())
     .join('_');
 }
-/* #endregion */
+
+//#endregion

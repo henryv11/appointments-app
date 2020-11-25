@@ -3,7 +3,8 @@ import { AgreementType, User, UserLoginBody, UserRegistrationBody } from '../sch
 import { AbstractService } from './abstract';
 
 export class AuthService extends AbstractService {
-  /* #region  Public */
+  //#region [Public]
+
   async logoutUser({ userId }: { userId: User['id'] }) {
     await this.repositories.session.update({ endedAt: new Date() }, { userId, endedAt: null });
   }
@@ -42,5 +43,6 @@ export class AuthService extends AbstractService {
     if (!(await compare(password, user.password))) throw this.errors.badRequest();
     return this.services.session.getContinuedOrNewSession(user.id);
   }
-  /* #endregion */
+
+  //#endregion
 }
