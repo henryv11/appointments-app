@@ -4,7 +4,7 @@ import { AbstractRepository } from './abstract';
 export class UserProfileViewRepository extends AbstractRepository {
   /* #region  Public */
   constructor() {
-    super({ table: '', columns: [] });
+    super();
     this.columns = this.sql.columns([
       'username',
       'email',
@@ -36,7 +36,6 @@ export class UserProfileViewRepository extends AbstractRepository {
             LIMIT ${limit} OFFSET ${offset}
             ORDER BY ${this.toSnakeCase(orderBy)} ${this.orderDirection(orderDirection)}`,
     ).then(this.allRows);
-
   /* #endregion */
 
   /* #region  Private */

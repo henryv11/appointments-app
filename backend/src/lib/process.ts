@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
+export { exitHandler };
 
 /* #region  Plugin */
 const exitHandlerPlugin: FastifyPluginCallback = (app, _, done) => (
@@ -11,7 +12,7 @@ const exitHandlerPlugin: FastifyPluginCallback = (app, _, done) => (
   done()
 );
 
-export const exitHandler = fp(exitHandlerPlugin);
+const exitHandler = fp(exitHandlerPlugin);
 /* #endregion */
 
 /* #region  Utils */

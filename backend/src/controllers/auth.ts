@@ -1,10 +1,9 @@
 import { FastifyPluginCallback } from 'fastify';
-import fp from 'fastify-plugin';
 import { authResponse, userLoginBody, UserLoginBody, UserRegistrationBody, userRegistrationBody } from '../schemas';
 
 const tags = ['auth'];
 
-const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
+export const authControllers: FastifyPluginCallback = function (app, _, done) {
   app.put<{ Body: UserRegistrationBody }>(
     '/auth',
     {
@@ -44,5 +43,3 @@ const authControllersPlugin: FastifyPluginCallback = function (app, _, done) {
 
   done();
 };
-
-export const authControllers = fp(authControllersPlugin);

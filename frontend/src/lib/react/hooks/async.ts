@@ -16,7 +16,7 @@ export function useAsync<
   });
 
   useEffect(() => {
-    if (!asyncFn || typeof asyncFn !== 'function') return;
+    if (typeof asyncFn !== 'function') return;
     abortController.current();
     let isAborted = false;
     abortController.current = () => {
@@ -27,20 +27,17 @@ export function useAsync<
     setState({ promiseState: PromiseState.PENDING });
     asyncFn(...args)
       .then(result => {
-        if (!isAborted)
-          (abortController.current = noop),
-            setState({ result: result as T, error: undefined, promiseState: PromiseState.RESOLVED });
+        if (!isAborted) setState({ result: result as T, error: undefined, promiseState: PromiseState.RESOLVED });
       })
       .catch(error => {
         if (!isAborted)
-          (abortController.current = noop),
-            setState({
-              result: undefined,
-              error: error || new Error('useAsync function rejected with an unknown error'),
-              promiseState: PromiseState.REJECTED,
-            });
+          setState({
+            result: undefined,
+            error: error || new Error('useAsync function rejected with an unknown error'),
+            promiseState: PromiseState.REJECTED,
+          });
       })
-      .finally(() => (isAborted = true) && (abortController.current = noop));
+      .finally(() => (abortController.current = noop));
     return abortController.current;
   }, args);
 

@@ -2,15 +2,14 @@ import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
 import { createDb, migrate } from 'postgres-migrations';
-
-export { QueryResult };
+export { QueryResult, database };
 
 /* #region  Constants */
 const tag = '[database]';
 /* #endregion */
 
 /* #region  Plugin */
-export const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
+const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
   const log = app.log.child({ plugin: 'database' });
   const pg = native
     ? (log.info(`${tag} using native bindings`), native)

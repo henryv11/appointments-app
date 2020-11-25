@@ -1,6 +1,7 @@
 import { FastifyPluginCallback, preValidationHookHandler } from 'fastify';
 import fp from 'fastify-plugin';
 import { Algorithm, sign, verify } from 'jsonwebtoken';
+export { jwtAuth };
 
 /* #region  Constants */
 const tokenSchema = {
@@ -63,7 +64,7 @@ const jwtAuthPlugin: FastifyPluginCallback<{
   done();
 };
 
-export const jwtAuth = fp(jwtAuthPlugin);
+const jwtAuth = fp(jwtAuthPlugin);
 /* #endregion */
 
 /* #region  Fastify declaration merging */

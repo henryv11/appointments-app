@@ -1,10 +1,9 @@
 import { FastifyPluginCallback } from 'fastify';
-import fp from 'fastify-plugin';
 import { User } from '../schemas';
 
 const tags = ['user'];
 
-const userControllersPlugin: FastifyPluginCallback = function (app, _, done) {
+export const userControllers: FastifyPluginCallback = function (app, _, done) {
   app.get<{ Querystring: any }>(
     '/profile',
     {
@@ -26,5 +25,3 @@ const userControllersPlugin: FastifyPluginCallback = function (app, _, done) {
 
   done();
 };
-
-export const userControllers = fp(userControllersPlugin);

@@ -11,7 +11,8 @@ export class UserRepository extends AbstractRepository {
 
   findMaybeOne = (filter: FilterUser) => this.find(filter).then(this.maybeFirstRow);
 
-  findOneWithPassword = (filter: FilterUser) => this.select<AuthUser>(filter, this.privateColumns).then(this.firstRow);
+  findOneWithPassword = (filter: FilterUser) =>
+    this.find<AuthUser>(filter, this.sql.columns([this.columns, 'password'])).then(this.firstRow);
 
   create = ({ username, password }: CreateUser, conn = this.query) =>
     conn<PublicUser>(
@@ -22,13 +23,7 @@ export class UserRepository extends AbstractRepository {
   /* #endregion */
 
   /* #region  Private */
-  private get privateColumns() {
-    return this.sql.columns(['id', 'username', 'password']);
-  }
-
-  private find = (filter: FilterUser) => this.select<PublicUser>(filter, this.columns);
-
-  private select = <T extends PublicUser | AuthUser>(filter: FilterUser, columns = this.columns) =>
+  private find = <T extends PublicUser | AuthUser = PublicUser>(filter: FilterUser, columns = this.columns) =>
     this.query<T>(
       this.sql`SELECT ${columns}
               FROM ${this.table}

@@ -287,11 +287,15 @@ export interface UserUpload {
   fileName: string;
   fileType: string;
   filePath: string;
+  fileEncoding: BufferEncoding;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export type CreateUserUpload = Pick<UserUpload, 'userId' | 'uploadType' | 'fileName' | 'fileType' | 'filePath'>;
+export type CreateUserUpload = Pick<
+  UserUpload,
+  'userId' | 'uploadType' | 'fileName' | 'fileType' | 'filePath' | 'fileEncoding'
+>;
 export type FilterUserUpload = Partial<
   Pick<UserUpload, 'userId' | 'uploadType' | 'id' | 'fileName' | 'fileType' | 'filePath' | 'createdAt' | 'updatedAt'>
 >;

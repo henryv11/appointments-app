@@ -1,6 +1,7 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import uws from 'uWebSockets.js';
+export { webSocketServer };
 
 /* #region  Constants */
 const compressionOptions = Object.freeze({
@@ -47,15 +48,7 @@ const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function 
   done();
 };
 
-export const webSocketServer = fp(webSocketServerPlugin);
-/* #endregion */
-
-/* #region  Fastify declaration */
-declare module 'fastify' {
-  interface FastifyInstance {
-    webSocket: Readonly<FastifyWebSocket>;
-  }
-}
+const webSocketServer = fp(webSocketServerPlugin);
 /* #endregion */
 
 /* #region  Types */
@@ -77,4 +70,12 @@ interface WebSocketOptions {
 
 export interface WebSocket extends uws.WebSocket {}
 
+/* #endregion */
+
+/* #region  Fastify declaration merging */
+declare module 'fastify' {
+  interface FastifyInstance {
+    webSocket: Readonly<FastifyWebSocket>;
+  }
+}
 /* #endregion */

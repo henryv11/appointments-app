@@ -1,0 +1,1 @@
+ALTER TABLE user_upload ADD COLUMN file_encoding TEXT NOT NULL;

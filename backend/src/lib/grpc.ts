@@ -2,6 +2,7 @@ import { loadSync, Options } from '@grpc/proto-loader';
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { GrpcObject, loadPackageDefinition, Server, ServerCredentials } from 'grpc';
+export { grpcServer };
 
 /* #region  Plugin */
 const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
@@ -39,7 +40,7 @@ const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
   done();
 };
 
-export const grpcServer = fp(grpcServerPlugin);
+const grpcServer = fp(grpcServerPlugin);
 /* #endregion */
 
 /* #region  Fastify declaration merging */

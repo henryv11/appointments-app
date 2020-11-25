@@ -1,10 +1,9 @@
 import { FastifyPluginCallback } from 'fastify';
-import fp from 'fastify-plugin';
 import { RefreshSessionParams, refreshSessionParams } from '../schemas';
 
 const tags = ['session'];
 
-const sessionControllersPlugin: FastifyPluginCallback = function (app, _, done) {
+export const sessionControllers: FastifyPluginCallback = function (app, _, done) {
   app.get<{ Params: RefreshSessionParams }>(
     '/session/:sessionToken/refresh',
     {
@@ -19,5 +18,3 @@ const sessionControllersPlugin: FastifyPluginCallback = function (app, _, done) 
 
   done();
 };
-
-export const sessionControllers = fp(sessionControllersPlugin);

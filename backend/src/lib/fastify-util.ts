@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
+export { registerServices, FastifyService };
 
 /* #region  Plugin */
 const servicesPlugin: FastifyPluginCallback<{
@@ -11,11 +12,11 @@ const servicesPlugin: FastifyPluginCallback<{
   done()
 );
 
-export const registerServices = fp(servicesPlugin);
+const registerServices = fp(servicesPlugin);
 /* #endregion */
 
 /* #region  Types */
-export interface FastifyService {
+interface FastifyService {
   register(app: FastifyInstance): void;
 }
 /* #endregion */

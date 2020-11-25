@@ -1,3 +1,5 @@
+export default Object.assign(sql, { where, set, values, columns, raw });
+
 /* #region  Constants */
 const PLACEHOLDER = '?';
 const PREFIX_PLACEHOLDER = '$';
@@ -159,16 +161,14 @@ function columns(columns: (string | [string, string] | ColumnsSqlObject)[], pref
 }
 
 function raw(str: string) {
-  const control = sqlObjectControl(SqlObjType.RAW);
   const sqlObj: RawSqlObj = {
-    [sqlObjControlsSymbol]: control,
+    [sqlObjControlsSymbol]: sqlObjectControl(SqlObjType.RAW),
   };
-  control.text.push(str);
+  sqlObj[sqlObjControlsSymbol].text.push(str);
   return sqlObj;
 }
 
-/* #region  Export */
-export default function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
+function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]) {
   const control = sqlObjectControl(SqlObjType.MAIN);
   const sqlObj: SqlObj = {
     [sqlObjControlsSymbol]: control,
@@ -192,15 +192,6 @@ export default function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg |
 }
 /* #endregion */
 
-/* #region  Assignments */
-sql.where = where;
-sql.set = set;
-sql.values = values;
-sql.columns = columns;
-sql.raw = raw;
-/* #endregion */
-/* #endregion */
-
 /* #region  Types */
 type ValidArg = string | number | boolean | Date | null;
 
@@ -219,7 +210,7 @@ type ExtraParamsMap = {
   };
 };
 
-type ExtraParams = ExtraParamsMap & Record<Exclude<SqlObjType, keyof ExtraParamsMap>, Record<string, unknown>>;
+type ExtraParams = ExtraParamsMap & Record<Exclude<SqlObjType, keyof ExtraParamsMap>, unknown>;
 
 interface SqlObjBase<T extends SqlObjType = SqlObjType> {
   [sqlObjControlsSymbol]: SqlObjControl<T>;

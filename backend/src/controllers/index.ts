@@ -7,7 +7,9 @@ import { uploadControllers } from './upload';
 import { userControllers } from './user';
 
 const controllersPlugin: FastifyPluginCallback = function (app, _, done) {
-  [authControllers, sessionControllers, boardControllers, userControllers, uploadControllers].forEach(app.register);
+  [authControllers, sessionControllers, boardControllers, userControllers, uploadControllers].forEach(plugin =>
+    app.register(fp(plugin)),
+  );
   done();
 };
 

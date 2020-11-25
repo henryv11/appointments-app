@@ -12,8 +12,7 @@ export default function RequireAuthentication({ children }: PropsWithChildren<un
     if (authState.isAuthenticated) return true;
     if (!authState.refreshToken) return false;
     try {
-      const session = await refreshSession(authState.refreshToken);
-      dispatch({ type: AuthContextActionType.LOG_IN, payload: session });
+      dispatch({ type: AuthContextActionType.LOG_IN, payload: await refreshSession(authState.refreshToken) });
       return true;
     } catch (error) {
       dispatch({ type: AuthContextActionType.LOG_OUT });
@@ -22,6 +21,6 @@ export default function RequireAuthentication({ children }: PropsWithChildren<un
   });
 
   if (promise.isPending) return <div>loading...</div>;
-  if ((promise.isResolved && !promise.result) || promise.isRejected) return <Redirect to={RoutePath.LOGIN} />;
-  return <>{children}</>;
+  if (promise.isResolved && promise.result) return <>{children}</>;
+  return <Redirect to={RoutePath.LOGIN} />;
 }

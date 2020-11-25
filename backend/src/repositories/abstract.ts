@@ -6,7 +6,7 @@ export abstract class AbstractRepository implements FastifyService {
   columns: ReturnType<typeof sql.columns>;
   table: ReturnType<typeof sql.raw>;
 
-  constructor({ columns, table }: { columns: string[]; table: string }) {
+  constructor({ columns = [], table = '' }: { columns?: string[]; table?: string } = {}) {
     this.columns = sql.columns(columns.map(column => [column, toCamelCase(column)]));
     this.table = sql.raw(table);
   }
@@ -29,13 +29,13 @@ export abstract class AbstractRepository implements FastifyService {
   protected orderDirection = orderDirection;
 
   protected maybeFirstRow<T>(res: QueryResult<T>): T | undefined {
-    if (res.rowCount > 0) throw this.errors.internal();
+    if (res.rowCount > 1) throw this.errors.internal('database query, expected one row, got more');
     return res.rows[0];
   }
 
   protected firstRow<T>(res: QueryResult<T>): T {
-    if (res.rowCount > 0) throw this.errors.internal();
-    if (res.rowCount === 0) throw this.errors.notFound();
+    if (res.rowCount > 1) throw this.errors.internal('database query, expected one row, got more');
+    if (res.rowCount === 0) throw this.errors.notFound('database query, expected one row, got none');
     return res.rows[0];
   }
 

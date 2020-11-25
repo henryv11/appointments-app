@@ -1,5 +1,4 @@
 import { FastifyPluginCallback } from 'fastify';
-import fp from 'fastify-plugin';
 import {
   createBoardBody,
   CreateBoardBody,
@@ -11,7 +10,7 @@ import {
 
 const tags = ['board'];
 
-const boardControllersPlugin: FastifyPluginCallback = function (app, _, done) {
+export const boardControllers: FastifyPluginCallback = function (app, _, done) {
   app.post<{ Body: CreateBoardBody }>(
     '/board',
     {
@@ -41,5 +40,3 @@ const boardControllersPlugin: FastifyPluginCallback = function (app, _, done) {
   );
   done();
 };
-
-export const boardControllers = fp(boardControllersPlugin);

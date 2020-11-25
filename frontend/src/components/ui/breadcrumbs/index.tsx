@@ -10,7 +10,7 @@ export default function Breadcrumbs() {
     <nav className={styles.root}>
       {['', ...path].map((el, i, path) => (
         <Fragment key={el}>
-          <span onClick={() => push(path.slice(0, i + 1).join('/'))} className={styles.link}>
+          <span onClick={() => push(path.slice(0, i + 1).join('/'))} className={styles.link} role='navigation'>
             {el || '..'}
           </span>
           {i < path.length - 1 && <span>/</span>}

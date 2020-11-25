@@ -1,5 +1,6 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
+export { healthCheck };
 
 /* #region  Plugin */
 const healthCheckPlugin: FastifyPluginCallback = function (app, _, done) {
@@ -7,5 +8,5 @@ const healthCheckPlugin: FastifyPluginCallback = function (app, _, done) {
   done();
 };
 
-export const healthCheck = fp(healthCheckPlugin);
+const healthCheck = fp(healthCheckPlugin);
 /* #endregion */

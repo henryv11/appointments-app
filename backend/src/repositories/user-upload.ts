@@ -6,7 +6,17 @@ export class UserUploadRepository extends AbstractRepository {
   constructor() {
     super({
       table: 'user_upload',
-      columns: ['id', 'user_id', 'upload_type', 'file_name', 'file_type', 'file_path', 'updated_at', 'created_at'],
+      columns: [
+        'id',
+        'user_id',
+        'upload_type',
+        'file_name',
+        'file_type',
+        'file_path',
+        'updated_at',
+        'created_at',
+        'file_encoding',
+      ],
     });
   }
 

@@ -1,6 +1,7 @@
 import Boom from '@hapi/boom';
 import { FastifyError, FastifyPluginCallback, FastifyRequest, HTTPMethods } from 'fastify';
 import fp from 'fastify-plugin';
+export { errors };
 
 /* #region  Plugin */
 const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
@@ -43,7 +44,7 @@ const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
   done();
 };
 
-export const errors = fp(errorsPluginCallback);
+const errors = fp(errorsPluginCallback);
 /* #endregion */
 
 /* #region  Utils */
