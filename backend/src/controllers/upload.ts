@@ -3,10 +3,13 @@ import { pipeline } from 'stream';
 import { promisify } from 'util';
 import { listUploadQuery, ListUploadQuery, postUploadQuery, PostUploadQuery, UserUpload } from '../schemas';
 
-const pump = promisify(pipeline);
-
 const tags = ['upload'];
 
+<<<<<<< HEAD
+=======
+const pump = promisify(pipeline);
+
+>>>>>>> origin
 export const uploadControllers: FastifyPluginCallback = function (app, _, done) {
   app.post<{ Querystring: PostUploadQuery }>(
     '/upload',

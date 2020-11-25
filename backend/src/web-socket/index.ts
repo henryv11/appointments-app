@@ -5,7 +5,8 @@ import { uid } from 'rand-token';
 import { WebSocket } from '../lib';
 
 const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done) {
-  /* #region  Utils */
+  //#region [Utils]
+
   const connections: Record<string, WebSocket> = {};
   const decoder = new TextDecoder('utf-8');
   function parseMessage(message: ArrayBuffer) {
@@ -16,7 +17,8 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
       } catch {}
     return { message: decoded, payload: undefined };
   }
-  /* #endregion */
+
+  //#endregion
 
   app.webSocket.handler('/*', {
     compression: app.webSocket.compressionOptions.shared,

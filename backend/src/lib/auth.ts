@@ -1,18 +1,20 @@
 import { FastifyPluginCallback, preValidationHookHandler } from 'fastify';
 import fp from 'fastify-plugin';
 import { Algorithm, sign, verify } from 'jsonwebtoken';
-export { jwtAuth };
 
-/* #region  Constants */
+//#region [Constants]
+
 const tokenSchema = {
   type: 'string',
   description: 'Json Web Token',
   example:
     'Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0IiwiaWF0IjoxNjAxODE0Mzc4fQ.Cqo8aBPhJN-hVN9wpAYNnIbLZ8M8ORMAMj_6ZIQTGV_g1hx3dti5Qjelgup2eh2dEnbP3aNmLqHKA7vYrJZjBQ',
 };
-/* #endregion */
 
-/* #region  Plugin */
+//#endregion
+
+//#region [Plugin]
+
 const jwtAuthPlugin: FastifyPluginCallback<{
   secret: string;
   algorithm: Algorithm;
@@ -64,10 +66,12 @@ const jwtAuthPlugin: FastifyPluginCallback<{
   done();
 };
 
-const jwtAuth = fp(jwtAuthPlugin);
-/* #endregion */
+export const jwtAuth = fp(jwtAuthPlugin);
 
-/* #region  Fastify declaration merging */
+//#endregion
+
+//#region [Declaration merging]
+
 declare module 'fastify' {
   interface FastifyRequest {
     user: DecodedToken | null;
@@ -83,9 +87,11 @@ declare module 'fastify' {
     jwt: Readonly<FastifyJWT>;
   }
 }
-/* #endregion */
 
-/* #region  Types */
+//#endregion
+
+//#region [Types]
+
 interface DecodedToken extends TokenPayload {
   iat: number;
 }
@@ -99,4 +105,5 @@ interface FastifyJWT {
   sign: (payload: TokenPayload) => string;
   decode: (payload: string | undefined | null) => DecodedToken;
 }
-/* #endregion */
+
+//#endregion

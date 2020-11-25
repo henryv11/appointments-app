@@ -2,9 +2,9 @@ import { loadSync, Options } from '@grpc/proto-loader';
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { GrpcObject, loadPackageDefinition, Server, ServerCredentials } from 'grpc';
-export { grpcServer };
 
-/* #region  Plugin */
+//#region [Plugin]
+
 const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
   const grpcServer = new Server();
   const grpc: FastifyGrpc = {
@@ -40,18 +40,22 @@ const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
   done();
 };
 
-const grpcServer = fp(grpcServerPlugin);
-/* #endregion */
+export const grpcServer = fp(grpcServerPlugin);
 
-/* #region  Fastify declaration merging */
+//#endregion
+
+//#region [Declaration merging]
+
 declare module 'fastify' {
   interface FastifyInstance {
     grpc: FastifyGrpc;
   }
 }
-/* #endregion */
 
-/* #region  Types */
+//#endregion
+
+//#region [Types]
+
 interface FastifyGrpc {
   addService: Server['addService'];
   register: Server['register'];
@@ -59,4 +63,4 @@ interface FastifyGrpc {
   listen: (host: string, port: number, cb?: (error?: Error) => void) => void;
 }
 
-/* #endregion */
+//#endregion

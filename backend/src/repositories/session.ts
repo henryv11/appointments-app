@@ -2,7 +2,8 @@ import { CreateSession, FilterSession, Session, UpdateSession } from '../schemas
 import { AbstractRepository } from './abstract';
 
 export class SessionRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region [Public]
+
   constructor() {
     super({
       table: 'session',
@@ -28,9 +29,11 @@ export class SessionRepository extends AbstractRepository {
                         ${this.sql.values([userId, token])}
               RETURNING ${this.columns}`,
     ).then(this.firstRow);
-  /* #endregion */
 
-  /* #region  Private */
+  //#endregion
+
+  //#region [Private]
+
   private find = (filter: FilterSession) =>
     this.query<Session>(
       this.sql`SELECT ${this.columns}
@@ -48,5 +51,6 @@ export class SessionRepository extends AbstractRepository {
     if (throwOnEmpty && where.isEmpty) throw this.errors.forbidden();
     return where;
   }
-  /* #endregion */
+
+  //#endregion
 }

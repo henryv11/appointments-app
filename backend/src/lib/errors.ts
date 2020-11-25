@@ -1,9 +1,9 @@
 import Boom from '@hapi/boom';
 import { FastifyError, FastifyPluginCallback, FastifyRequest, HTTPMethods } from 'fastify';
 import fp from 'fastify-plugin';
-export { errors };
 
-/* #region  Plugin */
+//#region [Plugin]
+
 const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
   const routeMethods: Record<string, Set<HTTPMethods>> = {};
   app.decorate('errors', Boom);
@@ -44,10 +44,12 @@ const errorsPluginCallback: FastifyPluginCallback = function (app, _, done) {
   done();
 };
 
-const errors = fp(errorsPluginCallback);
-/* #endregion */
+export const errors = fp(errorsPluginCallback);
 
-/* #region  Utils */
+//#endregion
+
+//#region [Utils]
+
 const formatError = ({ code, statusCode, message, name, stack }: FastifyError) => ({
   name,
   message,
@@ -67,16 +69,21 @@ const formatRequest = ({ id, body, query, method, headers, url, hostname, ip, us
   url,
   user,
 });
-/* #endregion */
 
-/* #region  Fastify declaration merging */
+//#endregion
+
+//#region [Declaration merging]
+
 declare module 'fastify' {
   interface FastifyInstance extends ErrorsInstance {}
 }
-/* #endregion */
 
-/* #region  Types */
+//#endregion
+
+//#region [Types]
+
 interface ErrorsInstance {
   errors: typeof Boom;
 }
-/* #endregion */
+
+//#endregion

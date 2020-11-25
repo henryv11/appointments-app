@@ -1,6 +1,7 @@
 import { Static as S, TLiteral, Type as T } from '@sinclair/typebox';
 
-/* #region  Enums */
+//#region [Enums]
+
 export enum AgreementType {
   TERMS_AND_CONDITIONS = 'TERMS_AND_CONDITIONS',
 }
@@ -8,9 +9,11 @@ export enum AgreementType {
 export enum UploadType {
   PROFILE_IMAGE = 'PROFILE_IMAGE',
 }
-/* #endregion */
 
-/* #region  Utils */
+//#endregion
+
+//#region [Utils]
+
 const getGenericListControlObject = <T extends string[]>(...orderByKeys: T) =>
   T.Object(
     {
@@ -29,9 +32,11 @@ const getGenericListControlObject = <T extends string[]>(...orderByKeys: T) =>
     },
     { description: 'Generic database sorting and pagination options', type: 'string' },
   );
-/* #endregion */
 
-/* #region  Schemas */
+//#endregion
+
+//#region [Schemas]
+
 const ascOrderDir = T.Literal('ASC');
 const descOrderDir = T.Literal('DESC');
 const orderDirection = T.Union([ascOrderDir, descOrderDir], {
@@ -116,9 +121,13 @@ export const listUploadQuery = T.Union([
 ]);
 
 export const getBoardsQuery = getGenericListControlObject('id', 'name', 'createdAt', 'updatedAt');
-/* #endregion */
 
-/* #region  Schema Types */
+//#endregion
+
+//#region [Types]
+
+//#region [Schema types]
+
 export type SessionToken = S<typeof sessionToken>;
 
 export type UserRegistrationBody = S<typeof userRegistrationBody>;
@@ -144,9 +153,11 @@ export type OrderDirection = S<typeof orderDirection>;
 export type PostUploadQuery = S<typeof postUploadQuery>;
 
 export type ListUploadQuery = S<typeof listUploadQuery>;
-/* #endregion */
 
-/* #region  General Types */
+//#endregion
+
+//#region [General types]
+
 export interface ListOptions<T extends string = string> {
   limit?: number;
   offset?: number;
@@ -154,7 +165,10 @@ export interface ListOptions<T extends string = string> {
   orderDirection?: OrderDirection;
 }
 
-/* #region  Boards table */
+//#endregion
+
+//#region [Boards table]
+
 export interface Board {
   id: number;
   name: string;
@@ -166,9 +180,11 @@ export type UpdateBoard = Pick<Board, 'name'>;
 export type FilterBoard = Partial<Pick<Board, 'id' | 'name' | 'createdAt' | 'updatedAt'>>;
 
 export type CreateBoard = Pick<Board, 'name'>;
-/* #endregion */
 
-/* #region  Channels table */
+//#endregion
+
+//#region [Channels table]
+
 export interface Channel {
   id: number;
   boardId: Board['id'];
@@ -180,9 +196,11 @@ export interface Channel {
 export type FilterChannel = Partial<Pick<Channel, 'id' | 'name' | 'boardId' | 'createdAt' | 'updatedAt'>>;
 
 export type CreateChannel = Pick<Channel, 'name' | 'boardId'>;
-/* #endregion */
 
-/* #region  Messages table */
+//#endregion
+
+//#region [Messages table]
+
 export interface Message {
   id: number;
   userId: User['id'];
@@ -192,9 +210,11 @@ export interface Message {
 }
 
 export type CreateMessage = Pick<Message, 'userId' | 'content'>;
-/* #endregion */
 
-/* #region  Persons agreements table */
+//#endregion
+
+//#region [Person agreements table]
+
 export interface PersonAgreement {
   agreementType: AgreementType;
   personId: Person['id'];
@@ -204,9 +224,11 @@ export interface PersonAgreement {
 }
 
 export type CreatePersonAgreement = Pick<PersonAgreement, 'agreementType' | 'personId' | 'hasAccepted'>;
-/* #endregion */
 
-/* #region  Persons table */
+//#endregion
+
+//#region [Persons table]
+
 export interface Person {
   id: number;
   userId: User['id'];
@@ -222,9 +244,11 @@ export type UpdatePerson = Partial<CreatePerson>;
 export type CreatePerson = Omit<Person, 'id' | 'createdAt' | 'updatedAt'>;
 
 export type FilterPerson = Pick<Person, 'id'>;
-/* #endregion */
 
-/* #region  Sessions table */
+//#endregion
+
+//#region [Sessions table]
+
 export interface Session {
   id: number;
   userId: User['id'];
@@ -240,9 +264,11 @@ export type CreateSession = Pick<Session, 'userId' | 'token'>;
 export type FilterSession = Partial<Pick<Session, 'id' | 'userId' | 'endedAt' | 'token'>>;
 
 export type UpdateSession = Pick<Session, 'endedAt'>;
-/* #endregion */
 
-/* #region  Users table */
+//#endregion
+
+//#region [Users table]
+
 export interface User {
   id: number;
   username: string;
@@ -260,26 +286,11 @@ export type CreateUser = Pick<User, 'username' | 'password'>;
 export type LoginUser = Partial<Pick<User, 'username'> & Pick<Person, 'email'>> & Pick<User, 'password'>;
 
 export type FilterUser = Partial<Pick<AuthUser, 'username' | 'id'> & Pick<Person, 'email'>>;
-/* #endregion */
 
-/* #region  User profile view */
-type UserProfileViewBase = Pick<User, 'username'> &
-  Pick<Person, 'dateOfBirth' | 'firstName' | 'lastName' | 'userId' | 'email'>;
+//#endregion
 
-export interface UserProfileView extends UserProfileViewBase {
-  userCreatedAt: User['createdAt'];
-  userUpdatedAt: User['updatedAt'];
-  personCreatedAt: Person['createdAt'];
-  personUpdatedAt: Person['updatedAt'];
-  personId: Person['id'];
-}
+//#region [User uploads table]
 
-export type UserProfileViewFilter = Partial<
-  Pick<UserProfileView, 'username' | 'dateOfBirth' | 'firstName' | 'lastName' | 'userId' | 'personId' | 'email'>
->;
-/* #endregion */
-
-/* #region  User uploads table */
 export interface UserUpload {
   id: number;
   userId: User['id'];
@@ -299,5 +310,26 @@ export type CreateUserUpload = Pick<
 export type FilterUserUpload = Partial<
   Pick<UserUpload, 'userId' | 'uploadType' | 'id' | 'fileName' | 'fileType' | 'filePath' | 'createdAt' | 'updatedAt'>
 >;
-/* #endregion */
-/* #endregion */
+
+//#endregion
+
+//#region [User profiles view]
+
+type UserProfileViewBase = Pick<User, 'username'> &
+  Pick<Person, 'dateOfBirth' | 'firstName' | 'lastName' | 'userId' | 'email'>;
+
+export interface UserProfileView extends UserProfileViewBase {
+  userCreatedAt: User['createdAt'];
+  userUpdatedAt: User['updatedAt'];
+  personCreatedAt: Person['createdAt'];
+  personUpdatedAt: Person['updatedAt'];
+  personId: Person['id'];
+}
+
+export type UserProfileViewFilter = Partial<
+  Pick<UserProfileView, 'username' | 'dateOfBirth' | 'firstName' | 'lastName' | 'userId' | 'personId' | 'email'>
+>;
+
+//#endregion
+
+//#endregion

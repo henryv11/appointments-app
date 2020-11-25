@@ -2,7 +2,8 @@ import { Board, CreateBoard, FilterBoard, ListOptions, UpdateBoard } from '../sc
 import { AbstractRepository } from './abstract';
 
 export class BoardRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region [Public]
+
   constructor() {
     super({
       columns: ['id', 'name', 'created_at', 'updated_at'],
@@ -39,9 +40,11 @@ export class BoardRepository extends AbstractRepository {
               ${this.where(filter, true)}
               RETURNING ${this.columns}`,
     ).then(this.allRows);
-  /* #endregion */
 
-  /* #region  Private */
+  //#endregion
+
+  //#region [Private]
+
   private find = (filter: FilterBoard) => this.query<Board>(this.sql`${this.select(filter)} LIMIT 1`);
 
   private select = (filter: FilterBoard) =>
@@ -56,5 +59,6 @@ export class BoardRepository extends AbstractRepository {
     if (throwOnEmpty && where.isEmpty) throw this.errors.forbidden();
     return where;
   }
-  /* #endregion */
+
+  //#endregion
 }

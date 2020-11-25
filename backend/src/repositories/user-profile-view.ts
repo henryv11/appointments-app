@@ -2,7 +2,8 @@ import { ListOptions, UserProfileView, UserProfileViewFilter } from '../schemas'
 import { AbstractRepository } from './abstract';
 
 export class UserProfileViewRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region  [Public]
+
   constructor() {
     super();
     this.columns = this.sql.columns([
@@ -36,9 +37,11 @@ export class UserProfileViewRepository extends AbstractRepository {
             LIMIT ${limit} OFFSET ${offset}
             ORDER BY ${this.toSnakeCase(orderBy)} ${this.orderDirection(orderDirection)}`,
     ).then(this.allRows);
-  /* #endregion */
 
-  /* #region  Private */
+  //#endregion
+
+  //#region  [Private]
+
   private find = (filter: UserProfileViewFilter) =>
     this.query<UserProfileView>(this.sql`${this.select(filter)} LIMIT 1`);
 
@@ -58,5 +61,6 @@ export class UserProfileViewRepository extends AbstractRepository {
     if (email) where.and`email = ${email}`;
     return where;
   }
-  /* #endregion */
+
+  //#endregion
 }

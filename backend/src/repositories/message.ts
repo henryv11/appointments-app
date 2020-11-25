@@ -2,7 +2,8 @@ import { CreateMessage, Message } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class MessageRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region [Public]
+
   constructor() {
     super({ table: 'message', columns: ['id', 'content', 'user_id', 'created_at', 'updated_at'] });
   }
@@ -13,5 +14,6 @@ export class MessageRepository extends AbstractRepository {
                         ${this.sql.values([userId, content])}
               RETURNING ${this.columns}`,
     ).then(this.firstRow);
-  /* #endregion */
+
+  //#endregion
 }

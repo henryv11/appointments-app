@@ -3,7 +3,8 @@ import { Session, User } from '../schemas';
 import { AbstractService } from './abstract';
 
 export class SessionService extends AbstractService {
-  /* #region  Public */
+  //#region [Public]
+
   async getContinuedOrNewSession(userOrSession: User['id'] | Session) {
     let session =
       typeof userOrSession === 'object'
@@ -32,5 +33,6 @@ export class SessionService extends AbstractService {
   async refreshSession(refreshToken: string) {
     return this.getContinuedOrNewSession(await this.repositories.session.findOne({ token: refreshToken }));
   }
-  /* #endregion */
+
+  //#endregion
 }

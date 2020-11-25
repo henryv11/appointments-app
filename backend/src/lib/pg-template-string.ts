@@ -1,10 +1,16 @@
-export default Object.assign(sql, { where, set, values, columns, raw });
+export default Object.assign(sql, { where, set, columns, values, raw });
 
-/* #region  Constants */
+//#region [Constants]
+
 const PLACEHOLDER = '?';
+
 const PREFIX_PLACEHOLDER = '$';
 
 const sqlObjControlsSymbol = Symbol('controls');
+
+//#endregion
+
+//#region [Enums]
 
 enum SqlObjType {
   MAIN,
@@ -14,14 +20,18 @@ enum SqlObjType {
   COLUMNS,
   RAW,
 }
-/* #endregion */
 
-/* #region  Utils */
-/* #region  Type guards */
+//#endregion
+
+//#region [Type guards]
+
 const isSqlObject = (obj: unknown): obj is SqlObjBase => (obj as SqlObj)?.[sqlObjControlsSymbol] !== undefined;
 const isColumnsSqlObjectControl = (obj: SqlObjControl): obj is SqlObjControl<SqlObjType.COLUMNS> =>
   obj.type === SqlObjType.COLUMNS;
-/* #endregion */
+
+//#endregion
+
+//#region [Utils]
 
 function sqlObjectControl<T extends SqlObjType>(type: T) {
   const values: ValidArg[] = [];
@@ -69,9 +79,11 @@ function templateStringParserLoop(
     else sqlObj.values.push(currArg), sqlObj.text.push(PLACEHOLDER);
   }
 }
-/* #endregion */
 
-/* #region  Library functions */
+//#endregion
+
+//#region [Library functions]
+
 function where(): WhereSqlObj;
 function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj;
 function where(tempStrs?: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj {
@@ -190,9 +202,11 @@ function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | u
   templateStringParserLoop(tempStrs, args, control);
   return sqlObj;
 }
-/* #endregion */
 
-/* #region  Types */
+//#endregion
+
+//#region [Types]
+
 type ValidArg = string | number | boolean | Date | null;
 
 type KeyValuePairs = ([string, ValidArg | undefined] | undefined | false)[];
@@ -248,4 +262,5 @@ interface UpdateSqlObjAdd {
   (arg1: string | KeyValuePairs): UpdateSqlObj;
   (arg1: string, arg2: ValidArg | undefined): UpdateSqlObj;
 }
-/* #endregion */
+
+//#endregion

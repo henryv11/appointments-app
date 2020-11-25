@@ -2,14 +2,17 @@ import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
 import { createDb, migrate } from 'postgres-migrations';
-export { QueryResult, database };
+export { QueryResult };
 
-/* #region  Constants */
+//#region [Constants]
+
 const tag = '[database]';
-/* #endregion */
 
-/* #region  Plugin */
-const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
+//#endregion
+
+//#region [Plugin]
+
+export const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
   const log = app.log.child({ plugin: 'database' });
   const pg = native
     ? (log.info(`${tag} using native bindings`), native)
@@ -30,9 +33,11 @@ const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) =>
   app.decorate('database', database);
   app.addHook('onClose', async () => (log.info(`${tag} ending database pool ...`), await pool.end()));
 });
-/* #endregion */
 
-/* #region  Utils */
+//#endregion
+
+//#region [Utils]
+
 async function databaseInit(
   pgClient: typeof Client,
   {
@@ -75,30 +80,35 @@ const attachLogger = (query: Pool['query'], log: FastifyInstance['log']) =>
     ),
     query(...args)
   )) as Pool['query'];
-/* #endregion */
 
-/* #region  Fastify declaration merging */
+//#endregion
+
+//#region [Declaration merging]
+
 declare module 'fastify' {
   interface FastifyInstance {
     database: Readonly<Database>;
   }
 }
-/* #endregion */
 
-/* #region  Types */
+//#endregion
+
+//#region [Types]
+
 type DatabaseConnectionOptions = Required<Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>>;
 
 type MigrationsOptions = { migrationsDirectory: string };
 
 interface Transaction {
-  query: Pool['query'];
-  commit: () => Promise<void>;
-  rollback: () => Promise<void>;
-  begin: () => Promise<void>;
+  readonly query: Pool['query'];
+  readonly commit: () => Promise<void>;
+  readonly rollback: () => Promise<void>;
+  readonly begin: () => Promise<void>;
 }
 
 interface Database {
-  query: Pool['query'];
-  transaction: () => Promise<Transaction>;
+  readonly query: Pool['query'];
+  readonly transaction: () => Promise<Transaction>;
 }
-/* #endregion */
+
+//#endregion

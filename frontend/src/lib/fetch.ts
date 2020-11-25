@@ -5,7 +5,8 @@ export { _fetch as fetch };
 async function _fetch<T>({ headers = {}, body, url, query, ...opts }: FetchOptions): Promise<FetchResponse<T>> {
   if (body && typeof body === 'object' && !(body instanceof FormData))
     (body = JSON.stringify(body)), (headers['Content-Type'] = 'application/json');
-  const res = await fetch(query ? url + '?' + stringify(query) : url, {
+  if (query) url += '?' + stringify(query);
+  const res = await fetch(url, {
     ...opts,
     body,
     headers,

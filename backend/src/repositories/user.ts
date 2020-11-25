@@ -2,7 +2,8 @@ import { AuthUser, CreateUser, FilterUser, PublicUser } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class UserRepository extends AbstractRepository {
-  /* #region  Public */
+  //#region [Public]
+
   constructor() {
     super({ table: 'app_user', columns: ['id', 'username'] });
   }
@@ -20,7 +21,6 @@ export class UserRepository extends AbstractRepository {
                         ${this.sql.values([username, password])}
               RETURNING ${this.columns}`,
     ).then(this.firstRow);
-  /* #endregion */
 
   /* #region  Private */
   private find = <T extends PublicUser | AuthUser = PublicUser>(filter: FilterUser, columns = this.columns) =>
@@ -38,5 +38,6 @@ export class UserRepository extends AbstractRepository {
     if (email) where.and`id = (SELECT user_id FROM ${this.repositores.person.table} WHERE email = ${email})`;
     return where;
   }
-  /* #endregion */
+
+  //#endregion
 }
