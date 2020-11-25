@@ -24,6 +24,7 @@ const jwtAuthPlugin: FastifyPluginCallback<{
     decode(token) {
       if (!token) throw new Error('missing token');
       const decoded = verify(token, secret, { algorithms: [algorithm] });
+      console.log({ decoded });
       if (!decoded || typeof decoded !== 'object' || ['userId', 'sessionId'].some(key => !(key in decoded)))
         throw new Error('invalid token payload');
       return decoded as DecodedToken;

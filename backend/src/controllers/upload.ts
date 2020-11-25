@@ -5,11 +5,8 @@ import { listUploadQuery, ListUploadQuery, postUploadQuery, PostUploadQuery, Use
 
 const tags = ['upload'];
 
-<<<<<<< HEAD
-=======
 const pump = promisify(pipeline);
 
->>>>>>> origin
 export const uploadControllers: FastifyPluginCallback = function (app, _, done) {
   app.post<{ Querystring: PostUploadQuery }>(
     '/upload',

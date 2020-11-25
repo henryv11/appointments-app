@@ -35,7 +35,7 @@ export class UserRepository extends AbstractRepository {
     const where = this.sql.where();
     if (id) where.and`id = ${id}`;
     if (username) where.and`username = ${username}`;
-    if (email) where.and`id = (SELECT user_id FROM ${this.repositores.person.table} WHERE email = ${email})`;
+    if (email) where.and`id = (SELECT user_id FROM ${this.repositories.person.table} WHERE email = ${email})`;
     return where;
   }
 

@@ -47,8 +47,8 @@ export class UserProfileViewRepository extends AbstractRepository {
 
   private select = (filter: UserProfileViewFilter) =>
     this.sql`SELECT ${this.columns}
-            FROM ${this.repositores.user.table} u
-            LEFT JOIN ${this.repositores.person.table} p
+            FROM ${this.repositories.user.table} u
+            LEFT JOIN ${this.repositories.person.table} p
             ON u.id = p.user_id
             ${this.where(filter)}`;
 

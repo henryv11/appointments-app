@@ -8,7 +8,7 @@ import { AbstractService } from './abstract';
 //#region [Constants]
 
 const basePathByUploadType: Record<UploadType, string> = {
-  [UploadType.PROFILE_IMAGE]: '/uploads/user-media/profile-images',
+  [UploadType.PROFILE_IMAGE]: '/www/user-uploads/user-media/profile-images',
 };
 
 //#endregion

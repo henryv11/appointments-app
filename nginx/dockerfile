@@ -1,4 +1,14 @@
-FROM nginx:latest
-RUN rm /etc/nginx/conf.d/default.conf
-COPY default.conf /etc/nginx/conf.d/
-COPY ./static /etc/var/www/
+FROM ubuntu:latest
+USER root
+
+RUN apt-get update
+RUN apt-get install -y nginx nodejs
+
+RUN rm -v /etc/nginx/nginx.conf
+
+COPY nginx.conf /etc/nginx/
+COPY mime.types /etc/nginx/
+
+EXPOSE 80
+
+CMD ["/usr/sbin/nginx"]

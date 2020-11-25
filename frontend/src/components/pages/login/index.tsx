@@ -20,6 +20,8 @@ export default function LoginPage() {
     return <Redirect to='/' />;
   }
 
+  console.log('hello');
+
   function onError(message: string) {
     setError(message);
     timeoutRef.current = 5000;
