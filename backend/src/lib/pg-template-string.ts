@@ -53,7 +53,6 @@ function mergeColumnsSqlObjects(dest: SqlObjControl, source: SqlObjControl<SqlOb
     if (txt === PREFIX_PLACEHOLDER) prefix && dest.text.push(prefix + '.');
     else dest.text.push(txt);
   });
-  if (dest.isEmpty && isColumnsSqlObjectControl(dest)) dest.text.push(', ');
 }
 
 function mergeSqlObjects(dest: SqlObjControl, source: SqlObjControl) {
@@ -165,9 +164,9 @@ function columns(columns: (string | [string, string] | ColumnsSqlObject)[], pref
   const len = columns.length - 1;
   columns.forEach((col, i) => {
     if (isSqlObject(col)) mergeSqlObjects(control, col[sqlObjControlsSymbol]);
-    else if (Array.isArray(col))
-      control.text.push(PREFIX_PLACEHOLDER, col[0] + ' AS ' + '"' + col[1] + '"' + (i < len ? ', ' : ''));
-    else control.text.push(PREFIX_PLACEHOLDER, col + (i < len ? ', ' : ''));
+    else if (Array.isArray(col)) control.text.push(PREFIX_PLACEHOLDER, col[0] + ' AS ' + '"' + col[1] + '"');
+    else control.text.push(PREFIX_PLACEHOLDER, col);
+    if (i < len) control.text.push(', ');
   });
   return sqlObj;
 }

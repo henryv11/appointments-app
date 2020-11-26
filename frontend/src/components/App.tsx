@@ -16,13 +16,13 @@ export default function App() {
         <LayoutContextProvider>
           <Router>
             <Switch>
+              <Route exact path={RoutePath.LOGIN}>
+                <LoginPage />
+              </Route>
               <Route path={RoutePath.HOME}>
                 <RequireAuthentication>
                   <HomePage />
                 </RequireAuthentication>
-              </Route>
-              <Route exact path={RoutePath.LOGIN}>
-                <LoginPage />
               </Route>
               <Route>
                 <NotFoundPage />

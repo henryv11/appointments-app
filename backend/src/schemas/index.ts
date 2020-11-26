@@ -177,9 +177,11 @@ export interface Board {
 }
 export type UpdateBoard = Pick<Board, 'name'>;
 
-export type FilterBoard = Partial<Pick<Board, 'id' | 'name' | 'createdAt' | 'updatedAt'>>;
-
 export type CreateBoard = Pick<Board, 'name'>;
+
+export type FilterBoard = Partial<Board>;
+
+export type ListBoard = FilterBoard & ListOptions<keyof Board>;
 
 //#endregion
 
@@ -193,7 +195,7 @@ export interface Channel {
   updatedAt: Date;
 }
 
-export type FilterChannel = Partial<Pick<Channel, 'id' | 'name' | 'boardId' | 'createdAt' | 'updatedAt'>>;
+export type FilterChannel = Partial<Channel>;
 
 export type CreateChannel = Pick<Channel, 'name' | 'boardId'>;
 
@@ -243,7 +245,9 @@ export type UpdatePerson = Partial<CreatePerson>;
 
 export type CreatePerson = Omit<Person, 'id' | 'createdAt' | 'updatedAt'>;
 
-export type FilterPerson = Pick<Person, 'id'>;
+export type FilterPerson = Partial<Person & { createdAtLaterThan: Date; createdAtBeforeThan: Date }>;
+
+export type ListPerson = ListOptions<keyof Person> & FilterPerson;
 
 //#endregion
 
@@ -277,7 +281,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type PublicUser = Pick<User, 'id' | 'username'>;
+export type PublicUser = Omit<User, 'password'>;
 
 export type AuthUser = Pick<User, 'password'> & PublicUser;
 
@@ -285,7 +289,7 @@ export type CreateUser = Pick<User, 'username' | 'password'>;
 
 export type LoginUser = Partial<Pick<User, 'username'> & Pick<Person, 'email'>> & Pick<User, 'password'>;
 
-export type FilterUser = Partial<Pick<AuthUser, 'username' | 'id'> & Pick<Person, 'email'>>;
+export type FilterUser = Partial<PublicUser & Pick<Person, 'email'>>;
 
 //#endregion
 
@@ -298,18 +302,16 @@ export interface UserUpload {
   fileName: string;
   fileType: string;
   filePath: string;
-  fileEncoding: BufferEncoding;
+  fileEncoding: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export type CreateUserUpload = Pick<
-  UserUpload,
-  'userId' | 'uploadType' | 'fileName' | 'fileType' | 'filePath' | 'fileEncoding'
->;
-export type FilterUserUpload = Partial<
-  Pick<UserUpload, 'userId' | 'uploadType' | 'id' | 'fileName' | 'fileType' | 'filePath' | 'createdAt' | 'updatedAt'>
->;
+export type CreateUserUpload = Omit<UserUpload, 'id' | 'createdAt' | 'updatedAt'>;
+
+export type FilterUserUpload = Partial<UserUpload>;
+
+export type ListUserUpload = FilterUserUpload & ListOptions<keyof UserUpload>;
 
 //#endregion
 
@@ -326,9 +328,9 @@ export interface UserProfileView extends UserProfileViewBase {
   personId: Person['id'];
 }
 
-export type UserProfileViewFilter = Partial<
-  Pick<UserProfileView, 'username' | 'dateOfBirth' | 'firstName' | 'lastName' | 'userId' | 'personId' | 'email'>
->;
+export type FilterUserProfileView = Partial<UserProfileView>;
+
+export type ListUserProfileView = FilterUserProfileView & ListOptions<keyof UserProfileView>;
 
 //#endregion
 

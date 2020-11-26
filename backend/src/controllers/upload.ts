@@ -18,10 +18,21 @@ export const uploadControllers: FastifyPluginCallback = function (app, _, done) 
         querystring: postUploadQuery,
       },
     },
-    async req => {
-      for await (const data of req.files()) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        await app.services.upload.upload(data, { userId: req.user!.userId, uploadType: req.query.uploadType });
+    async (req, res) => {
+      try {
+        if (!req.isMultipart()) throw app.errors.badRequest('body has to be multipart form data');
+        for await (const data of await req.files()) {
+          if (!data.file) {
+            continue;
+          }
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          await app.services.upload.upload(data, { userId: req.user!.userId, uploadType: req.query.uploadType });
+        }
+        res.status(201);
+        return 'file uploaded';
+      } catch (error) {
+        console.log(error);
+        throw error;
       }
     },
   );

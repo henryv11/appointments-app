@@ -1,4 +1,4 @@
-import { ListOptions, UserProfileView, UserProfileViewFilter } from '../schemas';
+import { ListUserProfileView, UserProfileView, FilterUserProfileView } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class UserProfileViewRepository extends AbstractRepository {
@@ -21,17 +21,17 @@ export class UserProfileViewRepository extends AbstractRepository {
     ]);
   }
 
-  findOne = (filter: UserProfileViewFilter) => this.find(filter).then(this.firstRow);
+  findOne = (filter: FilterUserProfileView) => this.find(filter).then(this.firstRow);
 
-  findMaybeOne = (filter: UserProfileViewFilter) => this.find(filter).then(this.maybeFirstRow);
+  findMaybeOne = (filter: FilterUserProfileView) => this.find(filter).then(this.maybeFirstRow);
 
   list = ({
     limit = 100,
     offset = 1,
     orderDirection = 'DESC',
-    orderBy = 'createdAt',
+    orderBy = 'userCreatedAt',
     ...filter
-  }: UserProfileViewFilter & ListOptions<string>) =>
+  }: ListUserProfileView) =>
     this.query<UserProfileView>(
       this.sql`${this.select(filter)}
             LIMIT ${limit} OFFSET ${offset}
@@ -42,17 +42,17 @@ export class UserProfileViewRepository extends AbstractRepository {
 
   //#region  [Private]
 
-  private find = (filter: UserProfileViewFilter) =>
+  private find = (filter: FilterUserProfileView) =>
     this.query<UserProfileView>(this.sql`${this.select(filter)} LIMIT 1`);
 
-  private select = (filter: UserProfileViewFilter) =>
+  private select = (filter: FilterUserProfileView) =>
     this.sql`SELECT ${this.columns}
             FROM ${this.repositories.user.table} u
             LEFT JOIN ${this.repositories.person.table} p
             ON u.id = p.user_id
             ${this.where(filter)}`;
 
-  private where({ userId, personId, firstName, lastName, email }: UserProfileViewFilter) {
+  private where({ userId, personId, firstName, lastName, email }: FilterUserProfileView) {
     const where = this.sql.where();
     if (userId) where.and`u.id = ${userId}`;
     if (personId) where.and`p.id = ${personId}`;

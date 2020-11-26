@@ -12,7 +12,7 @@ const _services = Object.freeze({
   upload: new UploadService(),
 });
 
-const servicesPlugin: FastifyPluginCallback = (app, _, done) => (app.registerService('services', _services), done());
+const servicesPlugin: FastifyPluginCallback = (app, _, done) => (app.registerServices('services', _services), done());
 
 export const services = fp(servicesPlugin);
 

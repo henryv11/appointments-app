@@ -1,5 +1,6 @@
 import SimpleLayout from '@/components/layouts/simple';
 import { AuthContextActionType, useAuthContext } from '@/contexts/auth';
+import { RoutePath } from '@/lib/constants';
 import { useTimeout } from '@/lib/react/hooks/timeout';
 import { loginUser, registerUser } from '@/services/auth';
 import React, { useRef, useState } from 'react';
@@ -17,10 +18,8 @@ export default function LoginPage() {
   useTimeout(() => setError(''), timeoutRef.current);
 
   if (isAuthenticated) {
-    return <Redirect to='/' />;
+    return <Redirect to={RoutePath.HOME} />;
   }
-
-  console.log('hello');
 
   function onError(message: string) {
     setError(message);

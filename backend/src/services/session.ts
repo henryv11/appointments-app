@@ -25,7 +25,7 @@ export class SessionService extends AbstractService {
 
     return {
       user: await this.repositories.user.findOne({ id: session.userId }),
-      token: this.jwt.sign({ userId: session.userId, sessionId: session.id }),
+      token: this.jwt.sign({ userId: Number(session.userId), sessionId: session.id }),
       refreshToken: session.token,
     };
   }

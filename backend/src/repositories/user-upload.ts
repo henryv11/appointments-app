@@ -1,4 +1,4 @@
-import { CreateUserUpload, FilterUserUpload, ListOptions, UserUpload } from '../schemas';
+import { CreateUserUpload, FilterUserUpload, ListUserUpload, UserUpload } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class UserUploadRepository extends AbstractRepository {
@@ -25,23 +25,17 @@ export class UserUploadRepository extends AbstractRepository {
 
   findMaybeOne = (filter: FilterUserUpload) => this.find(filter).then(this.maybeFirstRow);
 
-  list = ({
-    orderBy = 'createdAt',
-    orderDirection = 'ASC',
-    offset = 1,
-    limit = 100,
-    ...filter
-  }: ListOptions<keyof UserUpload> & FilterUserUpload) =>
+  list = ({ orderBy = 'createdAt', orderDirection = 'ASC', offset = 1, limit = 100, ...filter }: ListUserUpload) =>
     this.query<UserUpload>(
       this.sql`${this.select(filter)}
             ORDER BY ${this.toSnakeCase(orderBy)} ${this.orderDirection(orderDirection)}
             LIMIT ${limit} OFFSET ${offset}`,
     ).then(this.allRows);
 
-  create = ({ userId, uploadType, fileName, fileType, filePath }: CreateUserUpload, conn = this.query) =>
+  create = ({ userId, uploadType, fileName, fileType, filePath, fileEncoding }: CreateUserUpload, conn = this.query) =>
     conn<UserUpload>(
-      this.sql`INSERT INTO ${this.table} (user_id, upload_type, file_name, file_type, file_path)
-                          ${this.sql.values([userId, uploadType, fileName, fileType, filePath])}
+      this.sql`INSERT INTO ${this.table} (user_id, upload_type, file_name, file_type, file_path, file_encoding)
+                          ${this.sql.values([userId, uploadType, fileName, fileType, filePath, fileEncoding])}
             RETURNING ${this.columns}`,
     ).then(this.firstRow);
 

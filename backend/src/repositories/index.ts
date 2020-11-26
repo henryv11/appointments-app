@@ -23,7 +23,7 @@ const _repositories = Object.freeze({
 });
 
 const repositoriesPlugin: FastifyPluginCallback = (app, _, done) => (
-  app.registerService('repositories', _repositories), done()
+  app.registerServices('repositories', _repositories), done()
 );
 
 export const repositories = fp(repositoriesPlugin);
