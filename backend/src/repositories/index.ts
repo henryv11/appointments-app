@@ -1,6 +1,5 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
-import { registerServices } from '../lib';
 import { BoardRepository } from './board';
 import { ChannelRepository } from './channel';
 import { MessageRepository } from './message';
@@ -11,7 +10,7 @@ import { UserRepository } from './user';
 import { UserProfileViewRepository } from './user-profile-view';
 import { UserUploadRepository } from './user-upload';
 
-const services = Object.freeze({
+const _repositories = Object.freeze({
   user: new UserRepository(),
   person: new PersonRepository(),
   personAgreements: new PersonAgreementsRepository(),
@@ -24,13 +23,13 @@ const services = Object.freeze({
 });
 
 const repositoriesPlugin: FastifyPluginCallback = (app, _, done) => (
-  app.register(registerServices, { services, name: 'repositories' }), done()
+  app.registerServices('repositories', _repositories), done()
 );
 
 export const repositories = fp(repositoriesPlugin);
 
 declare module 'fastify' {
   interface FastifyInstance {
-    repositories: typeof services;
+    repositories: typeof _repositories;
   }
 }

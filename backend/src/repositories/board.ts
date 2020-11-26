@@ -1,4 +1,4 @@
-import { Board, CreateBoard, FilterBoard, ListOptions, UpdateBoard } from '../schemas';
+import { Board, CreateBoard, FilterBoard, ListBoard, UpdateBoard } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class BoardRepository extends AbstractRepository {
@@ -13,17 +13,11 @@ export class BoardRepository extends AbstractRepository {
 
   findOne = (filter: FilterBoard) => this.find(filter).then(this.firstRow);
 
-  list = ({
-    limit,
-    offset,
-    orderBy = 'id',
-    orderDirection = 'ASC',
-    ...filter
-  }: FilterBoard & ListOptions<keyof Board>) =>
+  list = ({ limit = 100, offset = 1, orderBy = 'id', orderDirection = 'ASC', ...filter }: ListBoard) =>
     this.query<Board>(
       this.sql`${this.select(filter)}
               ORDER BY ${this.toSnakeCase(orderBy)} ${orderDirection}
-              LIMIT ${limit || 100} OFFSET ${offset || 1}`,
+              LIMIT ${limit} OFFSET ${offset}`,
     ).then(this.allRows);
 
   create = ({ name }: CreateBoard, conn = this.query) =>

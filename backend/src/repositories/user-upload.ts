@@ -1,4 +1,4 @@
-import { CreateUserUpload, FilterUserUpload, ListOptions, UserUpload } from '../schemas';
+import { CreateUserUpload, FilterUserUpload, ListUserUpload, UserUpload } from '../schemas';
 import { AbstractRepository } from './abstract';
 
 export class UserUploadRepository extends AbstractRepository {
@@ -25,13 +25,7 @@ export class UserUploadRepository extends AbstractRepository {
 
   findMaybeOne = (filter: FilterUserUpload) => this.find(filter).then(this.maybeFirstRow);
 
-  list = ({
-    orderBy = 'createdAt',
-    orderDirection = 'ASC',
-    offset = 1,
-    limit = 100,
-    ...filter
-  }: ListOptions<keyof UserUpload> & FilterUserUpload) =>
+  list = ({ orderBy = 'createdAt', orderDirection = 'ASC', offset = 1, limit = 100, ...filter }: ListUserUpload) =>
     this.query<UserUpload>(
       this.sql`${this.select(filter)}
             ORDER BY ${this.toSnakeCase(orderBy)} ${this.orderDirection(orderDirection)}
