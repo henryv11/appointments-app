@@ -32,10 +32,10 @@ export class UserUploadRepository extends AbstractRepository {
             LIMIT ${limit} OFFSET ${offset}`,
     ).then(this.allRows);
 
-  create = ({ userId, uploadType, fileName, fileType, filePath }: CreateUserUpload, conn = this.query) =>
+  create = ({ userId, uploadType, fileName, fileType, filePath, fileEncoding }: CreateUserUpload, conn = this.query) =>
     conn<UserUpload>(
-      this.sql`INSERT INTO ${this.table} (user_id, upload_type, file_name, file_type, file_path)
-                          ${this.sql.values([userId, uploadType, fileName, fileType, filePath])}
+      this.sql`INSERT INTO ${this.table} (user_id, upload_type, file_name, file_type, file_path, file_encoding)
+                          ${this.sql.values([userId, uploadType, fileName, fileType, filePath, fileEncoding])}
             RETURNING ${this.columns}`,
     ).then(this.firstRow);
 

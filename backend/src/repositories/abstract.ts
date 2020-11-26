@@ -56,9 +56,9 @@ function orderDirection(dir: 'ASC' | 'DESC') {
 }
 
 function toCamelCase(str: string) {
-  return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index) {
-    if (+match === 0) return ''; // or if (/\s+/.test(match)) for white spaces
-    return index === 0 ? match.toLowerCase() : match.toUpperCase();
+  return str.replace(/^([A-Z])|[\s-_]+(\w)/g, function (_, p1, p2) {
+    if (p2) return p2.toUpperCase();
+    return p1.toLowerCase();
   });
 }
 

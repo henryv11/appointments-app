@@ -27,11 +27,7 @@ export default function HomePage() {
 
   // useInterval(() => ws.send('ping'), 20000);
 
-  console.log({ token });
-
   const userPromise = useAsync(authState.isAuthenticated && getUserProfile, [token, userId]);
-
-  console.log(userPromise);
 
   if (!userPromise.isResolved) {
     return <div>loading....</div>;

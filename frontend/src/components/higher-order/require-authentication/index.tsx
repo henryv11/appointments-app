@@ -20,7 +20,7 @@ export default function RequireAuthentication({ children }: PropsWithChildren<un
     }
   });
 
-  if (promise.isPending) return <div>loading...</div>;
+  if (promise.isPending || promise.isIdle) return <div>loading...</div>;
   if (promise.isResolved && promise.result) return <>{children}</>;
   return <Redirect to={RoutePath.LOGIN} />;
 }

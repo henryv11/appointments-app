@@ -302,7 +302,7 @@ export interface UserUpload {
   fileName: string;
   fileType: string;
   filePath: string;
-  fileEncoding: BufferEncoding;
+  fileEncoding: string;
   createdAt: Date;
   updatedAt: Date;
 }
