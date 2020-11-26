@@ -7,13 +7,14 @@ import swagger from 'fastify-swagger';
 import pino from 'pino';
 import { controllers } from './controllers';
 import { grpcControllers } from './grpc';
-import { database, errors, exitHandler, grpcServer, healthCheck, jwtAuth, webSocketServer } from './lib';
+import { database, errors, exitHandler, fastifyUtil, grpcServer, healthCheck, jwtAuth, webSocketServer } from './lib';
 import { repositories } from './repositories';
 import { services } from './services';
 import { webSocketController } from './web-socket';
 
 const app = Fastify({ logger: pino(config('logger')) })
   .register(exitHandler)
+  .register(fastifyUtil)
   .register(errors)
   .register(fastifyMultipart)
   .register(database, config('db'))
