@@ -1,11 +1,7 @@
 import { FastifyPluginCallback } from 'fastify';
-import { pipeline } from 'stream';
-import { promisify } from 'util';
 import { listUploadQuery, ListUploadQuery, postUploadQuery, PostUploadQuery, UserUpload } from '../schemas';
 
 const tags = ['upload'];
-
-const pump = promisify(pipeline);
 
 export const uploadControllers: FastifyPluginCallback = function (app, _, done) {
   app.post<{ Querystring: PostUploadQuery }>(

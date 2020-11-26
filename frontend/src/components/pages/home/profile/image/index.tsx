@@ -4,7 +4,7 @@ import { useAuthContext } from '@/contexts/auth';
 import { useUserContext } from '@/contexts/user';
 import { useAsync } from '@/lib/react/hooks/async';
 import { useSimpleReducer } from '@/lib/react/hooks/simple-reducer';
-import { listUploads, uploadFile } from '@/services/upload';
+import { listUploads, uploadFiles } from '@/services/upload';
 import buttonStyles from '@/styles/button.scss';
 import inputStyles from '@/styles/input.scss';
 import clsx from 'clsx';
@@ -40,6 +40,7 @@ function ImageChooserModal({ onClose }: { onClose: () => void }) {
   } = authState.isAuthenticated ? authState : { token: '', user: { id: -1 } };
   const [filters, updateFilters] = useSimpleReducer({ uploadType: 'PROFILE_IMAGE', userId });
   const uploadsPromise = useAsync(!!token && listUploads, [token, filters]);
+  const [files, setFiles] = useState<FileList>();
   return (
     <Modal onClose={onClose} title='Choose a new profile image'>
       <Expandable title='Uploaded files' isExpanded>
@@ -51,13 +52,15 @@ function ImageChooserModal({ onClose }: { onClose: () => void }) {
           className={inputStyles.input}
           type='file'
           id='input'
-          onChange={
-            token
-              ? ({ target: { files } }) =>
-                  files && uploadFile(token, 'PROFILE_IMAGE', files).then(() => updateFilters())
-              : () => void 0
-          }
+          multiple
+          onChange={token ? ({ target: { files } }) => files && setFiles(files) : () => void 0}
         ></input>
+        {files && (
+          <button
+            className={clsx(buttonStyles.button, buttonStyles.success)}
+            onClick={() => uploadFiles(token, 'PROFILE_IMAGE', files).then(() => updateFilters())}
+          ></button>
+        )}
         <label htmlFor='input'>Choose a profile image to upload</label>
       </Expandable>
     </Modal>

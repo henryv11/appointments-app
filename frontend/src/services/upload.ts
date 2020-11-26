@@ -2,7 +2,7 @@ import { makeServiceFetch } from '@/lib/services';
 
 const fetch = makeServiceFetch('upload');
 
-export async function uploadFile(token: string, uploadType: string, files: FileList) {
+export async function uploadFiles(token: string, uploadType: string, files: FileList) {
   const body = new FormData();
   for (let i = 0; i < files.length; i++) {
     body.append('file_' + i, files[i]);
