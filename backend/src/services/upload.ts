@@ -15,10 +15,6 @@ const basePathByUploadType: Record<UploadType, string> = {
 
 //#region [Utils]
 
-function getFilePath(uploadType: UploadType, userId: UserUpload['userId'], fileName: string) {
-  return resolve(basePathByUploadType[uploadType], [userId, Date.now(), fileName].join('-'));
-}
-
 const pump = promisify(pipeline);
 
 //#endregion
@@ -26,33 +22,35 @@ const pump = promisify(pipeline);
 export class UploadService extends AbstractService {
   //#region [Public]
 
-  async upload(file: File, { userId, uploadType }: Pick<UserUpload, 'userId' | 'uploadType'>) {
-    const filePath = getFilePath(uploadType, userId, file.filename);
-    this.log.info({ uploadType, userId, filePath }, 'uploading file');
+  upload(file: File, { userId, uploadType }: Pick<UserUpload, 'userId' | 'uploadType'>) {
+    const fileName = [userId, Date.now(), file.filename].join('-');
+    const filePath = resolve(basePathByUploadType[uploadType], fileName);
 
-    try {
-      await pump(file.file, createWriteStream(filePath));
-    } catch (error) {
-      this.log.info(error, 'failed to write file to disk');
-      unlinkSync(filePath);
-      throw this.errors.badRequest();
-    }
-
-    const upload = await this.repositories.userUpload.create({
-      userId,
-      uploadType,
-      fileName: file.filename,
-      fileType: file.mimetype,
-      fileEncoding: file.encoding,
-      filePath,
-    });
-    this.log.info(upload as any, 'file uploaded');
+    return pump(file.file, createWriteStream(filePath))
+      .then(() =>
+        this.repositories.userUpload.create({
+          userId,
+          uploadType,
+          fileName,
+          filePath,
+          fileType: file.mimetype,
+          fileEncoding: file.encoding,
+        }),
+      )
+      .catch(error => {
+        this.log.info(error, 'failed to write file to disk');
+        unlinkSync(filePath);
+        throw this.errors.badRequest();
+      });
   }
 
-  async download(id: UserUpload['id']) {
-    const userUpload = await this.repositories.userUpload.findOne({ id });
-    return { stream: createReadStream(userUpload.filePath), ...userUpload };
-  }
+  download = (id: UserUpload['id'], stream: NodeJS.WritableStream) =>
+    this.repositories.userUpload.findOne({ id }).then(({ filePath }) =>
+      pump(createReadStream(filePath), stream).catch(error => {
+        this.log.error(error, 'failed to send file to client');
+        throw this.errors.badRequest();
+      }),
+    );
 
   //#endregion
 }

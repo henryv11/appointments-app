@@ -104,7 +104,7 @@ export const getBoardParams = T.Object({
   boardId: id,
 });
 
-export const postUploadQuery = T.Object({ uploadType: T.Enum(UploadType) });
+export const postUploadQuery = T.Object({ uploadType: T.Enum(UploadType), isMultiple: T.Boolean() });
 
 export const listUploadQuery = T.Union([
   getGenericListControlObject(
