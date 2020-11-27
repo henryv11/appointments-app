@@ -5,16 +5,16 @@ import { AbstractService } from './abstract';
 export class SessionService extends AbstractService {
   //#region [Public]
 
-  async getContinuedOrNewSession(userOrSession: User['id'] | Session, conn = this.database.query) {
+  async getContinuedOrNewSession(userOrSession: User['id'] | Session, query = this.database.query) {
     let session =
       typeof userOrSession === 'object'
         ? userOrSession
-        : await this.repositories.session.findMaybeOne({ userId: userOrSession, endedAt: null }, conn);
+        : await this.repositories.session.findMaybeOne({ userId: userOrSession, endedAt: null }, query);
 
     if (session) {
       if (new Date().getTime() - new Date(session.startedAt).getTime() >= 8.64e7 * 14) {
-        await this.repositories.session.update({ endedAt: new Date() }, { id: session.id }, conn);
-        session = await this.repositories.session.create({ userId: session.userId, token: suid(64) }, conn);
+        await this.repositories.session.update({ endedAt: new Date() }, { id: session.id }, query);
+        session = await this.repositories.session.create({ userId: session.userId, token: suid(64) }, query);
       }
     } else {
       session = await this.repositories.session.create(
@@ -22,12 +22,12 @@ export class SessionService extends AbstractService {
           userId: typeof userOrSession === 'object' ? userOrSession.userId : userOrSession,
           token: suid(64),
         },
-        conn,
+        query,
       );
     }
 
     return {
-      user: await this.repositories.user.findOne({ id: session.userId }, conn),
+      user: await this.repositories.user.findOne({ id: session.userId }, query),
       token: this.jwt.sign({ userId: Number(session.userId), sessionId: session.id }),
       refreshToken: session.token,
     };

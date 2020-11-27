@@ -19,9 +19,8 @@ export const database = fp<DatabaseConnectionOptions>(async (app, connectionOpti
     : (log.info(`${tag} using postgres bindings`), { Pool, Client });
   await databaseInit(pg.Client, connectionOptions, log);
   const pool = new pg.Pool(connectionOptions);
-  const query = attachLogger(pool.query.bind(pool), log);
   const database: Database = Object.freeze({
-    query,
+    query: attachLogger(pool.query.bind(pool), log),
     transaction: () =>
       pool.connect().then(connection => ({
         begin: () => connection.query('BEGIN').then(() => void 0),

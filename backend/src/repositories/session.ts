@@ -13,10 +13,10 @@ export class SessionRepository extends AbstractRepository {
 
   findOne = (filter: FilterSession, conn = this.query) => this.find(filter, conn).then(this.firstRow);
 
-  findMaybeOne = (filter: FilterSession, conn = this.query) => this.find(filter, conn).then(this.maybeFirstRow);
+  findMaybeOne = (filter: FilterSession, query = this.query) => this.find(filter, query).then(this.maybeFirstRow);
 
-  update = ({ endedAt }: UpdateSession, filter: FilterSession, conn = this.query) =>
-    conn<Session>(
+  update = ({ endedAt }: UpdateSession, filter: FilterSession, query = this.query) =>
+    query<Session>(
       this.sql`UPDATE ${this.table}
               ${this.sql.set('ended_at', endedAt)}
               ${this.where(filter, true)}
@@ -34,8 +34,8 @@ export class SessionRepository extends AbstractRepository {
 
   //#region [Private]
 
-  private find = (filter: FilterSession, conn = this.query) =>
-    this.query<Session>(
+  private find = (filter: FilterSession, query = this.query) =>
+    query<Session>(
       this.sql`SELECT ${this.columns}
               FROM ${this.table}
               ${this.where(filter)}
