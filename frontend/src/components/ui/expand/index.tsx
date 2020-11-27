@@ -6,7 +6,13 @@ export default function Expandable({
   children,
   title,
   isExpanded: isExpanedProp = false,
-}: PropsWithChildren<{ title: string; isExpanded?: boolean }>) {
+  ...rest
+}: PropsWithChildren<
+  { title: string; isExpanded?: boolean } & React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLDivElement>,
+    HTMLDivElement
+  >
+>) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
@@ -19,7 +25,7 @@ export default function Expandable({
         <h4>{title}</h4>
         <SvgIcon icon={isExpanded ? 'arrowUp' : 'arrowDown'} size={16} strokeWidth={12} />
       </div>
-      {isExpanded && <div>{children}</div>}
+      {isExpanded && <div {...rest}>{children}</div>}
     </div>
   );
 }
