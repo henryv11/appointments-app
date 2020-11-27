@@ -8,12 +8,12 @@ export class UserRepository extends AbstractRepository {
     super({ table: 'app_user', columns: ['id', 'username'] });
   }
 
-  findOne = (filter: FilterUser) => this.find(filter).then(this.firstRow);
+  findOne = (filter: FilterUser, conn = this.query) => this.find(filter, conn).then(this.firstRow);
 
-  findMaybeOne = (filter: FilterUser) => this.find(filter).then(this.maybeFirstRow);
+  findMaybeOne = (filter: FilterUser, conn = this.query) => this.find(filter, conn).then(this.maybeFirstRow);
 
-  findOneWithPassword = (filter: FilterUser) =>
-    this.find<AuthUser>(filter, this.sql.columns([this.columns, 'password'])).then(this.firstRow);
+  findOneWithPassword = (filter: FilterUser, conn = this.query) =>
+    this.find<AuthUser>(filter, conn, this.sql.columns([this.columns, 'password'])).then(this.firstRow);
 
   create = ({ username, password }: CreateUser, conn = this.query) =>
     conn<PublicUser>(
@@ -23,8 +23,12 @@ export class UserRepository extends AbstractRepository {
     ).then(this.firstRow);
 
   /* #region  Private */
-  private find = <T extends PublicUser | AuthUser = PublicUser>(filter: FilterUser, columns = this.columns) =>
-    this.query<T>(
+  private find = <T extends PublicUser | AuthUser = PublicUser>(
+    filter: FilterUser,
+    conn = this.query,
+    columns = this.columns,
+  ) =>
+    conn<T>(
       this.sql`SELECT ${columns}
               FROM ${this.table}
               ${this.where(filter)}

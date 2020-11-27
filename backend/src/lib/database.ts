@@ -29,6 +29,11 @@ export const database = fp<DatabaseConnectionOptions>(async (app, connectionOpti
         rollback: () => connection.query('ROLLBACK').then(() => connection.release()),
         query: attachLogger(connection.query.bind(connection), log),
       })),
+    connection: () =>
+      pool.connect().then(connection => ({
+        query: attachLogger(connection.query.bind(connection), log),
+        close: () => connection.release(),
+      })),
   });
   app.decorate('database', database);
   app.addHook('onClose', async () => (log.info(`${tag} ending database pool ...`), await pool.end()));
@@ -106,9 +111,15 @@ interface Transaction {
   readonly begin: () => Promise<void>;
 }
 
+interface Connection {
+  query: Pool['query'];
+  close: () => void;
+}
+
 interface Database {
   readonly query: Pool['query'];
   readonly transaction: () => Promise<Transaction>;
+  readonly connection: () => Promise<Connection>;
 }
 
 //#endregion

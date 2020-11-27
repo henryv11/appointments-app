@@ -39,9 +39,10 @@ export class AuthService extends AbstractService {
   }
 
   async loginUser({ email, password, username }: UserLoginBody) {
-    const user = await this.repositories.user.findOneWithPassword({ email, username });
-    if (!(await compare(password, user.password))) throw this.errors.badRequest();
-    return this.services.session.getContinuedOrNewSession(user.id);
+    const connection = await this.database.connection();
+    const user = await this.repositories.user.findOneWithPassword({ email, username }, connection.query);
+    if (!(await compare(password, user.password))) throw (connection.close(), this.errors.badRequest());
+    return this.services.session.getContinuedOrNewSession(user.id, connection.query).finally(connection.close);
   }
 
   //#endregion
