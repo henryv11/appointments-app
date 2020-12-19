@@ -1,0 +1,17 @@
+.root {
+  .uploadsExpandable {
+    width: 100%;
+    height: 600px;
+    padding: 0;
+  }
+
+  .uploadNew {
+    button {
+      float: right;
+    }
+  }
+
+  .skeleton {
+    padding: 0.5rem;
+  }
+}

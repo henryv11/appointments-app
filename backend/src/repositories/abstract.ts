@@ -1,72 +1,57 @@
 import { FastifyInstance } from 'fastify';
 import { FastifyService, QueryResult, sql } from '../lib';
 
-export abstract class AbstractRepository implements FastifyService {
-  //#region [Public]
-
-  columns: ReturnType<typeof sql.columns>;
+export abstract class AbstractRepository<Columns extends Record<string, string> = Record<string, string>>
+  implements FastifyService {
   table: ReturnType<typeof sql.raw>;
+  columns: {
+    sql: ReturnType<typeof sql.columns>;
+    map: Record<keyof Columns, ReturnType<typeof sql.raw>>;
+  };
 
-  constructor({ columns = [], table = '' }: { columns?: string[]; table?: string } = {}) {
-    this.columns = sql.columns(columns.map(column => [column, toCamelCase(column)]));
+  constructor({ table = '', columns = {} as Columns }: { table?: string; columns?: Columns } = {}) {
     this.table = sql.raw(table);
+    this.columns = {
+      sql: sql.columns(Object.entries(columns).map(([a, b]) => [b, a])),
+      map: Object.entries(columns).reduce((map, [key, value]) => {
+        map[key as keyof Columns] = sql.raw(value);
+        return map;
+      }, {} as Record<keyof Columns, ReturnType<typeof sql.raw>>),
+    };
   }
 
-  register({ database: { query, transaction }, errors, repositories }: FastifyInstance) {
+  inject({ database: { query }, errors, repositories }: FastifyInstance) {
     this.query = query;
-    this.transaction = transaction;
     this.errors = errors;
     this.repositories = repositories;
+
+    this.firstRow = res => {
+      if (res.rowCount > 1) throw this.errors.internal('[database query] - expected one row, got ' + res.rowCount);
+      if (res.rowCount === 0) throw this.errors.notFound('[database query] - expected one row, got none');
+      return res.rows[0];
+    };
+
+    this.maybeFirstRow = res => {
+      if (res.rowCount > 1) throw this.errors.internal('[database query] - expected one row, got ' + res.rowCount);
+      return res.rows[0];
+    };
+
+    this.rowCount = res => res.rowCount;
+
+    this.allRows = res => res.rows;
   }
 
-  //#endregion
-
-  //#region [Protected]
-
-  protected query!: FastifyInstance['database']['query'];
-  protected transaction!: FastifyInstance['database']['transaction'];
-  protected errors!: FastifyInstance['errors'];
-  protected repositories!: FastifyInstance['repositories'];
-  protected toSnakeCase = toSnakeCase;
   protected sql = sql;
   protected orderDirection = orderDirection;
-
-  protected maybeFirstRow<T>(res: QueryResult<T>): T | undefined {
-    if (res.rowCount > 1) throw this.errors.internal('database query, expected one row, got more');
-    return res.rows[0];
-  }
-
-  protected firstRow<T>(res: QueryResult<T>): T {
-    if (res.rowCount > 1) throw this.errors.internal('database query, expected one row, got more');
-    if (res.rowCount === 0) throw this.errors.notFound('database query, expected one row, got none');
-    return res.rows[0];
-  }
-
-  protected allRows<T>(res: QueryResult<T>): T[] {
-    return res.rows;
-  }
-
-  //#endregion
+  protected query!: FastifyInstance['database']['query'];
+  protected errors!: FastifyInstance['errors'];
+  protected repositories!: FastifyInstance['repositories'];
+  protected firstRow!: <T>(res: QueryResult<T>) => T;
+  protected maybeFirstRow!: <T>(res: QueryResult<T>) => T | undefined;
+  protected rowCount!: (res: QueryResult) => number;
+  protected allRows!: <T>(res: QueryResult<T>) => T[];
 }
-
-//#region [Utils]
 
 function orderDirection(dir: 'ASC' | 'DESC') {
   return dir === 'DESC' ? sql`DESC` : sql`ASC`;
 }
-
-function toCamelCase(str: string) {
-  return str.replace(/^([A-Z])|[\s-_]+(\w)/g, function (_, p1, p2) {
-    if (p2) return p2.toUpperCase();
-    return p1.toLowerCase();
-  });
-}
-
-function toSnakeCase(str: string) {
-  return str
-    .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
-    ?.map(x => x.toLowerCase())
-    .join('_');
-}
-
-//#endregion

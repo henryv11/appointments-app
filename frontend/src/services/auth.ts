@@ -26,7 +26,7 @@ export async function registerUser(body: UserRegistration) {
 
 export async function refreshSession(refreshToken: string) {
   const res = await fetch<AuthResponseBody>({
-    path: ['session', refreshToken, 'refresh'],
+    path: refreshToken,
   });
   if (res.status !== 200) throw new Error('refreshing token failed');
   return res.json();

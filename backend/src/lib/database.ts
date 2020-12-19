@@ -4,19 +4,11 @@ import { Client, ClientConfig, native, Pool, QueryResult } from 'pg';
 import { createDb, migrate } from 'postgres-migrations';
 export { QueryResult };
 
-//#region [Constants]
-
-const tag = '[database]';
-
-//#endregion
-
-//#region [Plugin]
-
 export const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
   const log = app.log.child({ plugin: 'database' });
   const pg = native
-    ? (log.info(`${tag} using native bindings`), native)
-    : (log.info(`${tag} using postgres bindings`), { Pool, Client });
+    ? (log.info('using native bindings'), native)
+    : (log.info('using postgres bindings'), { Pool, Client });
   await databaseInit(pg.Client, connectionOptions, log);
   const pool = new pg.Pool(connectionOptions);
   const database: Database = Object.freeze({
@@ -35,12 +27,8 @@ export const database = fp<DatabaseConnectionOptions>(async (app, connectionOpti
       })),
   });
   app.decorate('database', database);
-  app.addHook('onClose', async () => (log.info(`${tag} ending database pool ...`), await pool.end()));
+  app.addHook('onClose', async () => (log.info('closing database pool ...'), await pool.end()));
 });
-
-//#endregion
-
-//#region [Utils]
 
 async function databaseInit(
   pgClient: typeof Client,
@@ -49,45 +37,41 @@ async function databaseInit(
     database,
     ...connectionOptions
   }: DatabaseConnectionOptions & Partial<MigrationsOptions>,
-  logger: FastifyInstance['log'],
+  logger: LogFn,
 ) {
   let client: Client | undefined = undefined;
   try {
     client = new pgClient(connectionOptions);
     await client.connect();
-    logger.info(`${tag} creating database "${database}" ...`);
+    logger.info('creating database ' + database + ' ...');
     await createDb(database, { client });
     await client.end();
-    logger.info(`${tag} running migrations ...`);
+    logger.info('running migrations ...');
     client = new pgClient({ database, ...connectionOptions });
     await client.connect();
     const migrations = await migrate({ client }, migrationsDirectory);
     migrations.length
-      ? logger.info({ migrations }, `${tag} ran migrations successfully`)
-      : logger.info(`${tag} no migrations to run`);
+      ? logger.info({ migrations }, 'ran migrations successfully')
+      : logger.info('no migrations to run');
     await client.end();
   } catch (error) {
-    logger.error(error, `${tag} database init failed`);
+    logger.error(error, 'database init failed');
     await client?.end();
     throw error;
   }
 }
 
-const attachLogger = (query: Pool['query'], log: FastifyInstance['log']) =>
-  ((...args: Parameters<Pool['query']>) => (
+const attachLogger = (query: QueryFn, log: LogFn) =>
+  ((...args: Parameters<QueryFn>) => (
     log.info(
       typeof args[0] === 'string'
         ? { text: args[0], values: args[1] }
         : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           { text: (args[0] as any).text, values: (args[0] as any).values },
-      `${tag} query`,
+      'query',
     ),
     query(...args)
-  )) as Pool['query'];
-
-//#endregion
-
-//#region [Declaration merging]
+  )) as QueryFn;
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -95,30 +79,28 @@ declare module 'fastify' {
   }
 }
 
-//#endregion
+type LogFn = FastifyInstance['log'];
 
-//#region [Types]
+type QueryFn = Pool['query'];
 
 type DatabaseConnectionOptions = Required<Pick<ClientConfig, 'host' | 'port' | 'user' | 'password' | 'database'>>;
 
 type MigrationsOptions = { migrationsDirectory: string };
 
 interface Transaction {
-  readonly query: Pool['query'];
+  readonly query: QueryFn;
   readonly commit: () => Promise<void>;
   readonly rollback: () => Promise<void>;
   readonly begin: () => Promise<void>;
 }
 
 interface Connection {
-  query: Pool['query'];
+  query: QueryFn;
   close: () => void;
 }
 
 interface Database {
-  readonly query: Pool['query'];
+  readonly query: QueryFn;
   readonly transaction: () => Promise<Transaction>;
   readonly connection: () => Promise<Connection>;
 }
-
-//#endregion

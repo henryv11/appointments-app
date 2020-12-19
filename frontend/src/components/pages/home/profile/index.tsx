@@ -1,6 +1,6 @@
 import React from 'react';
 import UserFields from './fields';
-import ProfileImage from './image';
+import ProfileImage from './profile-image';
 import styles from './styles.scss';
 
 export default function ProfilePage() {

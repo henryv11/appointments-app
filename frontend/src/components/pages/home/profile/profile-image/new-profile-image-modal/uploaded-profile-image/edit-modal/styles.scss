@@ -1,0 +1,14 @@
+.root {
+  display: flex;
+  flex-direction: column;
+
+  canvas {
+    margin-left: auto;
+    margin-right: auto;
+    height: 400px;
+  }
+
+  .controls {
+    margin-top: 1.5rem;
+  }
+}

@@ -9,6 +9,7 @@ const controllersPlugin: FastifyPluginCallback = function (app, _, done) {
   [authControllers, boardControllers, userControllers, uploadControllers].forEach(controller =>
     app.register(fp(controller)),
   );
+
   done();
 };
 

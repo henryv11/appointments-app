@@ -1,0 +1,1 @@
+ALTER TABLE user_upload ADD COLUMN original_file_name TEXT NOT NULL;

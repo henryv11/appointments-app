@@ -1,61 +1,78 @@
 import { FastifyPluginCallback } from 'fastify';
 import {
-  authResponse,
-  refreshSessionParams,
-  RefreshSessionParams,
-  userLoginBody,
-  UserLoginBody,
-  UserRegistrationBody,
-  userRegistrationBody,
+  loginUser,
+  LoginUser,
+  refreshSessionParameters,
+  RefreshSessionParameters,
+  registerUser,
+  RegisterUser,
+  sessionResponse,
 } from '../schemas';
 
 const tags = ['auth'];
+const path = '/auth';
 
 export const authControllers: FastifyPluginCallback = function (app, _, done) {
-  app.put<{ Body: UserRegistrationBody }>(
-    '/auth',
+  app.put<{ Body: RegisterUser }>(
+    path,
     {
       schema: {
         description: "User's registration details",
         summary: 'Registration',
         tags,
-        body: userRegistrationBody,
+        body: registerUser,
         response: {
-          201: authResponse,
+          201: sessionResponse,
         },
       },
     },
     (req, res) => (res.status(201), app.services.auth.registerUser(req.body)),
   );
 
-  app.post<{ Body: UserLoginBody }>(
-    '/auth',
+  app.post<{ Body: LoginUser }>(
+    path,
     {
       schema: {
         description: 'Login an existing user',
         summary: 'Login',
         tags,
-        body: userLoginBody,
+        body: loginUser,
         response: {
-          200: authResponse,
+          200: sessionResponse,
         },
       },
     },
     req => app.services.auth.loginUser(req.body),
   );
 
-  app.delete('/auth', { authorize: true, schema: { description: 'Logout user', summary: 'Logout', tags } }, req =>
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    app.services.auth.logoutUser({ userId: req.user!.userId }),
+  app.delete(
+    path,
+    {
+      authorize: true,
+      schema: {
+        description: 'Logout user',
+        summary: 'Logout',
+        tags,
+        response: {
+          200: { type: 'string' },
+        },
+      },
+    },
+    req =>
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      app.services.auth.logoutUser({ userId: req.user!.userId }).then(() => 'logged out'),
   );
 
-  app.get<{ Params: RefreshSessionParams }>(
-    '/auth/session/:sessionToken/refresh',
+  app.get<{ Params: RefreshSessionParameters }>(
+    `${path}/:sessionToken`,
     {
       schema: {
         description: 'Refresh session token',
         tags,
-        params: refreshSessionParams,
+        params: refreshSessionParameters,
+        response: {
+          200: sessionResponse,
+        },
       },
     },
     req => app.services.session.refreshSession(req.params.sessionToken),

@@ -1,12 +1,10 @@
 import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
-//#region [Plugin]
-
 const fastifyUtilsPlugin: FastifyPluginCallback = function (app, _, done) {
   const registerServices: RegisterServices = function (name, services) {
     app.decorate(name, services);
-    Object.values(app[name]).forEach(service => service.register(app));
+    Object.values(app[name]).forEach(service => service.inject(app));
   };
   app.decorate('registerServices', registerServices);
   done();
@@ -14,19 +12,11 @@ const fastifyUtilsPlugin: FastifyPluginCallback = function (app, _, done) {
 
 export const fastifyUtils = fp(fastifyUtilsPlugin);
 
-//#endregion
-
-//#region [Declaration merging]
-
 declare module 'fastify' {
   interface FastifyInstance {
     registerServices: RegisterServices;
   }
 }
-
-//#endregion
-
-//#region [Types]
 
 type FilterFlags<Base, Condition> = {
   [Key in keyof Base]: Base[Key] extends Condition ? Key : never;
@@ -42,7 +32,5 @@ interface RegisterServices {
 }
 
 export interface FastifyService {
-  register(app: FastifyInstance): void;
+  inject(app: FastifyInstance): void;
 }
-
-//#endregion

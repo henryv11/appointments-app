@@ -1,29 +1,30 @@
-import { ListUserProfileView, UserProfileView, FilterUserProfileView } from '../schemas';
+import { FilterUserProfileView, ListUserProfileView, UserProfileView } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-export class UserProfileViewRepository extends AbstractRepository {
-  //#region  [Public]
+const columns = {
+  personId: 'p.id',
+  personCreatedAt: 'p.created_at',
+  personUpdatedAt: 'p.updated_at',
+  userCreatedAt: 'u.created_at',
+  userUpdatedAt: 'u.updated_at',
+  username: 'username',
+  email: 'email',
+  userId: 'user_id',
+  firstName: 'first_name',
+  lastName: 'last_name',
+  dateOfBirth: 'date_of_birth',
+} as const;
 
+export class UserProfileViewRepository extends AbstractRepository<typeof columns> {
   constructor() {
-    super();
-    this.columns = this.sql.columns([
-      'username',
-      'email',
-      ['user_id', 'userId'],
-      ['p.id', 'personId'],
-      ['date_of_birth', 'dateOfBirth'],
-      ['first_name', 'firstName'],
-      ['last_name', 'lastName'],
-      ['p.created_at', 'personCreatedAt'],
-      ['p.updated_at', 'personUpdatedAt'],
-      ['u.created_at', 'userCreatedAt'],
-      ['u.updated_at', 'userUpdatedAt'],
-    ]);
+    super({ columns });
   }
 
-  findOne = (filter: FilterUserProfileView) => this.find(filter).then(this.firstRow);
+  findOne = (filter: FilterUserProfileView, conn = this.query) =>
+    conn<UserProfileView>(this.sql`${this.select(filter)} LIMIT 1`).then(this.firstRow);
 
-  findMaybeOne = (filter: FilterUserProfileView) => this.find(filter).then(this.maybeFirstRow);
+  findMaybeOne = (filter: FilterUserProfileView, conn = this.query) =>
+    conn<UserProfileView>(this.sql`${this.select(filter)} LIMIT 1`).then(this.maybeFirstRow);
 
   list = ({
     limit = 100,
@@ -35,18 +36,11 @@ export class UserProfileViewRepository extends AbstractRepository {
     this.query<UserProfileView>(
       this.sql`${this.select(filter)}
             LIMIT ${limit} OFFSET ${offset}
-            ORDER BY ${this.toSnakeCase(orderBy)} ${this.orderDirection(orderDirection)}`,
+            ORDER BY ${this.columns.map[orderBy]} ${this.orderDirection(orderDirection)}`,
     ).then(this.allRows);
 
-  //#endregion
-
-  //#region  [Private]
-
-  private find = (filter: FilterUserProfileView) =>
-    this.query<UserProfileView>(this.sql`${this.select(filter)} LIMIT 1`);
-
   private select = (filter: FilterUserProfileView) =>
-    this.sql`SELECT ${this.columns}
+    this.sql`SELECT ${this.columns.sql}
             FROM ${this.repositories.user.table} u
             LEFT JOIN ${this.repositories.person.table} p
             ON u.id = p.user_id
@@ -61,6 +55,4 @@ export class UserProfileViewRepository extends AbstractRepository {
     if (email) where.and`email = ${email}`;
     return where;
   }
-
-  //#endregion
 }

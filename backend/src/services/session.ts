@@ -1,25 +1,22 @@
 import { suid } from 'rand-token';
-import { Session, User } from '../schemas';
+import { PublicUser, SessionResponse } from '../schemas';
 import { AbstractService } from './abstract';
 
 export class SessionService extends AbstractService {
-  //#region [Public]
+  async getContinuedOrNewSession(user: PublicUser, query = this.database.query): Promise<SessionResponse> {
+    // TODO: validate user to previous sessions
 
-  async getContinuedOrNewSession(userOrSession: User['id'] | Session, query = this.database.query) {
-    let session =
-      typeof userOrSession === 'object'
-        ? userOrSession
-        : await this.repositories.session.findMaybeOne({ userId: userOrSession, endedAt: null }, query);
+    let session = await this.repositories.session.findMaybeOne({ userId: user.id, endedAt: null }, query);
 
     if (session) {
       if (new Date().getTime() - new Date(session.startedAt).getTime() >= 8.64e7 * 14) {
-        await this.repositories.session.update({ endedAt: new Date() }, { id: session.id }, query);
+        await this.repositories.session.update({ endedAt: new Date().toISOString() }, { id: session.id }, query);
         session = await this.repositories.session.create({ userId: session.userId, token: suid(64) }, query);
       }
     } else {
       session = await this.repositories.session.create(
         {
-          userId: typeof userOrSession === 'object' ? userOrSession.userId : userOrSession,
+          userId: user.id,
           token: suid(64),
         },
         query,
@@ -27,19 +24,19 @@ export class SessionService extends AbstractService {
     }
 
     return {
-      user: await this.repositories.user.findOne({ id: session.userId }, query),
-      token: this.jwt.sign({ userId: Number(session.userId), sessionId: session.id }),
+      user,
+      token: this.jwt.sign({ userId: session.userId, sessionId: session.id }),
       refreshToken: session.token,
     };
   }
 
   async refreshSession(refreshToken: string) {
     const connection = await this.database.connection();
-    return this.getContinuedOrNewSession(
-      await this.repositories.session.findOne({ token: refreshToken }, connection.query),
-      connection.query,
-    ).finally(connection.close);
+    try {
+      const user = await this.repositories.user.findOne({ sessionToken: refreshToken }, connection.query);
+      return await this.getContinuedOrNewSession(user, connection.query);
+    } finally {
+      connection.close();
+    }
   }
-
-  //#endregion
 }

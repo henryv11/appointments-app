@@ -9,7 +9,7 @@ export abstract class AbstractService implements FastifyService {
   protected services!: FastifyInstance['services'];
   protected jwt!: FastifyInstance['jwt'];
 
-  register({ repositories, database, errors, log, services, jwt }: FastifyInstance) {
+  inject({ repositories, database, errors, log, services, jwt }: FastifyInstance) {
     this.repositories = repositories;
     this.database = database;
     this.errors = errors;

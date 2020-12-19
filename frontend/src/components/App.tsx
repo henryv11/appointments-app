@@ -11,22 +11,21 @@ import NotFoundPage from './pages/not-found';
 
 export default function App() {
   return (
-    <ThemeContextProvider theme='dark'>
+    <ThemeContextProvider>
       <AuthContextProvider>
         <LayoutContextProvider>
           <Router>
             <Switch>
-              <Route exact path={RoutePath.LOGIN}>
-                <LoginPage />
-              </Route>
-              <Route path={RoutePath.HOME}>
-                <RequireAuthentication>
-                  <HomePage />
-                </RequireAuthentication>
-              </Route>
-              <Route>
-                <NotFoundPage />
-              </Route>
+              <Route exact path={RoutePath.LOGIN} component={LoginPage} />
+              <Route
+                path={RoutePath.HOME}
+                component={() => (
+                  <RequireAuthentication>
+                    <HomePage />
+                  </RequireAuthentication>
+                )}
+              />
+              <Route component={NotFoundPage} />
             </Switch>
           </Router>
         </LayoutContextProvider>

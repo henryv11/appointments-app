@@ -5,6 +5,7 @@ import arrowLeft from './arrow-left';
 import arrowRight from './arrow-right';
 import arrowUp from './arrow-up';
 import block from './block';
+import check from './check';
 import checkBox from './check-box';
 import checkBoxBlank from './check-box-blank';
 import chevronLeft from './chevron-left';
@@ -15,9 +16,12 @@ import expandLess from './expand-less';
 import expandMore from './expand-more';
 import flipBoard from './flip-board';
 import menu from './menu';
+import pencil from './pencil';
+import trash from './trash';
 import xCircle from './x-circle';
 
 const icons = asIconMap({
+  check,
   accountCircle,
   block,
   checkBox,
@@ -35,6 +39,8 @@ const icons = asIconMap({
   arrowRight,
   arrowDown,
   xCircle,
+  trash,
+  pencil,
 });
 
 export default function SvgIcon<Name extends IconName>({

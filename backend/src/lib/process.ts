@@ -1,8 +1,6 @@
 import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
-//#region [Plugin]
-
 const exitHandlerPlugin: FastifyPluginCallback = (app, _, done) => (
   ['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal =>
     process.on(signal, signal => handleExit(signal, undefined, 0, app)),
@@ -13,10 +11,6 @@ const exitHandlerPlugin: FastifyPluginCallback = (app, _, done) => (
 );
 
 export const exitHandler = fp(exitHandlerPlugin);
-
-//#endregion
-
-//#region [Utils]
 
 async function handleExit(
   signal: NodeJS.Signals | undefined,
@@ -32,14 +26,8 @@ async function handleExit(
   process.exit(code);
 }
 
-//#endregion
-
-//#region [Declaration merging]
-
 declare module 'fastify' {
   interface FastifyInstance {
     exit: (code: number, error?: Error, signal?: NodeJS.Signals) => Promise<never>;
   }
 }
-
-//#endregion

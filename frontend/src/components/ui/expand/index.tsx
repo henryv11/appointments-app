@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 import SvgIcon from '../icon/svg';
 import styles from './styles.scss';
@@ -5,6 +6,7 @@ import styles from './styles.scss';
 export default function Expandable({
   children,
   title,
+  className,
   isExpanded: isExpanedProp = false,
   ...rest
 }: PropsWithChildren<
@@ -25,7 +27,11 @@ export default function Expandable({
         <h4>{title}</h4>
         <SvgIcon icon={isExpanded ? 'arrowUp' : 'arrowDown'} size={16} strokeWidth={12} />
       </div>
-      {isExpanded && <div {...rest}>{children}</div>}
+      {isExpanded && (
+        <div className={clsx(styles.children, className)} {...rest}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }

@@ -5,8 +5,6 @@ import { uid } from 'rand-token';
 import { WebSocket } from '../lib';
 
 const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done) {
-  //#region [Utils]
-
   const connections: Record<string, WebSocket> = {};
   const decoder = new TextDecoder('utf-8');
   function parseMessage(message: ArrayBuffer) {
@@ -17,8 +15,6 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
       } catch {}
     return { message: decoded, payload: undefined };
   }
-
-  //#endregion
 
   app.webSocket.handler('/*', {
     compression: app.webSocket.compressionOptions.shared,
@@ -34,7 +30,7 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
       try {
         user = app.jwt.decode(token as string);
       } catch (error) {
-        app.log.error(error, 'web socket connection failed to authorize');
+        app.webSocket.log.error(error, 'upgrade request failed to authorize');
         return res.writeStatus('401 Unauthorized').end();
       }
       res.upgrade(
@@ -53,12 +49,12 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
 
     open(ws) {
       connections[ws.id] = ws;
-      app.log.info(`new websocket "${ws.id}" connected`);
+      app.webSocket.log.info(`new websocket "${ws.id}" connected`);
     },
 
     message(ws, messageBuffer) {
       const { message, payload } = parseMessage(messageBuffer);
-      app.log.info(`message from websocket "${ws.id}" message: "${message || JSON.stringify(payload)}"`);
+      app.webSocket.log.info(`message from websocket "${ws.id}" message: "${message || JSON.stringify(payload)}"`);
       const type = message || payload.type;
 
       switch (type) {
@@ -68,20 +64,20 @@ const webSocketControllerPlugin: FastifyPluginCallback = function (app, _, done)
     },
 
     close(ws, code, message) {
-      app.log.info({ code, message: decoder.decode(message) }, `websocket "${ws.id}" connection closed`);
+      app.webSocket.log.info({ code, message: decoder.decode(message) }, `websocket "${ws.id}" connection closed`);
       delete connections[ws.id];
     },
 
     drain(ws) {
-      app.log.info(`backpressure drain on websocket "${ws.id}" bufferedAmount: "${ws.getBufferedAmount()}"`);
+      app.webSocket.log.info(`backpressure drain on websocket "${ws.id}" bufferedAmount: "${ws.getBufferedAmount()}"`);
     },
 
     ping(ws) {
-      app.log.info(`ping from websocket "${ws.id}"`);
+      app.webSocket.log.info(`ping from websocket "${ws.id}"`);
     },
 
     pong(ws) {
-      app.log.info(`pong to websocket "${ws.id}"`);
+      app.webSocket.log.info(`pong to websocket "${ws.id}"`);
     },
   });
 

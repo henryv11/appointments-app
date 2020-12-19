@@ -1,16 +1,10 @@
 export default Object.assign(sql, { where, set, columns, values, raw });
 
-//#region [Constants]
-
 const PLACEHOLDER = '?';
 
 const PREFIX_PLACEHOLDER = '$';
 
 const sqlObjControlsSymbol = Symbol('controls');
-
-//#endregion
-
-//#region [Enums]
 
 enum SqlObjType {
   MAIN,
@@ -21,17 +15,9 @@ enum SqlObjType {
   RAW,
 }
 
-//#endregion
-
-//#region [Type guards]
-
 const isSqlObject = (obj: unknown): obj is SqlObjBase => (obj as SqlObj)?.[sqlObjControlsSymbol] !== undefined;
 const isColumnsSqlObjectControl = (obj: SqlObjControl): obj is SqlObjControl<SqlObjType.COLUMNS> =>
   obj.type === SqlObjType.COLUMNS;
-
-//#endregion
-
-//#region [Utils]
 
 function sqlObjectControl<T extends SqlObjType>(type: T) {
   const values: ValidArg[] = [];
@@ -79,10 +65,6 @@ function templateStringParserLoop(
   }
 }
 
-//#endregion
-
-//#region [Library functions]
-
 function where(): WhereSqlObj;
 function where(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj;
 function where(tempStrs?: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | undefined)[]): WhereSqlObj {
@@ -109,7 +91,7 @@ function where(tempStrs?: TemplateStringsArray, ...args: (ValidArg | SqlObjBase 
 
 function set(): UpdateSqlObj;
 function set(arg1: KeyValuePairs): UpdateSqlObj;
-function set(arg1: string, arg2: ValidArg): UpdateSqlObj;
+function set(arg1: string, arg2: ValidArg | undefined): UpdateSqlObj;
 function set(arg1?: string | KeyValuePairs, arg2?: ValidArg): UpdateSqlObj {
   const control = sqlObjectControl(SqlObjType.SET);
   const sqlObj: UpdateSqlObj = {
@@ -118,7 +100,7 @@ function set(arg1?: string | KeyValuePairs, arg2?: ValidArg): UpdateSqlObj {
       ((Array.isArray(arg1) ? arg1 : [[arg1, arg2]]) as KeyValuePairs).forEach(kv => {
         if (kv && kv[1] !== undefined) {
           if (!control.isEmpty) control.text.push(', ');
-          control.text.push(kv[0] + ' = ', PLACEHOLDER);
+          control.text.push('"' + kv[0] + '"' + ' = ', PLACEHOLDER);
           control.values.push(kv[1]);
         }
       });
@@ -202,10 +184,6 @@ function sql(tempStrs: TemplateStringsArray, ...args: (ValidArg | SqlObjBase | u
   return sqlObj;
 }
 
-//#endregion
-
-//#region [Types]
-
 type ValidArg = string | number | boolean | Date | null;
 
 type KeyValuePairs = ([string, ValidArg | undefined] | undefined | false)[];
@@ -261,5 +239,3 @@ interface UpdateSqlObjAdd {
   (arg1: string | KeyValuePairs): UpdateSqlObj;
   (arg1: string, arg2: ValidArg | undefined): UpdateSqlObj;
 }
-
-//#endregion

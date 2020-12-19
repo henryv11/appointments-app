@@ -1,15 +1,13 @@
 import { compare, hash } from 'bcrypt';
-import { AgreementType, User, UserLoginBody, UserRegistrationBody } from '../schemas';
+import { AgreementType, LoginUser, RegisterUser, User } from '../schemas';
 import { AbstractService } from './abstract';
 
 export class AuthService extends AbstractService {
-  //#region [Public]
-
   async logoutUser({ userId }: { userId: User['id'] }) {
-    await this.repositories.session.update({ endedAt: new Date() }, { userId, endedAt: null });
+    await this.repositories.session.update({ endedAt: new Date().toISOString() }, { userId, endedAt: null });
   }
 
-  async registerUser({ username, password, hasAcceptedTermsAndConditions, ...personDetails }: UserRegistrationBody) {
+  async registerUser({ username, password, hasAcceptedTermsAndConditions, ...personDetails }: RegisterUser) {
     const [hashedPassword, transaction] = await Promise.all([hash(password, 10), this.database.transaction()]);
     try {
       await transaction.begin();
@@ -30,7 +28,7 @@ export class AuthService extends AbstractService {
         transaction.query,
       );
       await transaction.commit();
-      return this.loginUser({ username, password });
+      return this.services.session.getContinuedOrNewSession(user);
     } catch (error) {
       this.log.error(error, 'failed to create user');
       await transaction.rollback();
@@ -38,12 +36,17 @@ export class AuthService extends AbstractService {
     }
   }
 
-  async loginUser({ email, password, username }: UserLoginBody) {
+  async loginUser({ email, password, username }: LoginUser) {
     const connection = await this.database.connection();
-    const user = await this.repositories.user.findOneWithPassword({ email, username }, connection.query);
-    if (!(await compare(password, user.password))) throw (connection.close(), this.errors.badRequest());
-    return this.services.session.getContinuedOrNewSession(user.id, connection.query).finally(connection.close);
+    try {
+      const { password: userPassword, ...user } = await this.repositories.user.auth.findOne(
+        { email, username },
+        connection.query,
+      );
+      if (!(await compare(password, userPassword))) throw this.errors.badRequest();
+      return await this.services.session.getContinuedOrNewSession(user, connection.query);
+    } finally {
+      connection.close();
+    }
   }
-
-  //#endregion
 }

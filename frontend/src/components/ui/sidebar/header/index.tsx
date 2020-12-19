@@ -1,6 +1,6 @@
 import SvgIcon from '@/components/ui/icon/svg';
 import { LayoutContextActionType, useLayoutContext } from '@/contexts/layout';
-import { getCurrentDateString } from '@/lib/date';
+import { formatDateString } from '@/lib/date';
 import { useInterval } from '@/lib/react/hooks/interval';
 import buttonStyles from '@/styles/button.scss';
 import clsx from 'clsx';
@@ -23,9 +23,9 @@ export default function SidebarHeader() {
 }
 
 function Clock() {
-  const [dateString, setDateString] = useState(getCurrentDateString());
+  const [dateString, setDateString] = useState(formatDateString(new Date()));
   useInterval(() => {
-    setDateString(getCurrentDateString());
+    setDateString(formatDateString(new Date()));
   }, 1000);
   return <span>{dateString}</span>;
 }

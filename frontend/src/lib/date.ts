@@ -1,5 +1,4 @@
-export function getCurrentDateString() {
-  const date = new Date();
+export function formatDateString(date: Date) {
   return (
     date.toDateString() +
     ' ' +
