@@ -1,4 +1,4 @@
-import { Static as S, Type as T } from '@sinclair/typebox';
+import { Static, Type } from '@sinclair/typebox';
 import { bigInt, email, jsonWebToken, password, sessionToken, uploadType, username } from './data-types';
 import { createPerson } from './person';
 import { createUser, publicUser } from './user';
@@ -13,48 +13,52 @@ export * from './session';
 export * from './user';
 export * from './user-profile-view';
 export * from './user-upload';
-export * from './util';
+export * from './type-util';
 
-export const sessionResponse = T.Object({ user: publicUser, token: jsonWebToken, refreshToken: sessionToken });
+export const sessionResponse = Type.Object({ user: publicUser, token: jsonWebToken, refreshToken: sessionToken });
 
-export type SessionResponse = S<typeof sessionResponse>;
+export type SessionResponse = Static<typeof sessionResponse>;
 
-export const getBoardParameters = T.Object({ boardId: bigInt });
+export const getBoardParameters = Type.Object({ boardId: bigInt });
 
-export type GetBoardParameters = S<typeof getBoardParameters>;
+export type GetBoardParameters = Static<typeof getBoardParameters>;
 
-export const loginUser = T.Object({
+export const loginUser = Object({
   password,
-  username: T.Optional(username),
-  email: T.Optional(email),
+  username: Type.Optional(username),
+  email: Type.Optional(email),
 });
 
-export type LoginUser = S<typeof loginUser>;
+export type LoginUser = Static<typeof loginUser>;
 
-export const registerUser = T.Intersect([
+export const registerUser = Type.Intersect([
   createPerson,
   createUser,
-  T.Object({
-    hasAcceptedTermsAndConditions: T.Boolean(),
+  Type.Object({
+    hasAcceptedTermsAndConditions: Type.Boolean(),
   }),
 ]);
 
-export type RegisterUser = S<typeof registerUser>;
+export type RegisterUser = Static<typeof registerUser>;
 
-export const postUploadQuery = T.Object({
+export const postUploadQuery = Type.Object({
   uploadType,
 });
 
-export type PostUploadQuery = S<typeof postUploadQuery>;
+export type PostUploadQuery = Static<typeof postUploadQuery>;
 
-export const getUploadParameters = T.Object({ uploadId: bigInt });
+export const getUploadParameters = Type.Object({ uploadId: bigInt });
 
-export type GetUploadParameters = S<typeof getUploadParameters>;
+export type GetUploadParameters = Static<typeof getUploadParameters>;
 
 export const deleteUploadParameters = getUploadParameters;
 
-export type DeleteUploadParameters = S<typeof deleteUploadParameters>;
+export type DeleteUploadParameters = Static<typeof deleteUploadParameters>;
 
-export const getUserProfileViewParameters = T.Object({ userId: bigInt });
+export const getUserProfileViewParameters = Type.Object({ userId: bigInt });
 
-export type GetUserProfileViewParameters = S<typeof getUserProfileViewParameters>;
+export type GetUserProfileViewParameters = Static<typeof getUserProfileViewParameters>;
+
+export const refreshSessionParameters = Type.Object({ sessionToken });
+
+export type RefreshSessionParameters = Static<typeof refreshSessionParameters>;

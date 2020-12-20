@@ -1,22 +1,26 @@
+import { TObject, TSchema } from '@sinclair/typebox';
 import { FastifyInstance } from 'fastify';
 import { FastifyService, QueryResult, sql } from '../lib';
 
-export abstract class AbstractRepository<Columns extends Record<string, string> = Record<string, string>>
-  implements FastifyService {
-  table: ReturnType<typeof sql.raw>;
+export abstract class AbstractRepository<Schema extends TObject<Record<string, TSchema>>> implements FastifyService {
+  table: ReturnType<typeof sql.identifier>;
   columns: {
     sql: ReturnType<typeof sql.columns>;
-    map: Record<keyof Columns, ReturnType<typeof sql.raw>>;
+    map: Record<keyof Schema['properties'], ReturnType<typeof sql.identifier>>;
   };
 
-  constructor({ table = '', columns = {} as Columns }: { table?: string; columns?: Columns } = {}) {
-    this.table = sql.raw(table);
+  constructor(schema: Schema) {
+    this.table = sql.identifier(schema.table || '');
+    const columns = Object.entries(schema.properties).reduce<[string, string][]>(
+      (acc, [k, { column = k }]) => (acc.push([k, column]), acc),
+      [],
+    );
     this.columns = {
-      sql: sql.columns(Object.entries(columns).map(([a, b]) => [b, a])),
-      map: Object.entries(columns).reduce((map, [key, value]) => {
-        map[key as keyof Columns] = sql.raw(value);
-        return map;
-      }, {} as Record<keyof Columns, ReturnType<typeof sql.raw>>),
+      sql: sql.columns(columns.map(([a, b]) => [b, a])),
+      map: columns.reduce(
+        (map, [key, value]) => ((map[key as keyof Schema['properties']] = sql.identifier(value)), map),
+        {} as Record<keyof Schema['properties'], ReturnType<typeof sql.identifier>>,
+      ),
     };
   }
 
@@ -26,14 +30,14 @@ export abstract class AbstractRepository<Columns extends Record<string, string> 
     this.repositories = repositories;
 
     this.firstRow = res => {
-      if (res.rowCount > 1) throw this.errors.internal('[database query] - expected one row, got ' + res.rowCount);
+      if (res.rowCount === 1) return res.rows[0];
       if (res.rowCount === 0) throw this.errors.notFound('[database query] - expected one row, got none');
-      return res.rows[0];
+      throw this.errors.internal('[database query] - expected one row, got ' + res.rowCount);
     };
 
     this.maybeFirstRow = res => {
-      if (res.rowCount > 1) throw this.errors.internal('[database query] - expected one row, got ' + res.rowCount);
-      return res.rows[0];
+      if (res.rowCount <= 1) return res.rows[0];
+      throw this.errors.internal('[database query] - expected one row, got ' + res.rowCount);
     };
 
     this.rowCount = res => res.rowCount;

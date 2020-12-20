@@ -1,6 +1,6 @@
-import { makeServiceFetch } from '@/lib/services';
+import { createServiceFetch } from '@/lib/services';
 
-const fetch = makeServiceFetch('upload');
+const fetch = createServiceFetch('upload');
 
 export async function uploadFiles(token: string, uploadType: string, files: FileList) {
   const body = new FormData();

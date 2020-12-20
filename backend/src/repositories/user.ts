@@ -1,18 +1,9 @@
-import { CreateUser, FilterUser, PublicUser, User } from '../schemas';
+import { CreateUser, FilterUser, PublicUser, user, User } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const table = 'app_user';
-
-const columns = {
-  id: 'id',
-  username: 'username',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-} as const;
-
-export class UserRepository extends AbstractRepository<typeof columns> {
+export class UserRepository extends AbstractRepository<typeof user> {
   constructor() {
-    super({ table, columns });
+    super(user);
   }
 
   auth = {

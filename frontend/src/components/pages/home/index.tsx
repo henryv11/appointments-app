@@ -11,8 +11,8 @@ import { getUserProfile } from '@/services/user';
 import { stringify } from 'querystring';
 import React from 'react';
 import { Route } from 'react-router-dom';
-import BoardsPage from './boards';
-import ProfilePage from './profile';
+import BoardsPage from './pages/boards';
+import ProfilePage from './pages/profile';
 
 export default function HomePage() {
   const [authState] = useAuthContext();

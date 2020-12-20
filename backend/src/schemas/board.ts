@@ -1,33 +1,36 @@
-import { Static as S, Type as T } from '@sinclair/typebox';
-import { bigInt, timestampTz } from './data-types';
-import { Keys, ListControl, Partial } from './util';
+import { Static, Type } from '@sinclair/typebox';
+import TypeUtil from './type-util';
 
-const id = bigInt;
-const name = T.String();
-const createdAt = timestampTz;
-const updatedAt = timestampTz;
+const id = TypeUtil.BigInt();
+const name = Type.String();
+const createdAt = TypeUtil.TimestampTz({
+  column: 'created_at',
+});
+const updatedAt = TypeUtil.TimestampTz({
+  column: 'created_at',
+});
 
-export const board = T.Object({
+export const board = TypeUtil.Table('board', {
   id,
   name,
   createdAt,
   updatedAt,
 });
 
-export type Board = S<typeof board>;
+export type Board = Static<typeof board>;
 
-export const updateBoard = Partial(T.Object({ name }));
+export const updateBoard = TypeUtil.Partial(Type.Object({ name }));
 
-export type UpdateBoard = S<typeof updateBoard>;
+export type UpdateBoard = Static<typeof updateBoard>;
 
-export const createBoard = T.Object({ name });
+export const createBoard = Type.Object({ name });
 
-export type CreateBoard = S<typeof createBoard>;
+export type CreateBoard = Static<typeof createBoard>;
 
-export const filterBoard = Partial(board);
+export const filterBoard = TypeUtil.Partial(board);
 
-export type FilterBoard = S<typeof filterBoard>;
+export type FilterBoard = Static<typeof filterBoard>;
 
-export const listBoard = T.Intersect([filterBoard, ListControl(...Keys(board))]);
+export const listBoard = Type.Intersect([filterBoard, TypeUtil.ListControl(...TypeUtil.Keys(board))]);
 
-export type ListBoard = S<typeof listBoard>;
+export type ListBoard = Static<typeof listBoard>;

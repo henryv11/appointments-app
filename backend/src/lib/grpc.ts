@@ -1,11 +1,13 @@
 import { loadSync, Options } from '@grpc/proto-loader';
-import { FastifyPluginCallback } from 'fastify';
+import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 import { GrpcObject, loadPackageDefinition, Server, ServerCredentials } from 'grpc';
 
 const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
+  const log = app.log.child({ plugin: 'grpc' });
   const grpcServer = new Server();
   const grpc: FastifyGrpc = {
+    log,
     addService: grpcServer.addService.bind(grpcServer),
     register: grpcServer.register.bind(grpcServer),
     loadProto: (filename: string, opts) =>
@@ -22,10 +24,10 @@ const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
       try {
         grpcServer.bind(`${host}:${port}`, ServerCredentials.createInsecure());
         grpcServer.start();
-        app.log.info(`grpc server listening at "${host}:${port}"`);
+        log.info(`grpc server listening at "${host}:${port}"`);
         cb();
       } catch (error) {
-        app.log.error(error, `failed to start grpc server`);
+        log.error(error, `failed to start grpc server`);
         cb(error);
       }
     },
@@ -33,7 +35,7 @@ const grpcServerPlugin: FastifyPluginCallback = function (app, _, done) {
   app.decorate('grpc', grpc);
   app.addHook(
     'onClose',
-    (app, done) => (app.log.info('shutting down grpc server ...'), grpcServer.tryShutdown(() => done())),
+    (_, done) => (log.info('shutting down grpc server ...'), grpcServer.tryShutdown(() => done())),
   );
   done();
 };
@@ -51,4 +53,5 @@ interface FastifyGrpc {
   register: Server['register'];
   loadProto: (filename: string, opts?: Options) => GrpcObject;
   listen: (host: string, port: number, cb?: (error?: Error) => void) => void;
+  log: FastifyInstance['log'];
 }

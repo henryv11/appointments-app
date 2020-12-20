@@ -7,8 +7,8 @@ export { QueryResult };
 export const database = fp<DatabaseConnectionOptions>(async (app, connectionOptions) => {
   const log = app.log.child({ plugin: 'database' });
   const pg = native
-    ? (log.info('using native bindings'), native)
-    : (log.info('using postgres bindings'), { Pool, Client });
+    ? (log.info('using native libpq bindings'), native)
+    : (log.info('using JavaScript bindings'), { Pool, Client });
   await databaseInit(pg.Client, connectionOptions, log);
   const pool = new pg.Pool(connectionOptions);
   const database: Database = Object.freeze({
@@ -61,17 +61,18 @@ async function databaseInit(
   }
 }
 
-const attachLogger = (query: QueryFn, log: LogFn) =>
-  ((...args: Parameters<QueryFn>) => (
+function attachLogger(query: QueryFn, log: LogFn) {
+  return function (...args: Parameters<QueryFn>) {
     log.info(
       typeof args[0] === 'string'
         ? { text: args[0], values: args[1] }
         : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           { text: (args[0] as any).text, values: (args[0] as any).values },
-      'query',
-    ),
-    query(...args)
-  )) as QueryFn;
+      'database query',
+    );
+    return query(...args);
+  } as QueryFn;
+}
 
 declare module 'fastify' {
   interface FastifyInstance {

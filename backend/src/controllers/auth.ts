@@ -26,7 +26,7 @@ export const authControllers: FastifyPluginCallback = function (app, _, done) {
         },
       },
     },
-    (req, res) => (res.status(201), app.services.auth.registerUser(req.body)),
+    (req, res) => (res.status(201), app.services.auth.register(req.body)),
   );
 
   app.post<{ Body: LoginUser }>(
@@ -42,7 +42,7 @@ export const authControllers: FastifyPluginCallback = function (app, _, done) {
         },
       },
     },
-    req => app.services.auth.loginUser(req.body),
+    req => app.services.auth.login(req.body),
   );
 
   app.delete(
@@ -60,7 +60,7 @@ export const authControllers: FastifyPluginCallback = function (app, _, done) {
     },
     req =>
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      app.services.auth.logoutUser({ userId: req.user!.userId }).then(() => 'logged out'),
+      app.services.auth.logout({ userId: req.user!.userId }).then(() => 'logged out'),
   );
 
   app.get<{ Params: RefreshSessionParameters }>(
@@ -75,7 +75,7 @@ export const authControllers: FastifyPluginCallback = function (app, _, done) {
         },
       },
     },
-    req => app.services.session.refreshSession(req.params.sessionToken),
+    req => app.services.session.refresh(req.params.sessionToken),
   );
 
   done();

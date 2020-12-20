@@ -1,23 +1,9 @@
-import { FilterUserProfileView, ListUserProfileView, UserProfileView } from '../schemas';
+import { FilterUserProfileView, ListUserProfileView, userProfileView, UserProfileView } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const columns = {
-  personId: 'p.id',
-  personCreatedAt: 'p.created_at',
-  personUpdatedAt: 'p.updated_at',
-  userCreatedAt: 'u.created_at',
-  userUpdatedAt: 'u.updated_at',
-  username: 'username',
-  email: 'email',
-  userId: 'user_id',
-  firstName: 'first_name',
-  lastName: 'last_name',
-  dateOfBirth: 'date_of_birth',
-} as const;
-
-export class UserProfileViewRepository extends AbstractRepository<typeof columns> {
+export class UserProfileViewRepository extends AbstractRepository<typeof userProfileView> {
   constructor() {
-    super({ columns });
+    super(userProfileView);
   }
 
   findOne = (filter: FilterUserProfileView, conn = this.query) =>

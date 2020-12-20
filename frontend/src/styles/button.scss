@@ -35,6 +35,8 @@
   align-items: center;
   align-content: center;
   justify-content: space-around;
+  height: 2rem;
+  font-size: medium;
 
   @include themed-buttons();
 
@@ -49,7 +51,12 @@
 
   &.small {
     font-size: small;
-    height: 2em;
+    height: 1.5rem;
+  }
+
+  &.large {
+    font-size: large;
+    height: 3rem;
   }
 
   &.outline,
@@ -60,6 +67,7 @@
   &.link {
     border: 0;
     box-shadow: none;
+    padding: 0.5rem;
   }
 
   &.outline {

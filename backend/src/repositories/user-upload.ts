@@ -1,24 +1,9 @@
-import { CreateUserUpload, FilterUserUpload, ListUserUpload, UserUpload } from '../schemas';
+import { CreateUserUpload, FilterUserUpload, ListUserUpload, userUpload, UserUpload } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const table = 'user_upload';
-
-const columns = {
-  id: 'id',
-  userId: 'user_id',
-  uploadType: 'upload_type',
-  fileName: 'file_name',
-  fileType: 'file_type',
-  filePath: 'file_path',
-  updatedAt: 'updated_at',
-  createdAt: 'created_at',
-  fileEncoding: 'file_encoding',
-  originalFileName: 'original_file_name',
-} as const;
-
-export class UserUploadRepository extends AbstractRepository<typeof columns> {
+export class UserUploadRepository extends AbstractRepository<typeof userUpload> {
   constructor() {
-    super({ table, columns });
+    super(userUpload);
   }
 
   findOne = (filter: FilterUserUpload, conn = this.query) =>
@@ -29,7 +14,7 @@ export class UserUploadRepository extends AbstractRepository<typeof columns> {
 
   list = ({ orderBy = 'createdAt', orderDirection = 'ASC', offset = 0, limit = 100, ...filter }: ListUserUpload) =>
     this.query<UserUpload & { totalRows: number }>(
-      this.sql`${this.select(filter, this.sql.columns([this.columns.sql, ['count(*) OVER()', 'totalRows']]))}
+      this.sql`${this.select(filter, this.sql.columns([this.columns.sql, this.sql`COUNT(*) OVER() AS "totalRows"`]))}
             ORDER BY ${this.columns.map[orderBy]} ${this.orderDirection(orderDirection)}
             LIMIT ${limit} OFFSET ${offset}`,
     ).then(this.allRows);
@@ -58,8 +43,6 @@ export class UserUploadRepository extends AbstractRepository<typeof columns> {
   }
 
   private select(filter: FilterUserUpload, columns = this.columns.sql) {
-    return this.sql`SELECT ${columns}
-                  FROM ${this.table}
-                  ${this.where(filter)}`;
+    return this.sql`SELECT ${columns} FROM ${this.table} ${this.where(filter)}`;
   }
 }

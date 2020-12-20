@@ -33,7 +33,7 @@ const webSocketServerPlugin: FastifyPluginCallback<WebSocketOptions> = function 
     listen: (port, cb = () => void 0) =>
       webSocketServer.listen(port, token =>
         token
-          ? ((listenSocket = token), log.info('listening at port ' + port), cb())
+          ? ((listenSocket = token), log.info('websocket server listening at port ' + port), cb())
           : (log.error('failed to listen to port ' + port), cb(new Error('web socket server failed to start'))),
       ),
   });

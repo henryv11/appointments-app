@@ -3,11 +3,11 @@ import { AgreementType, LoginUser, RegisterUser, User } from '../schemas';
 import { AbstractService } from './abstract';
 
 export class AuthService extends AbstractService {
-  async logoutUser({ userId }: { userId: User['id'] }) {
+  async logout({ userId }: { userId: User['id'] }) {
     await this.repositories.session.update({ endedAt: new Date().toISOString() }, { userId, endedAt: null });
   }
 
-  async registerUser({ username, password, hasAcceptedTermsAndConditions, ...personDetails }: RegisterUser) {
+  async register({ username, password, hasAcceptedTermsAndConditions, ...personDetails }: RegisterUser) {
     const [hashedPassword, transaction] = await Promise.all([hash(password, 10), this.database.transaction()]);
     try {
       await transaction.begin();
@@ -28,7 +28,7 @@ export class AuthService extends AbstractService {
         transaction.query,
       );
       await transaction.commit();
-      return this.services.session.getContinuedOrNewSession(user);
+      return this.services.session.get(user);
     } catch (error) {
       this.log.error(error, 'failed to create user');
       await transaction.rollback();
@@ -36,7 +36,7 @@ export class AuthService extends AbstractService {
     }
   }
 
-  async loginUser({ email, password, username }: LoginUser) {
+  async login({ email, password, username }: LoginUser) {
     const connection = await this.database.connection();
     try {
       const { password: userPassword, ...user } = await this.repositories.user.auth.findOne(
@@ -44,7 +44,7 @@ export class AuthService extends AbstractService {
         connection.query,
       );
       if (!(await compare(password, userPassword))) throw this.errors.badRequest();
-      return await this.services.session.getContinuedOrNewSession(user, connection.query);
+      return await this.services.session.get(user, connection.query);
     } finally {
       connection.close();
     }

@@ -1,27 +1,16 @@
-import { CreatePerson, FilterPerson, ListPerson, Person, UpdatePerson } from '../schemas';
+import { CreatePerson, FilterPerson, ListPerson, person, Person, UpdatePerson } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const table = 'person';
-
-const columns = {
-  id: 'id',
-  email: 'email',
-  firstName: 'first_name',
-  lastName: 'last_name',
-  dateOfBirth: 'date_of_birth',
-  userId: 'user_id',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-} as const;
-
-export class PersonRepository extends AbstractRepository<typeof columns> {
+export class PersonRepository extends AbstractRepository<typeof person> {
   constructor() {
-    super({ table, columns });
+    super(person);
   }
 
-  findOne = (filter: FilterPerson) => this.find(filter).then(this.firstRow);
+  findOne = (filter: FilterPerson, conn = this.query) =>
+    conn<Person>(this.sql`${this.select(filter)} LIMIT 1`).then(this.firstRow);
 
-  findMaybeOne = (filter: FilterPerson) => this.find(filter).then(this.maybeFirstRow);
+  findMaybeOne = (filter: FilterPerson, conn = this.query) =>
+    conn<Person>(this.sql`${this.select(filter)} LIMIT 1`).then(this.maybeFirstRow);
 
   list = ({ orderBy = 'createdAt', orderDirection = 'ASC', offset, limit, ...filter }: ListPerson) =>
     this.query<Person>(
@@ -49,8 +38,6 @@ export class PersonRepository extends AbstractRepository<typeof columns> {
               ${this.where(filter, true)}
               RETURNING ${this.columns.sql}`,
     ).then(this.allRows);
-
-  private find = (filter: FilterPerson) => this.query<Person>(this.sql`${this.select(filter)} LIMIT 1`);
 
   private select = (filter: FilterPerson) =>
     this.sql`SELECT ${this.columns.sql} FROM ${this.table} ${this.where(filter)}`;

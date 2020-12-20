@@ -3,7 +3,7 @@ import { PublicUser, SessionResponse } from '../schemas';
 import { AbstractService } from './abstract';
 
 export class SessionService extends AbstractService {
-  async getContinuedOrNewSession(user: PublicUser, query = this.database.query): Promise<SessionResponse> {
+  async get(user: PublicUser, query = this.database.query): Promise<SessionResponse> {
     // TODO: validate user to previous sessions
 
     let session = await this.repositories.session.findMaybeOne({ userId: user.id, endedAt: null }, query);
@@ -30,11 +30,11 @@ export class SessionService extends AbstractService {
     };
   }
 
-  async refreshSession(refreshToken: string) {
+  async refresh(refreshToken: string) {
     const connection = await this.database.connection();
     try {
       const user = await this.repositories.user.findOne({ sessionToken: refreshToken }, connection.query);
-      return await this.getContinuedOrNewSession(user, connection.query);
+      return await this.get(user, connection.query);
     } finally {
       connection.close();
     }

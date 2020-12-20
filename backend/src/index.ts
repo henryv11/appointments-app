@@ -1,5 +1,5 @@
 import { get as config } from 'config';
-import Fastify, { FastifyInstance } from 'fastify';
+import Fastify from 'fastify';
 import cors from 'fastify-cors';
 import helmet from 'fastify-helmet';
 import fastifyMultipart from 'fastify-multipart';
@@ -12,15 +12,7 @@ import { repositories } from './repositories';
 import { services } from './services';
 import { webSocketController } from './web-socket';
 
-let app: FastifyInstance;
-
-// if (cluster.isMaster) {
-// os.cpus().forEach(() => {
-//   cluster.fork();
-// });
-// } else {
-// eslint-disable-next-line prefer-const
-app = Fastify({ logger: pino(config('logger')) })
+const app = Fastify({ logger: pino(config('logger')) })
   .register(exitHandler)
   .register(fastifyUtils)
   .register(errors)
@@ -52,18 +44,3 @@ app.ready(error => {
     });
   });
 });
-// }
-
-// cluster.on('exit', async worker => {
-//   const message = `worker ${worker.id} has died`;
-//   const log = app?.log || console;
-//   log.info(message);
-
-//   if (app) {
-//     log.info('exiting current running app instance');
-//     await app.exit(1, new Error(message));
-//   }
-
-//   console.log('starting a new worker');
-//   cluster.fork();
-// });

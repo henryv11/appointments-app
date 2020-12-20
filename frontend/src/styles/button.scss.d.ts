@@ -4,6 +4,7 @@ interface CssExports {
   'button': string;
   'danger': string;
   'dark': string;
+  'large': string;
   'light': string;
   'link': string;
   'medium': string;

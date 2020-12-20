@@ -1,19 +1,9 @@
-import { CreatePersonAgreement, PersonAgreement } from '../schemas';
+import { CreatePersonAgreement, personAgreement, PersonAgreement } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const table = 'person_agreements';
-
-const columns = {
-  personId: 'person_id',
-  agreementType: 'agreement_type',
-  hasAccepted: 'has_accepted',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-} as const;
-
-export class PersonAgreementsRepository extends AbstractRepository<typeof columns> {
+export class PersonAgreementsRepository extends AbstractRepository<typeof personAgreement> {
   constructor() {
-    super({ table, columns });
+    super(personAgreement);
   }
 
   create = ({ personId, agreementType, hasAccepted }: CreatePersonAgreement, conn = this.query) =>

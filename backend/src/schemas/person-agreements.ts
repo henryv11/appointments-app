@@ -1,12 +1,13 @@
-import { Static as S, Type as T } from '@sinclair/typebox';
-import { agreementType, bigInt, timestampTz } from './data-types';
+import { Static, Type } from '@sinclair/typebox';
+import { agreementType } from './data-types';
+import TypeUtil from './type-util';
 
-const hasAccepted = T.Boolean();
-const personId = bigInt;
-const createdAt = timestampTz;
-const updatedAt = timestampTz;
+const hasAccepted = Type.Boolean({ column: 'has_accepted' });
+const personId = TypeUtil.BigInt({ column: 'person_id' });
+const createdAt = TypeUtil.TimestampTz({ column: 'created_at' });
+const updatedAt = TypeUtil.TimestampTz({ column: 'updated_at' });
 
-export const personAgreement = T.Object({
+export const personAgreement = TypeUtil.Table('person_agreements', {
   agreementType,
   hasAccepted,
   personId,
@@ -14,8 +15,8 @@ export const personAgreement = T.Object({
   updatedAt,
 });
 
-export type PersonAgreement = S<typeof personAgreement>;
+export type PersonAgreement = Static<typeof personAgreement>;
 
-export const createPersonAgreement = T.Object({ agreementType, personId, hasAccepted });
+export const createPersonAgreement = Type.Object({ agreementType, personId, hasAccepted });
 
-export type CreatePersonAgreement = S<typeof createPersonAgreement>;
+export type CreatePersonAgreement = Static<typeof createPersonAgreement>;

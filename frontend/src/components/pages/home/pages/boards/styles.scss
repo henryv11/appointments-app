@@ -1,0 +1,11 @@
+.root {
+  height: 100%;
+  padding-left: 0.5rem;
+
+  .floatingButtonContainer {
+    position: absolute;
+    right: 1.5rem;
+    top: 1rem;
+    z-index: 2;
+  }
+}

@@ -1,15 +1,19 @@
-import { Static as S, Type as T } from '@sinclair/typebox';
-import { bigInt, dateOfBirth, email, firstName, lastName, timestampTz, username } from './data-types';
-import { Keys, ListControl, Partial } from './util';
+import { Static, Type } from '@sinclair/typebox';
+import TypeUtil from './type-util';
 
-const userId = bigInt;
-const personId = bigInt;
-const userCreatedAt = timestampTz;
-const userUpdatedAt = timestampTz;
-const personCreatedAt = timestampTz;
-const personUpdatedAt = timestampTz;
+const email = TypeUtil.Email();
+const username = Type.String();
+const userId = TypeUtil.BigInt({ column: 'user_id' });
+const personId = TypeUtil.BigInt({ column: 'p.id' });
+const userCreatedAt = TypeUtil.TimestampTz({ column: 'u.created_at' });
+const userUpdatedAt = TypeUtil.TimestampTz({ column: 'u.updated_at' });
+const personCreatedAt = TypeUtil.TimestampTz({ column: 'p.created_at' });
+const personUpdatedAt = TypeUtil.TimestampTz({ column: 'p.updated_at' });
+const firstName = Type.String({ column: 'first_name' });
+const lastName = Type.String({ column: 'last_name' });
+const dateOfBirth = Type.String({ column: 'date_of_birth' });
 
-export const userProfileView = T.Object({
+export const userProfileView = Type.Object({
   username,
   dateOfBirth,
   firstName,
@@ -23,12 +27,15 @@ export const userProfileView = T.Object({
   personUpdatedAt,
 });
 
-export type UserProfileView = S<typeof userProfileView>;
+export type UserProfileView = Static<typeof userProfileView>;
 
-export const filterUserProfileView = Partial(userProfileView);
+export const filterUserProfileView = TypeUtil.Partial(userProfileView);
 
-export type FilterUserProfileView = S<typeof filterUserProfileView>;
+export type FilterUserProfileView = Static<typeof filterUserProfileView>;
 
-export const listUserProfileView = T.Intersect([filterUserProfileView, ListControl(...Keys(userProfileView))]);
+export const listUserProfileView = Type.Intersect([
+  filterUserProfileView,
+  TypeUtil.ListControl(...TypeUtil.Keys(userProfileView)),
+]);
 
-export type ListUserProfileView = S<typeof listUserProfileView>;
+export type ListUserProfileView = Static<typeof listUserProfileView>;

@@ -1,4 +1,4 @@
-export default Object.assign(sql, { where, set, columns, values, raw });
+export default Object.assign(sql, { where, set, columns, values, identifier });
 
 const PLACEHOLDER = '?';
 
@@ -12,12 +12,23 @@ enum SqlObjType {
   SET,
   VALUES,
   COLUMNS,
-  RAW,
+  IDENTIFIER,
 }
 
-const isSqlObject = (obj: unknown): obj is SqlObjBase => (obj as SqlObj)?.[sqlObjControlsSymbol] !== undefined;
-const isColumnsSqlObjectControl = (obj: SqlObjControl): obj is SqlObjControl<SqlObjType.COLUMNS> =>
-  obj.type === SqlObjType.COLUMNS;
+function isSqlObject(obj: unknown): obj is SqlObjBase {
+  return (obj as SqlObj)?.[sqlObjControlsSymbol] !== undefined;
+}
+
+function isColumnsSqlObjectControl(obj: SqlObjControl): obj is SqlObjControl<SqlObjType.COLUMNS> {
+  return obj.type === SqlObjType.COLUMNS;
+}
+
+function escapeIdentifier(identifier: string) {
+  return identifier
+    .split('.')
+    .map(part => '"' + part + '"')
+    .join('.');
+}
 
 function sqlObjectControl<T extends SqlObjType>(type: T) {
   const values: ValidArg[] = [];
@@ -135,7 +146,7 @@ function values(...rows: ValidArg[][]) {
   return sqlObj;
 }
 
-function columns(columns: (string | [string, string] | ColumnsSqlObject)[], prefix = '') {
+function columns(columns: (string | [string, string] | ColumnsSqlObject | SqlObj)[], prefix = '') {
   const control = Object.assign(sqlObjectControl(SqlObjType.COLUMNS), { prefix });
   const sqlObj: ColumnsSqlObject = {
     [sqlObjControlsSymbol]: control,
@@ -146,18 +157,19 @@ function columns(columns: (string | [string, string] | ColumnsSqlObject)[], pref
   const len = columns.length - 1;
   columns.forEach((col, i) => {
     if (isSqlObject(col)) mergeSqlObjects(control, col[sqlObjControlsSymbol]);
-    else if (Array.isArray(col)) control.text.push(PREFIX_PLACEHOLDER, col[0] + ' AS ' + '"' + col[1] + '"');
-    else control.text.push(PREFIX_PLACEHOLDER, col);
+    else if (Array.isArray(col))
+      control.text.push(PREFIX_PLACEHOLDER, escapeIdentifier(col[0]) + ' AS ' + escapeIdentifier(col[1]));
+    else control.text.push(PREFIX_PLACEHOLDER, escapeIdentifier(col));
     if (i < len) control.text.push(', ');
   });
   return sqlObj;
 }
 
-function raw(str: string) {
-  const sqlObj: RawSqlObj = {
-    [sqlObjControlsSymbol]: sqlObjectControl(SqlObjType.RAW),
+function identifier(str: string) {
+  const sqlObj: IdentifierSqlObj = {
+    [sqlObjControlsSymbol]: sqlObjectControl(SqlObjType.IDENTIFIER),
   };
-  sqlObj[sqlObjControlsSymbol].text.push(str);
+  sqlObj[sqlObjControlsSymbol].text.push(escapeIdentifier(str));
   return sqlObj;
 }
 
@@ -233,7 +245,7 @@ interface UpdateSqlObj extends SqlObjBase<SqlObjType.SET> {
   readonly isEmpty: boolean;
 }
 
-interface RawSqlObj extends SqlObjBase<SqlObjType.RAW> {}
+interface IdentifierSqlObj extends SqlObjBase<SqlObjType.IDENTIFIER> {}
 
 interface UpdateSqlObjAdd {
   (arg1: string | KeyValuePairs): UpdateSqlObj;

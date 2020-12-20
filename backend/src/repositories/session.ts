@@ -1,26 +1,16 @@
-import { CreateSession, FilterSession, Session, UpdateSession } from '../schemas';
+import { CreateSession, FilterSession, session, Session, UpdateSession } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const table = 'session';
-
-const columns = {
-  id: 'id',
-  token: 'token',
-  userId: 'user_id',
-  startedAt: 'started_at',
-  endedAt: 'ended_at',
-  updatedAt: 'updated_at',
-  createdAt: 'created_at',
-} as const;
-
-export class SessionRepository extends AbstractRepository<typeof columns> {
+export class SessionRepository extends AbstractRepository<typeof session> {
   constructor() {
-    super({ table, columns });
+    super(session);
   }
 
-  findOne = (filter: FilterSession, conn = this.query) => this.find(filter, conn).then(this.firstRow);
+  findOne = (filter: FilterSession, conn = this.query) =>
+    conn<Session>(this.sql`${this.select(filter)} LIMIT 1`).then(this.firstRow);
 
-  findMaybeOne = (filter: FilterSession, query = this.query) => this.find(filter, query).then(this.maybeFirstRow);
+  findMaybeOne = (filter: FilterSession, conn = this.query) =>
+    conn<Session>(this.sql`${this.select(filter)} LIMIT 1`).then(this.maybeFirstRow);
 
   update = ({ endedAt }: UpdateSession, filter: FilterSession, query = this.query) =>
     query<Session>(
@@ -37,13 +27,8 @@ export class SessionRepository extends AbstractRepository<typeof columns> {
               RETURNING ${this.columns.sql}`,
     ).then(this.firstRow);
 
-  private find = (filter: FilterSession, query = this.query) =>
-    query<Session>(
-      this.sql`SELECT ${this.columns.sql}
-              FROM ${this.table}
-              ${this.where(filter)}
-              LIMIT 1`,
-    );
+  private select = (filter: FilterSession) =>
+    this.sql`SELECT ${this.columns.sql} FROM ${this.table} ${this.where(filter)}`;
 
   private where({ endedAt, id, userId, token }: FilterSession, throwOnEmpty = false) {
     const where = this.sql.where();

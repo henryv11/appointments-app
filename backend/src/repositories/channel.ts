@@ -1,19 +1,9 @@
-import { Channel, CreateChannel } from '../schemas';
+import { channel, Channel, CreateChannel } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const table = 'channel';
-
-const columns = {
-  id: 'id',
-  name: 'name',
-  boardId: 'board_id',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-} as const;
-
-export class ChannelRepository extends AbstractRepository<typeof columns> {
+export class ChannelRepository extends AbstractRepository<typeof channel> {
   constructor() {
-    super({ table, columns });
+    super(channel);
   }
 
   create = ({ boardId, name }: CreateChannel, conn = this.query) =>

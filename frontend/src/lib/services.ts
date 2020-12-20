@@ -6,14 +6,14 @@ export const getServiceUrl = (...path: PathJoinParameters) => join(SERVER_BASE_U
 
 export const getServiceWebSocketUrl = (...path: PathJoinParameters) => join(SERVER_WEBSOCKET_BASE_URL, 'ws', ...path);
 
-export function makeServiceFetch(...basePath: PathJoinParameters) {
+export function createServiceFetch(...basePath: PathJoinParameters) {
   const baseUrl = getServiceUrl(...basePath);
   return <T>({
     path,
     token,
     headers = {},
     ...opts
-  }: Omit<FetchOptions, 'url'> & { path?: string | Parameters<typeof join>; token?: string }) => {
+  }: Omit<FetchOptions, 'url'> & { path?: string | Parameters<typeof join>; token?: string } = {}) => {
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return fetch<T>({
       url: path ? join(baseUrl, ...new Array<PathJoinParameters[number]>().concat(path)) : baseUrl,

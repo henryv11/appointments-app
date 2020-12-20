@@ -5,8 +5,8 @@ import { useTimeout } from '@/lib/react/hooks/timeout';
 import { loginUser, registerUser } from '@/services/auth';
 import React, { useRef, useState } from 'react';
 import { Redirect } from 'react-router-dom';
-import LoginForm from './forms/login';
-import RegistrationForm from './forms/registration';
+import LoginForm from './components/login-form';
+import RegistrationForm from './components/registration-form';
 import styles from './styles.scss';
 
 export default function LoginPage() {

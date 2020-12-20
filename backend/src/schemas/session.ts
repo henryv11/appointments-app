@@ -1,37 +1,34 @@
-import { Static as S, Type as T } from '@sinclair/typebox';
-import { bigInt, sessionToken, timestampTz } from './data-types';
-import { Partial } from './util';
+import { Static, Type } from '@sinclair/typebox';
+import TypeUtil from './type-util';
 
-const id = bigInt;
-const userId = bigInt;
-const token = sessionToken;
-const startedAt = timestampTz;
-const endedAt = T.Union([timestampTz, T.Null()]);
-const updatedAt = timestampTz;
+const id = TypeUtil.BigInt();
+const userId = TypeUtil.BigInt({ column: 'user_id' });
+const token = Type.String();
+const startedAt = TypeUtil.TimestampTz({ column: 'started_at' });
+const endedAt = Type.Union([TypeUtil.TimestampTz(), Type.Null()], { column: 'ended_at' });
+const updatedAt = TypeUtil.TimestampTz({ column: 'updated_at' });
+const createdAt = TypeUtil.TimestampTz({ column: 'created_at' });
 
-export const session = T.Object({
+export const session = TypeUtil.Table('session', {
   id,
   userId,
   token,
   startedAt,
   endedAt,
   updatedAt,
+  createdAt,
 });
 
-export type Session = S<typeof session>;
+export type Session = Static<typeof session>;
 
-export const createSession = T.Object({ userId, token });
+export const createSession = Type.Object({ userId, token });
 
-export type CreateSession = S<typeof createSession>;
+export type CreateSession = Static<typeof createSession>;
 
-export const filterSession = Partial(session);
+export const filterSession = TypeUtil.Partial(session);
 
-export type FilterSession = S<typeof filterSession>;
+export type FilterSession = Static<typeof filterSession>;
 
-export const updateSession = Partial(T.Object({ endedAt }));
+export const updateSession = TypeUtil.Partial(Type.Object({ endedAt }));
 
-export type UpdateSession = S<typeof updateSession>;
-
-export const refreshSessionParameters = T.Object({ sessionToken });
-
-export type RefreshSessionParameters = S<typeof refreshSessionParameters>;
+export type UpdateSession = Static<typeof updateSession>;

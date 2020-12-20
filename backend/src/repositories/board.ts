@@ -1,21 +1,13 @@
-import { Board, CreateBoard, FilterBoard, ListBoard, UpdateBoard } from '../schemas';
+import { board, Board, CreateBoard, FilterBoard, ListBoard, UpdateBoard } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const table = 'board';
-
-const columns = {
-  id: 'id',
-  name: 'name',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-} as const;
-
-export class BoardRepository extends AbstractRepository<typeof columns> {
+export class BoardRepository extends AbstractRepository<typeof board> {
   constructor() {
-    super({ columns, table });
+    super(board);
   }
 
-  findOne = (filter: FilterBoard) => this.find(filter).then(this.firstRow);
+  findOne = (filter: FilterBoard, conn = this.query) =>
+    conn<Board>(this.sql`${this.select(filter)} LIMIT 1`).then(this.firstRow);
 
   list = ({ limit = 100, offset = 1, orderBy = 'id', orderDirection = 'ASC', ...filter }: ListBoard) =>
     this.query<Board>(
@@ -38,8 +30,6 @@ export class BoardRepository extends AbstractRepository<typeof columns> {
               ${this.where(filter, true)}
               RETURNING ${this.columns.sql}`,
     ).then(this.allRows);
-
-  private find = (filter: FilterBoard) => this.query<Board>(this.sql`${this.select(filter)} LIMIT 1`);
 
   private select = (filter: FilterBoard) =>
     this.sql`SELECT ${this.columns.sql}

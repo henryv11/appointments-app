@@ -1,19 +1,9 @@
-import { CreateMessage, Message } from '../schemas';
+import { CreateMessage, message, Message } from '../schemas';
 import { AbstractRepository } from './abstract';
 
-const table = 'message';
-
-const columns = {
-  id: 'id',
-  content: 'content',
-  userId: 'user_id',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-} as const;
-
-export class MessageRepository extends AbstractRepository<typeof columns> {
+export class MessageRepository extends AbstractRepository<typeof message> {
   constructor() {
-    super({ table, columns });
+    super(message);
   }
 
   create = ({ userId, content }: CreateMessage, conn = this.query) =>
