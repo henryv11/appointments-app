@@ -9,5 +9,5 @@ export function formatDateString(date: Date) {
 }
 
 export function getAge(dateString: string) {
-  return Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 3.154e10);
+  return ~~((new Date().getTime() - new Date(dateString).getTime()) / 3.154e10);
 }

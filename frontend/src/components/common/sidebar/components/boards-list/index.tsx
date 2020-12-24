@@ -1,4 +1,4 @@
-import SvgIcon from '@/components/ui/svg-icon';
+import SvgIcon from '@/components/common/svg-icon';
 import { useLayoutContext } from '@/contexts/layout';
 import { RoutePath } from '@/lib/constants';
 import buttonStyles from '@/styles/button.scss';

@@ -35,5 +35,5 @@ export async function refreshSession(refreshToken: string) {
 interface AuthResponseBody {
   token: string;
   refreshToken: string;
-  user: Pick<User, 'username' | 'id'>;
+  userId: User['id'];
 }

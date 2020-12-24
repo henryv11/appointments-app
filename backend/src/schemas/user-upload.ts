@@ -43,6 +43,6 @@ export const filterUserUpload = TypeUtil.Partial(userUpload);
 
 export type FilterUserUpload = Static<typeof filterUserUpload>;
 
-export const listUserUpload = Type.Intersect([filterUserUpload, TypeUtil.ListControl(...TypeUtil.Keys(userUpload))]);
+export const listUserUpload = Type.Intersect([filterUserUpload, TypeUtil.ListControl(TypeUtil.Keys(userUpload))]);
 
 export type ListUserUpload = Static<typeof listUserUpload>;

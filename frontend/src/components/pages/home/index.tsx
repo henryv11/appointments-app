@@ -1,5 +1,5 @@
 import MainLayout from '@/components/layouts/main';
-import Breadcrumbs from '@/components/ui/breadcrumbs';
+import Breadcrumbs from '@/components/common/breadcrumbs';
 import { useAuthContext } from '@/contexts/auth';
 import { UserContextProvider } from '@/contexts/user';
 import { RoutePath } from '@/lib/constants';
@@ -13,23 +13,30 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 import BoardsPage from './pages/boards';
 import ProfilePage from './pages/profile';
+import RequireAuthentication from '@/components/higher-order/require-authentication';
 
-export default function HomePage() {
+function HomePage() {
   const [authState] = useAuthContext();
-  const [url, userId, token] = authState.isAuthenticated
-    ? [getServiceWebSocketUrl('?' + stringify({ token: authState.token })), authState.user.id, authState.token]
+  const [getUser, webSocketUrl, userId, token] = authState.isAuthenticated
+    ? [
+        getUserProfile,
+        getServiceWebSocketUrl('?' + stringify({ token: authState.token })),
+        authState.userId,
+        authState.token,
+      ]
     : [];
-  const ws = useWebSocket({
-    url,
-    onmessage: ev => console.log('on websocket message', ev),
-    onerror: ev => console.log('on websocket error', ev),
-    onopen: ev => (console.log('websocket open', ev), ws.send('hello')),
+  const webSocket = useWebSocket({
+    url: webSocketUrl,
+    onmessage: event => console.log('on websocket message', event),
+    onerror: event => console.log('on websocket error', event),
+    onopen: event => (console.log('websocket open', event), webSocket.send('hello')),
   });
-  useInterval(() => ws.send('ping'), 20000);
-  const userPromise = useAsync(authState.isAuthenticated && getUserProfile, [token, userId]);
-  if (!userPromise.isResolved) {
-    return <div>loading....</div>;
-  }
+  const userPromise = useAsync(getUser, [token, userId]);
+  
+  useInterval(() => webSocket.send('ping'), 20000);
+
+  if (!userPromise.isResolved) return <div>loading....</div>;
+
   return (
     <UserContextProvider {...userPromise.result}>
       <MainLayout>
@@ -40,3 +47,5 @@ export default function HomePage() {
     </UserContextProvider>
   );
 }
+
+export default RequireAuthentication(HomePage);

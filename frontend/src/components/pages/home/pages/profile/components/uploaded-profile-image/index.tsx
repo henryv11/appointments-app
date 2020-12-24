@@ -1,12 +1,13 @@
-import SvgIcon from '@/components/ui/svg-icon';
+import SvgIcon from '@/components/common/svg-icon';
 import { useAuthContext } from '@/contexts/auth';
 import { SERVER_BASE_URL } from '@/lib/constants';
 import { formatDateString } from '@/lib/date';
+import { join } from '@/lib/path';
 import { deleteUpload, UserUpload } from '@/services/upload';
 import buttonStyles from '@/styles/button.scss';
 import clsx from 'clsx';
 import React, { useState } from 'react';
-import ProfileImageEditModal from '../profile-image-edit-modal';
+import EditProfileImageModal from './components/edit-profile-image-modal';
 import styles from './styles.scss';
 
 export default function UploadedProfileImage({
@@ -19,7 +20,7 @@ export default function UploadedProfileImage({
   const [authState] = useAuthContext();
   const [isHovering, setIsHovering] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const imgSrc = SERVER_BASE_URL + '/profile-image/' + upload.fileName;
+  const imgSrc = join(SERVER_BASE_URL, 'profile-image', upload.fileName);
 
   return (
     <>
@@ -55,7 +56,7 @@ export default function UploadedProfileImage({
           </div>
         )}
       </div>
-      {isEditing && <ProfileImageEditModal src={imgSrc} onClose={() => setIsEditing(false)} />}
+      {isEditing && <EditProfileImageModal src={imgSrc} onClose={() => setIsEditing(false)} />}
     </>
   );
 }

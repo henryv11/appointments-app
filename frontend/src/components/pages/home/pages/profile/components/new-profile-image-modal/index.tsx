@@ -1,5 +1,5 @@
-import Expandable from '@/components/ui/expandable';
-import Modal from '@/components/ui/modal';
+import Expandable from '@/components/common/expandable';
+import Modal from '@/components/common/modal';
 import { useAuthContext } from '@/contexts/auth';
 import { usePagination } from '@/lib/react/hooks/pagination';
 import { useSimpleReducer } from '@/lib/react/hooks/simple-reducer';
@@ -20,11 +20,6 @@ const COLUMNS = 3;
 
 export default function NewImageModal({ onClose }: { onClose: () => void }) {
   const [authState] = useAuthContext();
-  const {
-    token,
-    user: { id: userId },
-  } = authState.isAuthenticated ? authState : { token: '', user: { id: -1 } };
-
   const [state, updateState] = useSimpleReducer(
     {
       totalRows: 0,
@@ -35,21 +30,26 @@ export default function NewImageModal({ onClose }: { onClose: () => void }) {
     },
     true,
   );
-
   const pagination = usePagination({
     currentOffset: state.offset,
     totalRows: state.totalRows,
     limit: LIMIT,
   });
+  const uploadsLength = state.uploads.length;
 
   useEffect(() => {
     loadUploads();
   }, []);
 
-  async function loadUploads(offset: number = 0) {
-    if (state.isLoading) return;
+  async function loadUploads(offset = 0) {
+    if (state.isLoading || !authState.isAuthenticated) return;
     updateState({ isLoading: true });
-    const uploads = await listUploads(token, { limit: LIMIT, uploadType: UPLOAD_TYPE, offset, userId });
+    const uploads = await listUploads(authState.token, {
+      limit: LIMIT,
+      uploadType: UPLOAD_TYPE,
+      offset,
+      userId: authState.userId,
+    });
     updateState({
       totalRows: Number(uploads[0]?.totalRows || 0),
       uploads: state.uploads.concat(uploads),
@@ -58,10 +58,16 @@ export default function NewImageModal({ onClose }: { onClose: () => void }) {
     });
   }
 
-  const uploadsLength = state.uploads.length;
-
   return (
-    <Modal onClose={onClose} title='Choose a new profile image' className={styles.root} large>
+    <Modal
+      title='Choose a new profile image'
+      className={styles.root}
+      onCloseClick={() => onClose()}
+      onBackdropClick={() => onClose()}
+      onOkClick={() => onClose()}
+      onCancelClick={() => onClose()}
+      large
+    >
       <Expandable title='Uploaded profile images' isExpanded className={styles.uploadsExpandable}>
         <AutoSizer>
           {({ width, height }) => (
@@ -113,18 +119,18 @@ export default function NewImageModal({ onClose }: { onClose: () => void }) {
           id='input'
           accept='image/*'
           multiple
-          onChange={token ? ({ target: { files } }) => files && updateState({ files }) : () => void 0}
+          onChange={({ target: { files } }) => files && updateState({ files })}
         ></input>
         <label htmlFor='input'>Choose a profile image to upload</label>
         {state.files && (
           <button
             className={clsx(buttonStyles.button, buttonStyles.success)}
             onClick={async () => {
-              const uploads = await uploadFiles(token, UPLOAD_TYPE, state.files!);
-              const len = uploads.length;
+              if (!authState.isAuthenticated || !state.files) return;
+              const uploads = await uploadFiles(authState.token, UPLOAD_TYPE, state.files);
               updateState({
                 uploads: state.uploads.concat(uploads),
-                totalRows: state.totalRows + len,
+                totalRows: state.totalRows + uploads.length,
               });
             }}
           >

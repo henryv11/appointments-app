@@ -15,7 +15,7 @@ export async function getBoard(token: string, boardId: Board['id']) {
 }
 
 export async function listBoards(token: string, filters: any) {
-  const res = await fetch<Board[]>({ method: 'GET', query: filters, token });
+  const res = await fetch<(Board & { totalRows: string })[]>({ method: 'GET', query: filters, token });
   if (res.status !== 200) throw new Error('failed to list boards');
   return res.json();
 }

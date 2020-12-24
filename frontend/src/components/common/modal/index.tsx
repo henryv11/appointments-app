@@ -2,15 +2,12 @@ import buttonStyles from '@/styles/button.scss';
 import clsx from 'clsx';
 import React, { FormEvent, PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
-import SvgIcon from '../svg-icon';
+import SvgIcon from '@/components/common/svg-icon';
 import styles from './styles.scss';
 
 const root = document.getElementById('root')!;
 
-function noop() {}
-
 export default function Modal({
-  onClose,
   title,
   className,
   children,
@@ -20,18 +17,13 @@ export default function Modal({
   onSubmit,
   okText = 'ok',
   cancelText = 'cancel',
-  onOkClicked = noop,
-  onCancelClicked = noop,
+  onOkClick,
+  onCancelClick,
+  onCloseClick,
+  onBackdropClick,
   isLoading,
   ...rest
-}: PropsWithChildren<
-  { onClose: () => void; title: string; onSubmit?: (event: FormEvent<HTMLFormElement>) => void } & Partial<
-    Record<'large' | 'small' | 'isForm' | 'isLoading', boolean>
-  > &
-    Partial<Record<'title' | 'okText' | 'cancelText', string>> &
-    Partial<Record<'onOkClicked' | 'onCancelClicked', () => void>> &
-    React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
->) {
+}: PropsWithChildren<ModalProps>) {
   const Children = (
     <>
       <div className={clsx(styles.children, className)} {...rest}>
@@ -39,7 +31,7 @@ export default function Modal({
       </div>
       <div className={styles.controls}>
         <button
-          onClick={() => onOkClicked()}
+          onClick={onOkClick}
           className={clsx(buttonStyles.button, buttonStyles.primary)}
           type={isForm ? 'submit' : 'button'}
           disabled={isLoading}
@@ -47,7 +39,7 @@ export default function Modal({
           {okText}
         </button>
         <button
-          onClick={() => onCancelClicked()}
+          onClick={onCancelClick}
           className={clsx(buttonStyles.button, buttonStyles.danger)}
           type={isForm ? 'reset' : 'button'}
           disabled={isLoading}
@@ -60,13 +52,13 @@ export default function Modal({
   return createPortal(
     <div className={styles.root}>
       <div className={styles.wrapper}>
-        <div className={styles.backdrop} onClick={() => onClose()} />
+        <div className={styles.backdrop} onClick={onBackdropClick} />
         <div className={clsx(styles.content, (large && styles.lg) || (small && styles.sm) || styles.md)}>
           <div className={styles.header}>
             <h4>{title}</h4>
             <button
               className={clsx(buttonStyles.button, buttonStyles.link, buttonStyles.danger)}
-              onClick={() => onClose()}
+              onClick={onCloseClick}
             >
               <SvgIcon icon='xCircle' size={24} strokeWidth={24} />
             </button>
@@ -84,3 +76,30 @@ export default function Modal({
     root,
   );
 }
+
+type StringProps = {
+  [k in 'title' | 'okText' | 'cancelText']?: string;
+};
+
+type BooleanProps = {
+  [k in 'large' | 'small' | 'isForm' | 'isLoading']?: boolean;
+};
+
+type DivClickEventProps = {
+  [k in 'onBackdropClick']?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+};
+
+type ButtonClickEventProps = {
+  [k in 'onOkClick' | 'onCancelClick' | 'onCloseClick']?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => void;
+};
+
+type ModalProps = {
+  title: string;
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
+} & StringProps &
+  BooleanProps &
+  ButtonClickEventProps &
+  DivClickEventProps &
+  React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;

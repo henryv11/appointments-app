@@ -27,7 +27,7 @@ interface LoggedInState {
   isAuthenticated: true;
   token: string;
   refreshToken: string;
-  user: Pick<User, 'id' | 'username'>;
+  userId: User['id'];
 }
 
 interface LoggedOutState {

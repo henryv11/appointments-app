@@ -2,14 +2,14 @@ import { useEffect, useRef } from 'react';
 import { useSimpleReducer } from './simple-reducer';
 
 export function useAsync<
-  F extends (...args: R) => Promise<unknown>,
-  R extends unknown[],
-  T = ReturnType<F> extends Promise<infer R> ? R : ReturnType<F>
->(asyncFn: F | undefined | boolean, args: R = ([] as unknown) as R) {
+  F extends (...args: Args) => Promise<unknown>,
+  Args extends unknown[],
+  Result = ReturnType<F> extends Promise<infer R> ? R : ReturnType<F>
+>(asyncFn: F | undefined | false, args: Args = ([] as unknown) as Args) {
   const abortController = useRef<() => void>(noop);
   const [{ promiseState, result, error }, setState] = useSimpleReducer<{
     promiseState: PromiseState;
-    result?: T;
+    result?: Result;
     error?: Error;
   }>({
     promiseState: PromiseState.IDLE,
@@ -26,14 +26,14 @@ export function useAsync<
     };
     setState({ promiseState: PromiseState.PENDING });
     asyncFn(...args)
-      .then(result => {
-        if (!isAborted) setState({ result: result as T, error: undefined, promiseState: PromiseState.RESOLVED });
+      .then((result: Result) => {
+        if (!isAborted) setState({ result, error: undefined, promiseState: PromiseState.RESOLVED });
       })
-      .catch(error => {
+      .catch((error: Error) => {
         if (!isAborted)
           setState({
             result: undefined,
-            error: error || new Error('useAsync function rejected with an unknown error'),
+            error,
             promiseState: PromiseState.REJECTED,
           });
       })
@@ -50,7 +50,7 @@ export function useAsync<
     error,
     result,
     abort: abortController.current,
-  } as UseAsyncState<T>;
+  } as UseAsyncState<Result>;
 }
 
 function noop() {}

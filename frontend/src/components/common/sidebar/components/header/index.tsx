@@ -1,10 +1,9 @@
-import SvgIcon from '@/components/ui/svg-icon';
+import SvgIcon from '@/components/common/svg-icon';
 import { LayoutContextActionType, useLayoutContext } from '@/contexts/layout';
-import { formatDateString } from '@/lib/date';
-import { useInterval } from '@/lib/react/hooks/interval';
 import buttonStyles from '@/styles/button.scss';
 import clsx from 'clsx';
-import React, { useState } from 'react';
+import React from 'react';
+import Clock from './components/clock';
 import styles from './styles.scss';
 
 export default function Header() {
@@ -20,12 +19,4 @@ export default function Header() {
       </button>
     </div>
   );
-}
-
-function Clock() {
-  const [dateString, setDateString] = useState(formatDateString(new Date()));
-  useInterval(() => {
-    setDateString(formatDateString(new Date()));
-  }, 1000);
-  return <span>{dateString}</span>;
 }

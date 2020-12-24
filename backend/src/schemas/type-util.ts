@@ -10,7 +10,7 @@ import {
 } from '@sinclair/typebox';
 import { orderDirection } from './data-types';
 
-export function ListControl<T extends string[]>(...orderByKeys: T) {
+function ListControl<T extends string[]>(orderByKeys: T) {
   return Type.Object(
     {
       limit: Type.Optional(Type.Number({ description: 'database listing result limit' })),
@@ -29,7 +29,7 @@ export function ListControl<T extends string[]>(...orderByKeys: T) {
   );
 }
 
-export function Partial<T extends Record<string, TSchema>>(obj: TObject<T>) {
+function Partial<T extends Record<string, TSchema>>(obj: TObject<T>) {
   const partial = Object.entries(obj.properties).reduce<Record<string, TOptional<TSchema>>>(
     (acc, [k, v]) => ((acc[k] = Type.Optional(v)), acc),
     {},
@@ -37,7 +37,7 @@ export function Partial<T extends Record<string, TSchema>>(obj: TObject<T>) {
   return { ...obj, ...Type.Object(partial) } as TObject<{ [K in keyof T]: TOptional<T[K]> }>;
 }
 
-export function Keys<T extends Record<string, TSchema>>(obj: TObject<T>) {
+function Keys<T extends Record<string, TSchema>>(obj: TObject<T>) {
   return Object.keys(obj.properties) as (keyof T)[];
 }
 

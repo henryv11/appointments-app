@@ -2,9 +2,13 @@ import { SERVER_BASE_URL, SERVER_WEBSOCKET_BASE_URL } from './constants';
 import { fetch, FetchOptions } from './fetch';
 import { join } from './path';
 
-export const getServiceUrl = (...path: PathJoinParameters) => join(SERVER_BASE_URL, 'backend', ...path);
+export function getServiceUrl(...path: PathJoinParameters) {
+  return join(SERVER_BASE_URL, 'backend', ...path);
+}
 
-export const getServiceWebSocketUrl = (...path: PathJoinParameters) => join(SERVER_WEBSOCKET_BASE_URL, 'ws', ...path);
+export function getServiceWebSocketUrl(...path: PathJoinParameters) {
+  return join(SERVER_WEBSOCKET_BASE_URL, 'ws', ...path);
+}
 
 export function createServiceFetch(...basePath: PathJoinParameters) {
   const baseUrl = getServiceUrl(...basePath);

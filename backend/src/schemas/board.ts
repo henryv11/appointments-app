@@ -7,7 +7,7 @@ const createdAt = TypeUtil.TimestampTz({
   column: 'created_at',
 });
 const updatedAt = TypeUtil.TimestampTz({
-  column: 'created_at',
+  column: 'updated_at',
 });
 
 export const board = TypeUtil.Table('board', {
@@ -31,6 +31,6 @@ export const filterBoard = TypeUtil.Partial(board);
 
 export type FilterBoard = Static<typeof filterBoard>;
 
-export const listBoard = Type.Intersect([filterBoard, TypeUtil.ListControl(...TypeUtil.Keys(board))]);
+export const listBoard = Type.Intersect([filterBoard, TypeUtil.ListControl(TypeUtil.Keys(board))]);
 
 export type ListBoard = Static<typeof listBoard>;

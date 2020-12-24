@@ -1,7 +1,8 @@
 import { Static, Type } from '@sinclair/typebox';
 import { bigInt, email, jsonWebToken, password, sessionToken, uploadType, username } from './data-types';
 import { createPerson } from './person';
-import { createUser, publicUser } from './user';
+import TypeUtil from './type-util';
+import { createUser } from './user';
 
 export * from './board';
 export * from './channel';
@@ -15,7 +16,11 @@ export * from './user-profile-view';
 export * from './user-upload';
 export * from './type-util';
 
-export const sessionResponse = Type.Object({ user: publicUser, token: jsonWebToken, refreshToken: sessionToken });
+export const sessionResponse = Type.Object({
+  userId: TypeUtil.BigInt(),
+  token: jsonWebToken,
+  refreshToken: sessionToken,
+});
 
 export type SessionResponse = Static<typeof sessionResponse>;
 

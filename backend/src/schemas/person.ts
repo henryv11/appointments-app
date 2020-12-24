@@ -35,6 +35,6 @@ export const updatePerson = TypeUtil.Partial(Type.Object({ firstName, lastName, 
 
 export type UpdatePerson = Static<typeof updatePerson>;
 
-export const listPerson = Type.Intersect([filterPerson, TypeUtil.ListControl(...TypeUtil.Keys(person))]);
+export const listPerson = Type.Intersect([filterPerson, TypeUtil.ListControl(TypeUtil.Keys(person))]);
 
 export type ListPerson = Static<typeof listPerson>;

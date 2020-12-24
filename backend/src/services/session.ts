@@ -24,7 +24,7 @@ export class SessionService extends AbstractService {
     }
 
     return {
-      user,
+      userId: user.id,
       token: this.jwt.sign({ userId: session.userId, sessionId: session.id }),
       refreshToken: session.token,
     };

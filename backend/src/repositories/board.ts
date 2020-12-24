@@ -10,9 +10,9 @@ export class BoardRepository extends AbstractRepository<typeof board> {
     conn<Board>(this.sql`${this.select(filter)} LIMIT 1`).then(this.firstRow);
 
   list = ({ limit = 100, offset = 1, orderBy = 'id', orderDirection = 'ASC', ...filter }: ListBoard) =>
-    this.query<Board>(
-      this.sql`${this.select(filter)}
-              ORDER BY ${this.columns.map[orderBy]} ${orderDirection}
+    this.query<Board & { totalRows: number }>(
+      this.sql`${this.select(filter, this.sql.columns([this.columns.sql, this.sql`COUNT(*) OVER() AS "totalRows"`]))}
+              ORDER BY ${this.columns.map[orderBy]} ${this.orderDirection(orderDirection)}
               LIMIT ${limit} OFFSET ${offset}`,
     ).then(this.allRows);
 
@@ -31,8 +31,8 @@ export class BoardRepository extends AbstractRepository<typeof board> {
               RETURNING ${this.columns.sql}`,
     ).then(this.allRows);
 
-  private select = (filter: FilterBoard) =>
-    this.sql`SELECT ${this.columns.sql}
+  private select = (filter: FilterBoard, columns = this.columns.sql) =>
+    this.sql`SELECT ${columns}
             FROM ${this.table}
             ${this.where(filter)}`;
 

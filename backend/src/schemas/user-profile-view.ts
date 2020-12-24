@@ -35,7 +35,7 @@ export type FilterUserProfileView = Static<typeof filterUserProfileView>;
 
 export const listUserProfileView = Type.Intersect([
   filterUserProfileView,
-  TypeUtil.ListControl(...TypeUtil.Keys(userProfileView)),
+  TypeUtil.ListControl(TypeUtil.Keys(userProfileView)),
 ]);
 
 export type ListUserProfileView = Static<typeof listUserProfileView>;

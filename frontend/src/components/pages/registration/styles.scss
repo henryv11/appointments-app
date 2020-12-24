@@ -1,0 +1,27 @@
+.root {
+  width: 80%;
+  margin-top: 200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px 20px;
+  border-radius: 5px;
+  background-color: rgba(var(--color-light-rgb), 0.4);
+  box-shadow: 1px 1px 1px 1px rgba(var(--color-dark-rgb), 0.4);
+
+  a {
+    margin-left: auto;
+    margin-right: auto;
+    font-size: small;
+    display: table;
+    margin-top: 25px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--color-primary-hex);
+
+    &:hover {
+      filter: brightness(1.1);
+      font-weight: bold;
+      letter-spacing: 0.2px;
+    }
+  }
+}

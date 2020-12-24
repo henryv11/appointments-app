@@ -1,0 +1,18 @@
+.root {
+  height: 100%;
+  padding: 0.2rem;
+
+  .inner {
+    height: 100%;
+    border-radius: 0.2rem;
+    box-shadow: 1px 1px 1px 1px rgba(var(--color-dark-rgb), 0.2);
+    background-color: rgba(var(--color-light-rgb), 0.4);
+    border: 1px solid rgba(var(--color-dark-rgb), 0.1);
+
+    &:hover {
+      cursor: pointer;
+      box-shadow: 1px 1px 1px 1px rgba(var(--color-dark-rgb), 0.6);
+      filter: brightness(1.02);
+    }
+  }
+}
