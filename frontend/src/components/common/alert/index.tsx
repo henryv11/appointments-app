@@ -1,10 +1,19 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
-export default function Alert() {
-  useEffect(() => {
-    console.log('bitch tits');
+export default function Alert({ title, message }: AlertProps) {
+  return (
+    <div>
+      <div>{title}</div>
+      <div>{message}</div>
+      <div>
+        <button>OK</button>
+        <button>Cancel</button>
+      </div>
+    </div>
+  );
+}
 
-    return () => console.log('nigger');
-  }, []);
-  return <div>Alert or sth</div>;
+export interface AlertProps {
+  title?: string;
+  message?: string;
 }
