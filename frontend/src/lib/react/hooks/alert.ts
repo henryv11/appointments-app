@@ -31,7 +31,8 @@ function getPositionCssText(position: Position = 'top-middle') {
   if (horizontalPosition === 'middle')
     return `${verticalPosition}: 1rem;
             left: 0;
-            right: 0;`;
+            right: 0;
+            margin: 0 auto;`;
   return `${verticalPosition}: 1rem;
           ${horizontalPosition}: 1rem;`;
 }

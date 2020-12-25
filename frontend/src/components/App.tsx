@@ -11,7 +11,7 @@ import NotFoundPage from './pages/not-found';
 import RegistrationPage from './pages/registration';
 
 export default function App() {
-  const alert = useAlert({ duration: 3000 });
+  const alert = useAlert({ duration: 1000 });
   return (
     <ThemeContextProvider>
       <AuthContextProvider>
